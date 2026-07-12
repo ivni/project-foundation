@@ -1,6 +1,8 @@
-<!-- Template for docs/architecture.md (C4-lite). Exactly two diagrams — context and
-     containers. No component-level diagrams: they rot. Falls under the same-change
-     rule: a new container or integration updates this file in the same commit. -->
+<!-- Template for docs/architecture.md (architecture-lite). Keep two views: context
+     and runtime/package topology. Delete nodes for capabilities marked not applicable;
+     do not invent infrastructure to fill the template. No component-level diagrams:
+     they rot. Runtime units, consumer boundaries, and integrations follow the
+     same-change rule. -->
 
 # Architecture — {{project}}
 
@@ -22,28 +24,29 @@ graph TB
 
 {{One paragraph: the system in one breath — what it is, for whom, what it depends on.}}
 
-## Containers
+## Runtime / package topology
 
-Deployable units and the protocols between them.
+Show the applicable execution and release boundaries: deployable units for a service;
+host, artifact, and consumer for a library or CLI; platform and backend boundaries for
+a client application; execution units and data flow for a data job.
 
 ```mermaid
 graph TB
-    subgraph host["{{deployment target}}"]
-        app["{{app/API}}"]
-        worker["{{background worker}}"]
-        db[("{{database}}")]
-        cache[("{{cache/queue}}")]
-        storage[("{{object storage}}")]
+    consumer["{{user / host application / scheduler}}"]
+    artifact["{{service / CLI / library / client app / data job}}"]
+    subgraph target["{{runtime / platform / package ecosystem}}"]
+        primary["{{primary runtime or packaged artifact}}"]
+        supporting["{{supporting runtime, if applicable}}"]
+        data[("{{persistent data, if applicable}}")]
     end
-    spa["{{client, if separate}}"]
+    external["{{external integration, if applicable}}"]
 
-    spa -->|HTTPS| app
-    app --> db
-    app --> cache
-    worker --> db
-    worker --> cache
-    app -->|presigned URLs| storage
+    consumer --> artifact
+    artifact --> primary
+    primary --> supporting
+    primary --> data
+    primary --> external
 ```
 
-{{One line per container: responsibility, scaling constraint if any (e.g. "scheduler —
-single instance, must never run twice").}}
+{{One line per shown unit or boundary: responsibility, protocol or packaging relation,
+and lifecycle/scaling constraint if any. Remove every non-applicable placeholder.}}

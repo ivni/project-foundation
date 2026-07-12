@@ -1,5 +1,6 @@
-<!-- Template for docs/PRD.md. A living document: phase slices refine it; when
-     reality diverges, correct it in the same change. -->
+<!-- Template for docs/PRD.md. A living document: phase slices refine it. When code or
+     runtime diverges, determine intent first: update the PRD only if intent changed;
+     otherwise fix the implementation. Never rewrite the PRD to legitimize a defect. -->
 
 # PRD — {{project}}
 
@@ -21,8 +22,8 @@ what they need to accomplish, what "good" looks like to them.}}
 <!-- Feature areas mapped to phases from docs/stages.md. Sketch-level here;
      detail arrives in each phase's requirements slice. -->
 
-### Phase 0 — walking skeleton
-{{deployable slice, no features}}
+### Phase 0 — releasable skeleton
+{{real build/package/release path for the applicable contour, no product features}}
 
 ### Phase 1 — {{name}}
 {{feature areas}}

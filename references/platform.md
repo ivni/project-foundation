@@ -2,10 +2,13 @@
 
 Stack-agnostic questions that must be answered **early** — in bootstrap discovery or
 in the audit gap analysis — because retrofitting them is an order of magnitude more
-expensive than deciding them up front. Each question ships with a hard default;
-answering differently is fine, silently not answering is not. Record the answers in
-`CLAUDE.md` (Security & platform rules / Observability rules) and, where the decision
-was contested, in an ADR.
+expensive than deciding them up front. Defaults are capability-conditional: apply a
+default when `docs/discovery.md` marks its capability applicable; do not build
+infrastructure for a capability marked not applicable. A planned capability enters
+stages or the register with a trigger. Answering an applicable question differently is
+fine with a mini-ADR; silently omitting it is not. Promote the answers into `CLAUDE.md`
+(Project shape & applicability / Security & platform rules / Observability rules) and,
+where the decision was contested, into an ADR.
 
 ## Observability
 
@@ -13,8 +16,9 @@ was contested, in an ADR.
   scheduled jobs. Default: yes, no plain-text printf logging.
 - **Correlation / request id** generated at the edge, propagated through every layer
   (API → DB logs → background jobs → outbound calls), echoed in responses. Default: yes.
-- **Health endpoints**: liveness (`/health`) and readiness (`/ready`) or the platform's
-  equivalent. Deploy verifies them. Default: yes.
+- **Health signals for deployed services**: liveness (`/health`) and readiness
+  (`/ready`) or the platform's equivalent. Deploy verifies them. Default: yes for a
+  long-running deployable service; not applicable to packages and local-only tools.
 - **Error tracking** (Sentry-compatible or equivalent) wired before real users exist.
   Default: yes.
 - **Metrics** for hot paths and queues, scraped by something. Default: yes for anything
@@ -22,27 +26,39 @@ was contested, in an ADR.
 - **Two journals, never conflated**: the business **audit log** (who did what — in the
   primary DB, surfaced in the product) vs **ops telemetry** (logs/metrics/traces).
   Default: separate from the start.
-- If the domain needs tamper-evidence: audit log is append-only, hash-chained, and
-  retention never deletes individual records from an open chain. Default: only when
-  the domain demands accountability (HR, finance, access control).
+- If the domain needs tamper-evidence, define the attacker and the verification anchor.
+  An append-only hash chain detects history modification only when its trusted head,
+  signature, or key is protected outside the mutable log. A privileged-storage threat
+  requires an external anchor, immutable/WORM storage, or an equivalent independently
+  protected ledger. Never call an unanchored chain tamper-evident. Retention must
+  preserve verifiability. Default: only when the domain demands accountability.
 
 ## Security & access
 
-- **Humans vs machines are separate auth channels.** Decide each explicitly, e.g.
-  server-side sessions for humans (instant revocation) vs API keys for machines.
-  Record the choice and its revocation story in an ADR. Default: sessions + keys;
-  choose stateless tokens only with an explicit revocation answer.
+- **Humans vs machines are separate auth channels.** Decide each applicable channel
+  explicitly. Default for browser/server systems: revocable server-side sessions for
+  humans and scoped keys or service identities for machines. Native or delegated clients
+  use an appropriate OAuth/OIDC flow with a revocation story. Choose stateless bearer
+  tokens only with an explicit revocation answer. Record the choice in an ADR.
+- **Authentication bypasses never ship.** Stubs are allowed only in tests or explicitly
+  local development modes, must fail closed elsewhere, and must be absent or unreachable
+  in released artifacts. When auth is applicable in phase 0, exercise a minimal real
+  authentication path.
 - **Instant deactivation path**: one action kills a person's sessions and keys and
   surfaces what they owned. Default: designed in phase 1, not "later".
-- **A machine credential is never broader than its owner**; scopes narrow, never widen.
-  Store hashes, show secrets once, identify by prefix.
+- **Delegated machine credentials never exceed the delegating principal.** Independent
+  workload identities instead receive only the permissions their workload needs and
+  have an accountable owner or team, rotation and revocation paths, and audit records.
+  For bearer API keys, store hashes, show the secret once, and identify it by prefix.
 - **CSRF protection** on state-changing requests for cookie-authenticated web apps.
   Default: yes.
-- **Least privilege for service accounts**: admin-created, owned by a human, expiring,
-  audited under their own identity.
-- **File uploads/downloads** go client ↔ object storage via short-lived presigned URLs;
-  files inherit the permission model of the entity they attach to. Default: yes when
-  files exist at all.
+- **Least privilege for workload identities**: separately identifiable, never borrowed
+  from a human account, owned by an accountable person or team, rotated or expiring when
+  the mechanism supports it, and audited under their own identity.
+- **File transfer and storage** follow the execution topology. Networked multi-client
+  systems default to client ↔ object storage transfer via short-lived presigned URLs;
+  local client applications use platform-native sandboxed storage. Files inherit the
+  permission and lifecycle model of the entity they attach to.
 
 ## Data & integrity
 
@@ -71,5 +87,6 @@ was contested, in an ADR.
   gotchas, and the deployment mechanically prevents duplicates.
 - **Bulk external actions are jittered** (notifications, emails) — never one burst;
   never notify a user about their own action.
-- **Maintenance mode**: some way to say "down on purpose" that is distinguishable from
-  "down by accident". Default: a simple flag/page is enough; having none is not.
+- **Maintenance mode for user-facing deployed runtimes**: some way to say "down on
+  purpose" that is distinguishable from "down by accident". Default: a simple flag or
+  page is enough. Not applicable to packages and local-only tools.

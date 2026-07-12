@@ -10,8 +10,9 @@
 
 ## Approach
 
-{{What was tried, in what environment, with what shortcuts (auth stubbed, data
-faked, …). Shortcuts are fine — this code will be deleted.}}
+{{What was tried, in what environment, with what shortcuts (auth stubbed locally,
+data faked, …). Shortcuts are fine only in this throwaway environment; they must not
+enter a released artifact. This code will be deleted.}}
 
 ## Findings
 

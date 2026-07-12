@@ -23,4 +23,4 @@
 ## Upgrade policy
 
 {{How versions move: e.g. "pin exact; review pins at each phase close; security
-patches immediately". Dependency audit runs in the QA gate.}}
+patches immediately". Dependency audit runs in local verification and CI.}}

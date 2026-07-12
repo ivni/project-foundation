@@ -31,7 +31,8 @@ resolution path. **Unknowns are closed before build, not during.**
 2. Write the unknowns down as an explicit list, ordered by impact.
 3. Ask the user **one question at a time**, most impactful first. Each question comes
    with concrete options and a recommended default. Batch only trivial questions.
-4. Record every answer into the artifacts immediately — an answer that lives only in
+4. Record every answer immediately — into `docs/discovery.md` during bootstrap, or into
+   the current phase/canonical artifact once it exists. An answer that lives only in
    chat is lost.
 
 ## Subphases
@@ -39,7 +40,8 @@ resolution path. **Unknowns are closed before build, not during.**
 A subphase is one coherent, committable increment — typically one to a few commits.
 A subphase is done only when **all** of the following hold:
 
-- QA gate green (see [gates.md](gates.md)).
+- Local verification green; required CI green before merge or release (see
+  [gates.md](gates.md)).
 - New behavior covered by tests, and the change verified by actually running it —
   not only by tests and typecheck passing.
 - Docs updated in the same change (same-change rule).
@@ -53,8 +55,9 @@ one applies.
 
 - All subphases in `checklist.md` complete.
 - All `BLK-N` resolved or explicitly graduated to the register.
-- Consistency: PRD, stages, architecture, and CLAUDE.md reflect what was actually
-  built (walk them; do not assume).
+- Consistency: intended behavior in PRD, stages, ADRs, and `CLAUDE.md` agrees with code
+  and runtime evidence. Resolve every mismatch by correcting the wrong layer; do not
+  rewrite intent merely to match an incorrect implementation (walk them; do not assume).
 - Debt & risk register reviewed — new entries added, stale entries closed.
 - `CLAUDE.md` status line rewritten: phase closed, next phase named.
 

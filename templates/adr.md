@@ -1,11 +1,11 @@
 <!-- Template for docs/adr/NNNN-slug.md. Sequential numbers, never renumbered.
-     Add a line to docs/adr/README.md (index: number, title, status, one-liner)
+     Add a line to docs/adr/README.md using templates/adr-index.md
      in the same commit. A mini-ADR (standard deviation) may be three sentences —
      but it uses this same file format. -->
 
 # ADR-{{NNNN}}: {{decision title}}
 
-- **Status:** {{proposed | accepted | accepted (retroactive) | superseded by ADR-NNNN}}
+- **Status:** {{proposed | accepted | accepted (retroactive) | rejected | superseded by ADR-NNNN}}
 - **Date:** {{YYYY-MM-DD}}
 
 ## Context

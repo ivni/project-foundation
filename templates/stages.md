@@ -3,16 +3,21 @@
 
 # Build stages — {{project}}
 
-## Phase 0 — walking skeleton
+## Phase 0 — releasable skeleton
 
-**Goal:** the thinnest end-to-end deployable slice; no features.
+**Goal:** prove the thinnest releasable path for this project's applicable contour;
+no product features.
 
-Includes: repo + CI (lint → typecheck → test → audit → build → deploy), QA gate and
-pre-push hook, deploy path exercised for real (tag → production), auth stub,
-structured logging with correlation id, health endpoints, backup + rehearsed restore.
+Always includes: repo, local verification, required CI, build, tests, packaging,
+release/version path, and documented rollback. Add only applicable capability paths
+from `docs/discovery.md`:
+deploy + health checks for a service; install + launch for a CLI or client app;
+package + consumer example for a library; representative run + safe rerun for a data
+job; auth, migrations, backup/restore, and observability when their capabilities apply.
 
-**Done when:** a tagged release deploys automatically and responds healthy in
-production; the deploy and restore runbooks exist.
+**Done when:** a versioned artifact follows the real release path and is verified in
+its target environment; every applicable operational path has been exercised and its
+rollback or abort procedure documented.
 
 ## Phase 1 — {{name}}
 

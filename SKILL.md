@@ -9,39 +9,64 @@ An opinionated engineering method for the **solo engineer + AI agent** setup. It
 a standard (hard defaults for artifacts, process, gates, and platform decisions) and the
 process for establishing it on a new project or retrofitting it onto an existing one.
 
-The standard is directive: defaults are not suggestions. Deviating is allowed, but only
-deliberately — every deviation gets a mini-ADR recording what was changed and why.
-"We didn't get around to it" is not a deviation; it is a violation.
+The standard is directive within the project's applicable capabilities: defaults are
+not suggestions. Marking a capability not applicable requires a one-line rationale in
+discovery, not an ADR. Rejecting an applicable default is a deliberate deviation and
+gets a mini-ADR recording what was changed and why. "We didn't get around to it" is
+not a deviation; it is a violation.
 
 ## The standard in ten rules
 
-1. **Docs are the system of record and the agent's inter-session memory.** The project's
-   `CLAUDE.md` is the working contract; a stale doc is a bug, not a nuisance.
-2. **The artifact core exists from day one:** `CLAUDE.md`, PRD, tech-stack, stages plan,
-   ADR log with index, architecture sketch (C4-lite), debt & risk register.
-3. **Phase 0 is a walking skeleton:** the thinnest deployable slice through the full
-   contour (repo, CI, deploy, auth stub, logging, health checks) ships before any feature.
+1. **Docs are the project contract and the agent's inter-session memory.** They record
+   intent, decisions, process, and status; code records the implementation; runtime
+   observation records current behavior. A mismatch is a defect to investigate, not
+   permission to overwrite either side blindly.
+2. **Discovery exists from day one; the artifact core exists before build:**
+   `docs/discovery.md` captures applicability and unknowns, then `CLAUDE.md`, PRD,
+   tech-stack, stages, ADR log with index, architecture-lite sketch, and registers
+   become canonical before phase 0 starts.
+3. **Phase 0 proves the thinnest releasable path appropriate to the project.** It always
+   exercises build, verification, packaging, release, and rollback. Deploy, auth,
+   health checks, migrations, backups, and observability join it when applicable.
 4. **Every phase starts with a requirements slice** — scope, checklist, blockers,
    consistency-check — and unknowns are closed *before* code is written.
 5. **Non-negotiables are written down:** 5–7 product principles plus the domain rules
    code must enforce. Violating one is a bug, not a style choice.
-6. **One QA entry point** (single script: lint + typecheck + audit), wired as a pre-push
-   gate; CI mirrors it and adds tests.
+6. **One local verification entry point** (lint + format check + typecheck + fast tests
+   + audit). A pre-push hook provides fast feedback; required CI checks are enforcement.
 7. **Decisions are recorded.** Anything hard to reverse, cross-cutting, or surprising
    gets an ADR. Deviations from this standard get a mini-ADR.
 8. **Debt and risk live in a register** with an owner and a review trigger. Known debt
    without a register entry violates the standard.
-9. **Platform questions are answered early** — observability, auth model, time handling,
-   idempotency, backups — using the hard defaults in [references/platform.md](references/platform.md).
-10. **Releases are deliberate:** version-tag deploys only, backup before migration,
-    rollback documented, the deploy path rehearsed in phase 0.
+9. **Applicable platform questions are answered early** — observability, auth model,
+   time handling, idempotency, backups — using the capability-conditional defaults in
+   [references/platform.md](references/platform.md).
+10. **Releases are deliberate:** every released artifact is versioned; applicable
+    deploy or publish paths run from the version, backup precedes applicable migrations,
+    rollback is documented, and the real release path is rehearsed in phase 0.
 
 ## Artifact language
 
 This skill and its templates are English. The language of *generated artifacts* is a
 per-project decision: default to the language of the user's brief, confirm during
-discovery, record it in the project's `CLAUDE.md`, and apply it consistently (docs,
-commit messages, register entries). Translate template headings when instantiating.
+discovery, record it first in `docs/discovery.md`, then promote it into the project's
+`CLAUDE.md` with the artifact core. Apply it consistently (docs, commit messages,
+register entries). Translate template headings when instantiating.
+
+## Establish applicability
+
+Before applying hard defaults, classify the project's capabilities in
+`docs/discovery.md`: deployable runtime, persistent data, human auth, machine auth,
+background jobs or external delivery, public network exposure, file storage, and
+multiple independently deployed components. Mark each **applicable**, **planned**, or
+**not applicable**, with evidence or a one-line rationale.
+
+A default is mandatory only when its capability is applicable. A capability marked
+planned enters stages or the register with a trigger. Not applicable is not a deviation;
+silently omitting an applicable default is. Phase 0 follows the resulting contour: a
+service deploys and answers health checks; a CLI installs and runs; a library builds,
+packages, and works in a consumer example; a data job runs and reruns safely on
+representative input.
 
 ## Choose the mode
 
@@ -58,39 +83,52 @@ If ambiguous, ask which mode the user wants before doing anything else.
 1. **Intake.** Read the brief. If there is none, ask the user for a free-form brain dump
    (product idea, users, constraints, stack preferences, deployment target). Do not
    interrogate before letting them talk.
-2. **Fix the artifact language** (see above).
-3. **Build the unknowns register.** List every open question the artifact core needs
-   answered, grouped by impact. Typical unknowns: target users and core jobs, scale,
-   product non-negotiables, stack constraints, deployment/hosting, auth model, data
-   sensitivity, timezone/locale, solo-vs-team process expectations.
-4. **Close unknowns one question at a time**, most impactful first, per
+2. **Open discovery.** Create `docs/discovery.md` from
+   [templates/discovery.md](templates/discovery.md). This is the only project artifact
+   created while high-impact unknowns remain open.
+3. **Fix the artifact language and applicability** in discovery (see above). Do not
+   implement infrastructure for capabilities marked not applicable.
+4. **Build the unknowns register inside discovery.** List every open question the
+   artifact core needs answered, grouped by impact. Typical unknowns: target users and
+   core jobs, scale, product non-negotiables, stack constraints, release target, auth
+   model, data sensitivity, timezone/locale, solo-vs-team process expectations.
+5. **Close unknowns one question at a time**, most impactful first, per
    [references/ai-collaboration.md](references/ai-collaboration.md). Batch only trivia.
-   Do not generate artifacts while high-impact unknowns are open.
-5. **Generate the artifact core** from [templates/](templates/), in dependency order:
-   PRD → product principles & domain rules → tech-stack (verify every version against
-   official docs, record the verification date) → stages (phase 0 = walking skeleton) →
-   architecture sketch → registers → foundational ADRs (stack choice, auth model, and
+   Record every answer immediately in discovery. Do not generate the canonical artifact
+   core while high-impact unknowns remain open.
+6. **Generate the artifact core and promote decisions** from discovery into their
+   canonical destinations, in dependency order: PRD → product principles & domain rules
+   → tech-stack (verify every version against official docs, record the verification
+   date) → stages (phase 0 follows the applicable contour) → architecture sketch →
+   registers → ADR index and foundational ADRs (stack choice, applicable auth model, and
    any decision that was genuinely contested) → `CLAUDE.md` last, referencing the rest.
-6. **Set up the gates** per [references/gates.md](references/gates.md): QA script,
-   pre-push hook, CI skeleton — concrete commands come from the chosen stack.
-7. **Open phase 0** with a requirements slice per [references/process.md](references/process.md).
-8. **Consistency pass.** Re-read the generated set as a whole; fix contradictions
+   Record each destination in discovery, mark it complete, and thereafter treat it as
+   historical context rather than a parallel authority.
+7. **Set up the applicable gates** per [references/gates.md](references/gates.md): local
+   verification script, pre-push feedback hook, required CI checks, and a recorded git
+   workflow profile — concrete commands come from the chosen stack.
+8. **Open phase 0** with a requirements slice per [references/process.md](references/process.md).
+9. **Consistency pass.** Re-read the generated set as a whole; fix contradictions
    before showing the result. Present a summary: artifacts created, decisions recorded,
    unknowns that remain (they go to the blockers file or the register, never silently).
 
 ## Mode: Audit (brownfield)
 
 1. **Inventory.** Map what exists: code layout, docs, process signals (CI config, hooks,
-   scripts, commit history, release tags), and implicit decisions baked into the code
-   (auth model, data handling, deployment). Cheap subagents are appropriate for the
-   scanning; the analysis is yours.
+   scripts, commit history, release tags), implicit decisions baked into the code
+   (auth model, data handling, deployment), and which capabilities are applicable.
+   Record applicability in `docs/discovery.md`; cheap subagents are appropriate for the
+   scanning, but the analysis is yours.
 2. **Gap analysis.** Compare findings against the ten rules and the four reference
-   standards. Classify each item: present / partial / missing / contradicts.
+   standards only where their capabilities apply. Classify each applicable item:
+   present / partial / missing / contradicts. Record not-applicable items with rationale,
+   but do not report them as gaps.
 3. **Retro-ADRs.** Significant implicit decisions get recorded as ADRs with status
    "accepted (retroactive)" and the observed rationale. Do not relitigate them — record
    them so future changes have a baseline.
 4. **Gap plan.** A prioritized adoption plan, ordered by safety-of-change: first make
-   change safe (QA gate, `CLAUDE.md`, status line, backup/restore path), then the docs
+   change safe (local verification, required CI, `CLAUDE.md`, status line,
+   applicable backup/restore path), then the docs
    spine (PRD-as-is, stages, registers), then process (phase slices), then platform
    gaps. Phase the plan like any other work.
 5. **Boundaries.** The standard governs artifacts, process, and gates — it does **not**
@@ -115,13 +153,15 @@ If ambiguous, ask which mode the user wants before doing anything else.
 References (the standard — load what the task needs):
 - [references/artifacts.md](references/artifacts.md) — the artifact core: every artifact's purpose, hard defaults, maintenance rules
 - [references/process.md](references/process.md) — phases, requirements slices, subphase discipline, DoD, spikes
-- [references/gates.md](references/gates.md) — QA entry point, hooks, CI, release & git discipline
+- [references/gates.md](references/gates.md) — local verification, hooks, CI, release & git discipline
 - [references/platform.md](references/platform.md) — early platform decisions: observability, security, data integrity, operations
 - [references/ai-collaboration.md](references/ai-collaboration.md) — rules for the agent: memory, verification, autonomy boundaries, discovery technique
 
 Templates (instantiate, translating headings into the artifact language):
-- [templates/claude-md.md](templates/claude-md.md), [templates/prd.md](templates/prd.md),
+- [templates/discovery.md](templates/discovery.md), [templates/claude-md.md](templates/claude-md.md),
+  [templates/prd.md](templates/prd.md),
   [templates/tech-stack.md](templates/tech-stack.md), [templates/stages.md](templates/stages.md),
   [templates/architecture.md](templates/architecture.md), [templates/adr.md](templates/adr.md),
+  [templates/adr-index.md](templates/adr-index.md),
   [templates/registers.md](templates/registers.md), [templates/runbook.md](templates/runbook.md),
   [templates/spike.md](templates/spike.md), [templates/phase-slice/](templates/phase-slice/)

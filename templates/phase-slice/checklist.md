@@ -11,8 +11,10 @@
 
 ## Phase definition of done
 
-- [ ] All subphases above complete (QA green, tests, verified by running, docs updated)
+- [ ] All subphases above complete (local verification and required CI green, tests,
+      verified by running, docs updated)
 - [ ] All BLK-N resolved or graduated to the register
-- [ ] PRD / stages / architecture / CLAUDE.md walked and consistent with what was built
+- [ ] PRD / stages / ADRs / architecture / CLAUDE.md agree with code and runtime;
+      every mismatch resolved by correcting the wrong layer
 - [ ] Debt & risk register reviewed
 - [ ] CLAUDE.md status line rewritten: phase closed, next phase named

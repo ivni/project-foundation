@@ -4,10 +4,13 @@
 # CLAUDE.md
 
 Engineering guide for **{{project}}** — {{one-line description}}. This file is the
-source of truth for how we build. Product details live in [docs/PRD.md](docs/PRD.md),
+authoritative contract for how we intend to build. Code records implementation and
+runtime checks record actual behavior. Product details live in [docs/PRD.md](docs/PRD.md),
 stack in [docs/tech-stack.md](docs/tech-stack.md), build order in
 [docs/stages.md](docs/stages.md), architecture sketch in
 [docs/architecture.md](docs/architecture.md), decisions in [docs/adr/](docs/adr/README.md).
+Foundation discovery and its historical rationale live in
+[docs/discovery.md](docs/discovery.md).
 
 > Status: {{what is implemented — by phase/subphase; what is in progress; what is
 > next. Rewrite at every phase/subphase completion, in the same commit. A fresh
@@ -19,6 +22,16 @@ stack in [docs/tech-stack.md](docs/tech-stack.md), build order in
      These shape every feature. Violating them is a bug, not a style choice. -->
 
 - **{{Principle}}.** {{One sentence of what it means in practice.}}
+
+## Project shape & applicability
+
+<!-- Current capability classification promoted from docs/discovery.md. This section,
+     not completed discovery, is the living summary. Planned items link to stages or
+     a register trigger. -->
+
+| Capability | Status | Evidence / destination |
+|---|---|---|
+| {{deployable runtime / persistent data / human auth / ...}} | applicable / planned / not applicable | {{why, phase, or register link}} |
 
 ## Repository layout
 
@@ -36,19 +49,26 @@ confirm against official docs; do not invent or recall version numbers.}}
 
 ```bash
 {{build / lint / typecheck / test commands}}
-{{single QA entry point, e.g.: bash scripts/qa.sh}}
+{{single local verification command: lint + format + typecheck + fast tests + audit,
+e.g. bash scripts/qa.sh}}
+{{slow / integration test command}}
 ```
 
 ## Git & release workflow
 
-<!-- Branching model, commit-message language, deploy trigger, and agent autonomy
-     boundaries. Solo defaults shown; adapt. -->
+<!-- Choose one profile. Protected trunk is the default when the remote supports
+     required checks; solo-fast accepts that main may briefly be red. -->
 
-- Trunk-based: commit directly to `main`; no long-lived branches.
+- Workflow profile: {{protected trunk / solo-fast}}.
+- Protected trunk: short-lived branches, PR merge, required CI, no direct push to `main`.
+- Solo-fast: local verification before direct push; release refuses commits without
+  green CI. Remove the profile that does not apply.
+- No long-lived branches.
 - Commit messages in {{language}}, present tense, naming phase/subphase when one applies.
-- **Push and tag only on explicit instruction** — tags deploy.
-- Deploy is by semver tag only; backup runs automatically before migrations;
-  rollback runbook: [docs/runbooks/](docs/runbooks/).
+- **Push and tag only on explicit instruction** — tags release.
+- Release is by version tag only. When deployment and schema migrations apply, backup
+  runs automatically before migration. Rollback or withdrawal runbook:
+  [docs/runbooks/](docs/runbooks/).
 
 ## Documentation must stay current
 
@@ -65,8 +85,9 @@ confirm against official docs; do not invent or recall version numbers.}}
 
 ## Security & platform rules
 
-<!-- The answers to references/platform.md for this project: auth channels,
-     revocation, idempotency, outbox, time handling, files, secrets. -->
+<!-- The applicable answers to references/platform.md for this project: auth channels
+     and no-bypass rule, revocation, delegated and workload identities, tamper-evidence
+     anchor when required, idempotency, outbox, time handling, files, and secrets. -->
 
 - {{rule}}
 

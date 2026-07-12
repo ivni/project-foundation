@@ -12,6 +12,9 @@ the agent executing this skill follows them itself.
   open questions in blockers/registers. "I'll remember" is always false.
 - Record answers and decisions into artifacts **at the moment they land**, not in a
   batch "afterwards" — afterwards is after the context is gone.
+- During bootstrap, before canonical artifacts exist, `docs/discovery.md` is the
+  landing place. Once high-impact unknowns close, promote each answer into its canonical
+  destination and mark discovery complete; do not maintain it as a parallel authority.
 - The `CLAUDE.md` **status line** is the agent's resume point: it must let a fresh
   session reconstruct where the project stands without re-reading history.
 
@@ -25,19 +28,23 @@ the agent executing this skill follows them itself.
   that the feature works; exercise the real flow (run the app, hit the endpoint, click
   the screen) before claiming "done". Report failures faithfully — a red test reported
   as red is progress; a red test glossed over is sabotage.
-- When a doc contradicts the code, the code is the fact and the doc is the bug — fix
-  the doc, and check what else trusted it.
+- Treat each source as evidence about a different layer: docs record intended behavior,
+  decisions, and process; code records the current implementation; runtime observation
+  records what the system actually does. When they disagree, determine the intended
+  state from the brief, ADRs, tests, history, and user direction, then fix the incorrect
+  layer. If intent is ambiguous or changing behavior would be risky, report the mismatch
+  and ask rather than silently choosing a winner.
 
 ## Autonomy boundaries
 
 Define these in `CLAUDE.md` explicitly. The hard defaults:
 
 Proceed without asking:
-- reading anything; local edits; local commits; running QA and tests; scaffolding
+- reading anything; local edits; local commits; running local verification and tests; scaffolding
   inside the agreed scope.
 
 Only on explicit instruction, each time:
-- `git push` (publishing) and **tagging** (tags deploy);
+- `git push` (publishing) and **tagging** (tags release, publish, or deploy);
 - deploys, migrations against real data, destructive operations;
 - any external side effect (sending, posting, creating resources outside the repo).
 
