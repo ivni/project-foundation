@@ -1,47 +1,82 @@
-# project-foundation
+# Project Foundation
 
-Скил в формате Agent Skills: best practices по закладке архитектуры, процесса и набора артефактов проекта — на старте нового проекта (bootstrap) или при переделке существующего (audit → gap-план). Не привязан к конкретному стеку или технологии. Инструкция установки ниже относится к Claude Code; создаваемый проектный agent contract настраивается независимо под `CLAUDE.md`, `AGENTS.md` или путь пользователя.
+Project Foundation is an opinionated, stack-agnostic Agent Skill for establishing a durable
+project architecture, delivery process, and artifact set. It supports greenfield bootstrap,
+brownfield audit, and focused work such as ADRs, phase slices, risk registers, and docs-to-code
+consistency checks.
 
-## Режимы
+The package includes an interactive Bun installer for Codex, Claude Code, Pi, OpenCode, and
+Hermes Agent.
 
-- **Bootstrap (greenfield)** — бриф → capability-матрица и закрытие «неизвестных» вопросами по одному → генерация набора артефактов (настраиваемый agent contract, PRD, tech-stack, план фаз, ADR, architecture-lite схема, реестр долгов/рисков, локальная проверка и CI) и настройка процесса.
-- **Audit (brownfield)** — инвентаризация кода/доков/процесса → сравнение со стандартом → приоритизированный план доведения, включая ретро-ADR.
-- **Reference (точечно)** — срез требований фазы, оформление ADR, проверка расхождений доков с кодом, ведение реестра долгов.
+## Quick start
 
-## Принципы
-
-- Нормативные уровни `MUST / SHOULD / MAY / N/A`; MUST-отклонение требует явного одобрения и ADR.
-- Правила применяются по capability-матрице: `N/A` с обоснованием не считается отклонением.
-- Agent contract выбирается в discovery (`CLAUDE.md`, `AGENTS.md` или путь пользователя); параллельные контракты без явной необходимости не создаются.
-- Сам скил и шаблоны — на английском; язык генерируемых артефактов определяется на discovery проекта.
-- Рассчитан на связку «соло-инженер + AI-агент».
-
-## Структура
-
-```
-SKILL.md                    # точка входа: десять правил стандарта, роутер режимов, процессы
-references/
-  artifacts.md              # ядро артефактов: agent contract, PRD, tech-stack, stages, ADR, architecture-lite, реестры, runbooks
-  process.md                # фазы: срез требований, подфазы, DoD, конвенция спайков, техника discovery
-  gates.md                  # гейты: единая локальная проверка, хуки, CI, дисциплина релизов и git
-  platform.md               # платформенные чек-листы: наблюдаемость, безопасность, целостность данных, эксплуатация
-  ai-collaboration.md       # правила работы AI-агента: память в доках, верификация, границы автономии
-templates/
-  discovery.md  agent-contract.md  prd.md  tech-stack.md  stages.md  architecture.md
-  adr.md  adr-index.md  registers.md  runbook.md  spike.md
-  phase-slice/              # scope.md, checklist.md, blockers.md, consistency-check.md
-```
-
-## Установка в Claude Code
-
-Символическая ссылка (или копия) папки репозитория в личную папку скилов:
+Install [Bun](https://bun.com/docs/installation), then run:
 
 ```bash
-# Windows (от администратора или с включённым Developer Mode)
-mklink /D %USERPROFILE%\.claude\skills\project-foundation C:\code\project-foundation
-
-# macOS / Linux
-ln -s /path/to/project-foundation ~/.claude/skills/project-foundation
+bunx @ivni/project-foundation
 ```
 
-После установки скил вызывается в Claude Code как `/project-foundation`.
+Choose the agent environments, a user or project scope, and a copy or managed-link installation.
+The wizard shows a complete preview before writing anything.
+
+You can also open a flow directly:
+
+```bash
+bunx @ivni/project-foundation install
+bunx @ivni/project-foundation@latest update
+bunx @ivni/project-foundation remove
+```
+
+Nothing is installed globally as an executable. `bunx` downloads and runs the package for that
+invocation. Use `@latest` for updates when you want to bypass ambiguity around cached package
+resolution.
+
+## Supported environments
+
+| Agent | User scope | Project scope |
+| --- | --- | --- |
+| Codex | `~/.agents/skills` | `.agents/skills` |
+| Claude Code | `~/.claude/skills` | `.claude/skills` |
+| Pi | `~/.pi/agent/skills` | `.pi/skills` |
+| OpenCode | `~/.config/opencode/skills` | `.opencode/skills` |
+| Hermes Agent | `~/.hermes/skills` | Not supported |
+
+The installer understands cross-agent discovery. For example, Codex, Pi, and OpenCode can share
+one `.agents/skills` target instead of receiving redundant copies.
+
+## Safety model
+
+- Every mutation is preceded by a preview.
+- Existing unmanaged content is never overwritten silently.
+- Locally modified managed installs can be shown as a diff, kept, removed, or backed up first.
+- Multi-path operations use compensating rollback when a write fails.
+- Downgrades are rejected.
+- The installer never writes `.git` or mutates the index, branches, commits, or worktrees. Project-scope files can change the working tree and remain the user's Git responsibility.
+- No telemetry is collected.
+
+## Documentation
+
+- [Installation](docs/installation.md)
+- [Targets and scopes](docs/targets-and-scopes.md)
+- [Copy vs link](docs/copy-vs-link.md)
+- [Updating](docs/updating.md)
+- [Removing](docs/removing.md)
+- [Troubleshooting](docs/troubleshooting.md)
+- [Compatibility sources](docs/compatibility.md)
+- [Development](docs/development.md)
+- [Release process](docs/release.md)
+
+## Development
+
+```bash
+bun install --frozen-lockfile
+bun run check
+```
+
+The public package is the repository root. The private workspaces under `packages/` separate the
+CLI source from the raw skill payload. See [Development](docs/development.md) for the full layout
+and verification workflow.
+
+## License
+
+[MIT](LICENSE)

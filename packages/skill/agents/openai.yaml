@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Foundation"
+  short_description: "Lay down a durable project architecture and process"
+  default_prompt: "Use $project-foundation to establish or audit this project's foundation."

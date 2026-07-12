@@ -1,0 +1,67 @@
+{
+  "name": "@ivni/project-foundation",
+  "version": "1.0.0",
+  "description": "Interactive Bun installer for the Project Foundation agent skill.",
+  "type": "module",
+  "private": false,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ivni/project-foundation.git"
+  },
+  "homepage": "https://github.com/ivni/project-foundation#readme",
+  "bugs": {
+    "url": "https://github.com/ivni/project-foundation/issues"
+  },
+  "keywords": [
+    "agent-skills",
+    "bun",
+    "claude-code",
+    "codex",
+    "hermes-agent",
+    "opencode",
+    "pi-coding-agent"
+  ],
+  "bin": {
+    "project-foundation": "dist/cli.js"
+  },
+  "files": [
+    "dist/cli.js",
+    "dist/cli.js.map",
+    "packages/skill/SKILL.md",
+    "packages/skill/agents",
+    "packages/skill/references",
+    "packages/skill/templates",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "bun build ./packages/cli/src/index.ts --target=bun --outdir=./dist --entry-naming=cli.js --sourcemap=external",
+    "check": "bun run lint && bun run typecheck && bun test && bun run build && bun run verify:package",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "lint": "biome check .",
+    "start": "bun ./packages/cli/src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "verify:package": "bun ./scripts/verify-package.ts"
+  },
+  "engines": {
+    "bun": ">=1.3.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
+  "dependencies": {
+    "@clack/core": "^1.4.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.3",
+    "@types/bun": "^1.3.14",
+    "typescript": "^7.0.2"
+  }
+}
