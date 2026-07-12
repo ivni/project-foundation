@@ -5,7 +5,7 @@
 # Spike — {{question being answered}}
 
 - **Timebox:** {{agreed upfront: hours / a day}}
-- **Blocker / unknown:** {{BLK-N or the open question this closes}}
+- **Blocker / unknown:** {{BLK-P2-001 or the open question this closes}}
 - **Success criteria:** {{what result lets us decide — measurable where possible}}
 
 ## Approach

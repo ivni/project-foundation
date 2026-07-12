@@ -1,7 +1,7 @@
-<!-- Template for the project's CLAUDE.md. Translate headings into the artifact
-     language. Delete guidance comments after instantiating. -->
+<!-- Template for the selected agent contract (e.g. CLAUDE.md or AGENTS.md). Translate
+     headings into the artifact language. Delete guidance comments after instantiating. -->
 
-# CLAUDE.md
+# {{agent_contract_file}}
 
 Engineering guide for **{{project}}** — {{one-line description}}. This file is the
 authoritative contract for how we intend to build. Code records implementation and
@@ -16,12 +16,22 @@ Foundation discovery and its historical rationale live in
 > next. Rewrite at every phase/subphase completion, in the same commit. A fresh
 > session must be able to resume from this paragraph alone.}}
 
-## Product principles (non-negotiable)
+## Product principles (canonical)
 
-<!-- 5–7 principles from discovery, phrased so a violation is detectable.
-     These shape every feature. Violating them is a bug, not a style choice. -->
+This is the sole editable list of product principles. PRD, phase slices, ADRs, and
+other artifacts reference the stable IDs below and do not mirror their wording.
+Violating a principle is a bug, not a style choice.
 
-- **{{Principle}}.** {{One sentence of what it means in practice.}}
+<!-- Keep 5–7 principles promoted from discovery. IDs are stable and never reused.
+     Adding, removing, or semantically changing a principle requires explicit user
+     approval and an ADR. Editorial changes that preserve meaning do not. -->
+
+### PRINC-001 — {{short principle name}}
+
+- **Statement:** {{the non-negotiable product outcome or constraint}}
+- **Operational meaning:** {{what this requires in product and engineering decisions}}
+- **Detectable violation:** {{observable condition that proves the principle was broken}}
+- **Source:** {{discovery item / user decision / ADR-NNNN}}
 
 ## Project shape & applicability
 
@@ -31,7 +41,7 @@ Foundation discovery and its historical rationale live in
 
 | Capability | Status | Evidence / destination |
 |---|---|---|
-| {{deployable runtime / persistent data / human auth / ...}} | applicable / planned / not applicable | {{why, phase, or register link}} |
+| {{deployable runtime / persistent data / human auth / ...}} | applicable / planned / N/A | {{why, phase, or register link}} |
 
 ## Repository layout
 
@@ -39,11 +49,11 @@ Foundation discovery and its historical rationale live in
 {{annotated tree — top two levels, one comment per entry}}
 ```
 
-## Tech stack (pinned; verify via docs, never from memory)
+## Tech stack (constrained; verify via docs, never from memory)
 
-{{One line per layer with pinned versions. Full detail + verification dates in
-docs/tech-stack.md. Keep the rule inline: when touching anything version-sensitive,
-confirm against official docs; do not invent or recall version numbers.}}
+{{One line per layer with constraint type + value. Full evidence, source URLs,
+verification dates, and lifecycle/EOL live in docs/tech-stack.md. When touching
+anything version-sensitive, confirm against official docs; do not invent or recall it.}}
 
 ## Commands
 

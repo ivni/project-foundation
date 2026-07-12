@@ -9,9 +9,13 @@
 ## In scope
 
 <!-- Requirements at build-ready detail: behavior, invariants, edge cases decided.
-     Group by feature area. Each item should be checkable at phase close. -->
+     Group by feature area. IDs are stable and never reused within the project. -->
 
-- {{requirement}}
+### {{Feature area}}
+
+| ID | Requirement | Product principles | Acceptance criteria | Planned verification |
+|---|---|---|---|---|
+| REQ-P{{N}}-001 | {{behavior or invariant}} | {{PRINC-001, PRINC-003 / —}} | {{observable conditions}} | {{test / probe / manual flow}} |
 
 ## Out of scope (this phase)
 

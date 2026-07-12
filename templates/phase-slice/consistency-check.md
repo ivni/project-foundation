@@ -5,14 +5,20 @@
 
 # Phase {{N}} — consistency check
 
-**Checked against:** PRD ({{date/commit}}), ADR index, architecture.md, code areas:
-{{which parts of the codebase were actually examined}}
+**Requirements checked:** REQ-P{{N}}-001, REQ-P{{N}}-002, ...
+
+**Canonical principles:** [agent contract]({{agent_contract_path_from_phase_slice}}#product-principles-canonical)
+
+**Principles checked:** PRINC-001, PRINC-002, ... / none applicable
+
+**Checked against:** canonical product principles, PRD ({{date/commit}}), ADR index,
+architecture.md, code areas: {{which parts of the codebase were actually examined}}
 
 ## Contradictions found and resolved
 
-| # | Contradiction | Where | Resolution |
-|---|---|---|---|
-| 1 | {{new requirement vs existing doc/ADR/behavior}} | {{file/ADR}} | {{PRD corrected / ADR-NNNN written / requirement changed}} |
+| Requirement | Principles | Contradiction | Where | Resolution |
+|---|---|---|---|---|
+| REQ-P{{N}}-001 | {{PRINC-001 / —}} | {{new requirement vs principle/doc/ADR/behavior}} | {{principle / file / ADR}} | {{requirement changed / doc corrected / ADR-NNNN written}} |
 
 ## Confirmed assumptions
 
@@ -24,4 +30,4 @@
 ## Follow-ups
 
 {{Anything discovered that belongs elsewhere: register entries filed, docs fixed
-in passing, gotchas appended to CLAUDE.md.}}
+in passing, gotchas appended to the agent contract.}}

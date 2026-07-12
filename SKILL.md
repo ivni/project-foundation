@@ -6,14 +6,25 @@ description: Opinionated, stack-agnostic method for laying a project's foundatio
 # Project Foundation
 
 An opinionated engineering method for the **solo engineer + AI agent** setup. It defines
-a standard (hard defaults for artifacts, process, gates, and platform decisions) and the
+a standard (normative rules for artifacts, process, gates, and platform decisions) and the
 process for establishing it on a new project or retrofitting it onto an existing one.
 
-The standard is directive within the project's applicable capabilities: defaults are
-not suggestions. Marking a capability not applicable requires a one-line rationale in
-discovery, not an ADR. Rejecting an applicable default is a deliberate deviation and
-gets a mini-ADR recording what was changed and why. "We didn't get around to it" is
-not a deviation; it is a violation.
+The standard is directive within the project's applicable capabilities. "We didn't get
+around to it" is not a deviation; it is a violation.
+
+## Normative language
+
+- **MUST** — required for an applicable capability. Deviation requires explicit user
+  approval and a full ADR describing the risk and compensating control.
+- **SHOULD** — the recommended default. Deviate with a short rationale in the canonical
+  artifact; use a mini-ADR when the choice is cross-cutting or hard to reverse.
+- **MAY** — optional; no deviation record is required.
+- **N/A** — the capability does not apply. Record a one-line rationale in discovery;
+  this is not a deviation.
+
+The ten rules below are MUST unless they explicitly say SHOULD, MAY, or depend on an
+applicable capability. Elsewhere, `must`, `never`, and `only` mean MUST; a labeled
+`Default:` means SHOULD unless the text explicitly raises it to MUST.
 
 ## The standard in ten rules
 
@@ -22,7 +33,7 @@ not a deviation; it is a violation.
    observation records current behavior. A mismatch is a defect to investigate, not
    permission to overwrite either side blindly.
 2. **Discovery exists from day one; the artifact core exists before build:**
-   `docs/discovery.md` captures applicability and unknowns, then `CLAUDE.md`, PRD,
+   `docs/discovery.md` captures applicability and unknowns, then the agent contract, PRD,
    tech-stack, stages, ADR log with index, architecture-lite sketch, and registers
    become canonical before phase 0 starts.
 3. **Phase 0 proves the thinnest releasable path appropriate to the project.** It always
@@ -30,12 +41,15 @@ not a deviation; it is a violation.
    health checks, migrations, backups, and observability join it when applicable.
 4. **Every phase starts with a requirements slice** — scope, checklist, blockers,
    consistency-check — and unknowns are closed *before* code is written.
-5. **Non-negotiables are written down:** 5–7 product principles plus the domain rules
-   code must enforce. Violating one is a bug, not a style choice.
+5. **Non-negotiables are written down:** the agent contract is the sole canonical home
+   for 5–7 product principles with stable `PRINC-NNN` IDs, plus the domain rules code
+   must enforce. Other artifacts reference principle IDs instead of mirroring their
+   wording. Violating one is a bug, not a style choice.
 6. **One local verification entry point** (lint + format check + typecheck + fast tests
    + audit). A pre-push hook provides fast feedback; required CI checks are enforcement.
 7. **Decisions are recorded.** Anything hard to reverse, cross-cutting, or surprising
-   gets an ADR. Deviations from this standard get a mini-ADR.
+   gets an ADR. MUST deviations require explicit approval and a full ADR; cross-cutting
+   SHOULD deviations get a mini-ADR.
 8. **Debt and risk live in a register** with an owner and a review trigger. Known debt
    without a register entry violates the standard.
 9. **Applicable platform questions are answered early** — observability, auth model,
@@ -50,23 +64,42 @@ not a deviation; it is a violation.
 This skill and its templates are English. The language of *generated artifacts* is a
 per-project decision: default to the language of the user's brief, confirm during
 discovery, record it first in `docs/discovery.md`, then promote it into the project's
-`CLAUDE.md` with the artifact core. Apply it consistently (docs, commit messages,
+agent contract with the artifact core. Apply it consistently (docs, commit messages,
 register entries). Translate template headings when instantiating.
+
+## Choose the agent contract
+
+Select the project-level instruction file during discovery and record its path in
+`docs/discovery.md`. Reuse an existing project convention. Otherwise default to
+`CLAUDE.md` for Claude Code, `AGENTS.md` for Codex, or a user-specified equivalent.
+In this skill, **agent contract** means that selected file; instantiate
+[templates/agent-contract.md](templates/agent-contract.md) at the chosen path. Do not
+create competing instruction files unless the user explicitly requests synchronized
+adapters and names one canonical contract.
 
 ## Establish applicability
 
-Before applying hard defaults, classify the project's capabilities in
+Before applying capability-conditional rules, classify the project's capabilities in
 `docs/discovery.md`: deployable runtime, persistent data, human auth, machine auth,
 background jobs or external delivery, public network exposure, file storage, and
 multiple independently deployed components. Mark each **applicable**, **planned**, or
-**not applicable**, with evidence or a one-line rationale.
+**N/A**, with evidence or a one-line rationale.
 
-A default is mandatory only when its capability is applicable. A capability marked
-planned enters stages or the register with a trigger. Not applicable is not a deviation;
-silently omitting an applicable default is. Phase 0 follows the resulting contour: a
+A capability-conditional rule applies only when its capability is applicable: MUST is
+required, SHOULD is recommended, and N/A is not a deviation. A capability marked planned
+enters stages or the register with a trigger. Silently omitting an applicable MUST is a
+violation. Phase 0 follows the resulting contour: a
 service deploys and answers health checks; a CLI installs and runs; a library builds,
 packages, and works in a consumer example; a data job runs and reruns safely on
 representative input.
+
+## Respect requested write scope
+
+Read-only instructions override every workflow step that creates, edits, fixes, records,
+scaffolds, or commits. When the user asks to review, audit, assess, or plan without
+changes, inspect the project and return discovery, applicability, drift, and gap results
+in the response only. Do not create `docs/discovery.md` or any other artifact until the
+user explicitly authorizes writes. Proposed patches are not authorization to apply them.
 
 ## Choose the mode
 
@@ -83,51 +116,60 @@ If ambiguous, ask which mode the user wants before doing anything else.
 1. **Intake.** Read the brief. If there is none, ask the user for a free-form brain dump
    (product idea, users, constraints, stack preferences, deployment target). Do not
    interrogate before letting them talk.
-2. **Open discovery.** Create `docs/discovery.md` from
-   [templates/discovery.md](templates/discovery.md). This is the only project artifact
-   created while high-impact unknowns remain open.
-3. **Fix the artifact language and applicability** in discovery (see above). Do not
-   implement infrastructure for capabilities marked not applicable.
+2. **Open discovery.** When writes are authorized, create `docs/discovery.md` from
+   [templates/discovery.md](templates/discovery.md); it is the only project artifact
+   created while high-impact unknowns remain open. In read-only work, use the same
+   structure in the response without creating the file.
+3. **Fix the agent contract path, artifact language, and applicability** in discovery
+   (see above). Do not implement infrastructure for capabilities marked N/A.
 4. **Build the unknowns register inside discovery.** List every open question the
    artifact core needs answered, grouped by impact. Typical unknowns: target users and
    core jobs, scale, product non-negotiables, stack constraints, release target, auth
    model, data sensitivity, timezone/locale, solo-vs-team process expectations.
 5. **Close unknowns one question at a time**, most impactful first, per
    [references/ai-collaboration.md](references/ai-collaboration.md). Batch only trivia.
-   Record every answer immediately in discovery. Do not generate the canonical artifact
-   core while high-impact unknowns remain open.
-6. **Generate the artifact core and promote decisions** from discovery into their
-   canonical destinations, in dependency order: PRD → product principles & domain rules
-   → tech-stack (verify every version against official docs, record the verification
-   date) → stages (phase 0 follows the applicable contour) → architecture sketch →
-   registers → ADR index and foundational ADRs (stack choice, applicable auth model, and
-   any decision that was genuinely contested) → `CLAUDE.md` last, referencing the rest.
+   Record every answer immediately in discovery, or in the read-only report when writes
+   are not authorized. Do not generate the canonical artifact core while high-impact
+   unknowns remain open.
+6. **When writes are authorized, generate the artifact core and promote decisions**
+   from discovery into their canonical destinations, in dependency order: product
+   intent into PRD → product principles with stable `PRINC-NNN` IDs and domain rules
+   into the agent contract (the sole editable principle list; PRD and phase slices
+   reference it) → tech-stack (**MUST** record each constraint type, official source
+   URL, verification date, and lifecycle/EOL) → stages (phase 0 follows the applicable
+   contour) → architecture sketch → registers → ADR index and foundational ADRs (stack
+   choice, applicable auth model, and any decision that was genuinely contested) →
+   complete the agent contract last, referencing the rest.
    Record each destination in discovery, mark it complete, and thereafter treat it as
    historical context rather than a parallel authority.
 7. **Set up the applicable gates** per [references/gates.md](references/gates.md): local
    verification script, pre-push feedback hook, required CI checks, and a recorded git
    workflow profile — concrete commands come from the chosen stack.
 8. **Open phase 0** with a requirements slice per [references/process.md](references/process.md).
-9. **Consistency pass.** Re-read the generated set as a whole; fix contradictions
-   before showing the result. Present a summary: artifacts created, decisions recorded,
+9. **Consistency pass.** Re-read the generated set as a whole; fix contradictions,
+   duplicated editable principle lists, and unresolved `PRINC-NNN` references before
+   showing the result. Present a summary: artifacts created, decisions recorded,
    unknowns that remain (they go to the blockers file or the register, never silently).
 
 ## Mode: Audit (brownfield)
 
 1. **Inventory.** Map what exists: code layout, docs, process signals (CI config, hooks,
    scripts, commit history, release tags), implicit decisions baked into the code
-   (auth model, data handling, deployment), and which capabilities are applicable.
-   Record applicability in `docs/discovery.md`; cheap subagents are appropriate for the
-   scanning, but the analysis is yours.
+   (auth model, data handling, deployment), the current or selected agent contract,
+   and which capabilities are applicable.
+   If writes are authorized, record applicability in `docs/discovery.md`; otherwise keep
+   it in the read-only report. Cheap subagents are appropriate for scanning, but the
+   analysis is yours.
 2. **Gap analysis.** Compare findings against the ten rules and the four reference
    standards only where their capabilities apply. Classify each applicable item:
-   present / partial / missing / contradicts. Record not-applicable items with rationale,
+   present / partial / missing / contradicts. Record N/A items with rationale,
    but do not report them as gaps.
-3. **Retro-ADRs.** Significant implicit decisions get recorded as ADRs with status
-   "accepted (retroactive)" and the observed rationale. Do not relitigate them — record
-   them so future changes have a baseline.
+3. **Retro-ADRs.** Significant implicit decisions become ADRs with status
+   "accepted (retroactive)" and the observed rationale. When read-only, propose the
+   entries in the report; when writes are authorized, record them. Do not relitigate
+   them — preserve a baseline for future changes.
 4. **Gap plan.** A prioritized adoption plan, ordered by safety-of-change: first make
-   change safe (local verification, required CI, `CLAUDE.md`, status line,
+   change safe (local verification, required CI, agent contract, status line,
    applicable backup/restore path), then the docs
    spine (PRD-as-is, stages, registers), then process (phase slices), then platform
    gaps. Phase the plan like any other work.
@@ -141,9 +183,9 @@ If ambiguous, ask which mode the user wants before doing anything else.
 | Request | Do |
 |---|---|
 | "Start phase N" | Requirements slice per [references/process.md](references/process.md); use [templates/phase-slice/](templates/phase-slice/) |
-| "Close phase N" | Phase DoD checklist; graduate open blockers to the register; sync `CLAUDE.md` status |
+| "Close phase N" | Phase DoD checklist; graduate open blockers to the register; sync agent-contract status |
 | "Record a decision" | ADR from [templates/adr.md](templates/adr.md); update the index |
-| "Check drift" | Compare `CLAUDE.md`/docs against code and recent history; fix or flag every mismatch |
+| "Check drift" | Compare the agent contract/docs against code and recent history; report every mismatch; fix only when writes are authorized |
 | "Register debt/risk" | Entry in the register per [templates/registers.md](templates/registers.md) |
 | "Run a spike" | Spike convention in [references/process.md](references/process.md); outcome becomes an ADR |
 | "Review my ADRs / stages / …" | Evaluate against the matching reference standard; report gaps |
@@ -151,14 +193,14 @@ If ambiguous, ask which mode the user wants before doing anything else.
 ## Files
 
 References (the standard — load what the task needs):
-- [references/artifacts.md](references/artifacts.md) — the artifact core: every artifact's purpose, hard defaults, maintenance rules
+- [references/artifacts.md](references/artifacts.md) — the artifact core: every artifact's purpose, normative rules, maintenance rules
 - [references/process.md](references/process.md) — phases, requirements slices, subphase discipline, DoD, spikes
 - [references/gates.md](references/gates.md) — local verification, hooks, CI, release & git discipline
 - [references/platform.md](references/platform.md) — early platform decisions: observability, security, data integrity, operations
 - [references/ai-collaboration.md](references/ai-collaboration.md) — rules for the agent: memory, verification, autonomy boundaries, discovery technique
 
 Templates (instantiate, translating headings into the artifact language):
-- [templates/discovery.md](templates/discovery.md), [templates/claude-md.md](templates/claude-md.md),
+- [templates/discovery.md](templates/discovery.md), [templates/agent-contract.md](templates/agent-contract.md),
   [templates/prd.md](templates/prd.md),
   [templates/tech-stack.md](templates/tech-stack.md), [templates/stages.md](templates/stages.md),
   [templates/architecture.md](templates/architecture.md), [templates/adr.md](templates/adr.md),

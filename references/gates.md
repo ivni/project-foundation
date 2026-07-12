@@ -29,7 +29,7 @@ Properties:
 ## Tests
 
 - The fast/default suite runs inside the local verification command. Document a
-  separate command for slow/integration tests next to it in `CLAUDE.md`.
+  separate command for slow/integration tests next to it in the agent contract.
 - Split fast/default from slow/integration (markers, tags, or directories) so local
   verification stays cheap and the expensive suite is deliberate.
 - Run all applicable suites in CI. New behavior without a test is an incomplete
@@ -56,7 +56,7 @@ lint → format check → typecheck → test (+coverage) → audit → build/pac
 - **Release from a version tag only** (semver unless the ecosystem requires another
   scheme). A tag deploys a service, publishes a package, or produces a signed client
   artifact according to the applicable contour; pushing a branch never releases.
-- If a deployable runtime has no staging environment, say so explicitly in `CLAUDE.md`
+- If a deployable runtime has no staging environment, say so explicitly in the agent contract
   — it changes how carefully tags are cut.
 - When persistent data and schema migrations apply, run an **automatic backup before
   migration** in the release pipeline, not as a human step. Rehearse restore from that
@@ -72,7 +72,7 @@ lint → format check → typecheck → test (+coverage) → audit → build/pac
 
 ## Git discipline
 
-Choose one trunk-based profile and record it in `CLAUDE.md`; neither uses long-lived
+Choose one trunk-based profile and record it in the agent contract; neither uses long-lived
 branches:
 
 - **Protected trunk — default when the remote supports required checks.** Work on a

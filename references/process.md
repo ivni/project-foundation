@@ -8,16 +8,21 @@ explicit definition of done. The unit of daily progress is the subphase.
 Before writing any code for phase N, create `docs/phase-N/` with four files
 (templates: [templates/phase-slice/](../templates/phase-slice/)):
 
-- **scope.md** — what this phase delivers and, explicitly, what it does not. Refines
-  the PRD for this slice; disagreements between them are resolved *now*, in the PRD.
+- **scope.md** — what this phase delivers and, explicitly, what it does not. Every
+  requirement gets a stable ID (`REQ-P2-001` form), acceptance criteria, a planned
+  verification method, and applicable `PRINC-NNN` references (or an explicit `—`). It
+  refines the PRD; disagreements are resolved *now*.
 - **checklist.md** — the phase broken into subphases (`N.0`, `N.1`, …) with a status
-  marker each. Subphase `N.0` is always the requirements slice itself.
-- **blockers.md** — numbered unknowns and external dependencies (`BLK-1`, `BLK-2`, …):
-  things that could invalidate the plan. Each has an owner and a resolution path.
+  marker each. Subphase `N.0` is always the requirements slice itself. Its traceability
+  table maps every requirement ID to a subphase, verification method, and evidence.
+- **blockers.md** — phase-qualified unknowns and external dependencies
+  (`BLK-P2-001`, `BLK-P2-002`, …): things that could invalidate the plan. Each has an
+  owner and a resolution path; IDs are globally unambiguous and never reused.
   Blockers that outlive the phase graduate to the debt & risk register.
-- **consistency-check.md** — the result of checking the new requirements against
-  existing PRD, ADRs, architecture, and code. Every contradiction found is listed with
-  its resolution (doc corrected, ADR written, or requirement changed). An empty
+- **consistency-check.md** — the result of checking the new requirements against the
+  canonical product principles, existing PRD, ADRs, architecture, and code. Every
+  contradiction is keyed by requirement ID and lists applicable principle IDs plus its
+  resolution (doc corrected, ADR written, or requirement changed). An empty
   consistency-check on a non-trivial phase is a red flag, not a good sign.
 
 The slice is complete when every high-impact unknown is closed — via the discovery
@@ -31,9 +36,9 @@ resolution path. **Unknowns are closed before build, not during.**
 2. Write the unknowns down as an explicit list, ordered by impact.
 3. Ask the user **one question at a time**, most impactful first. Each question comes
    with concrete options and a recommended default. Batch only trivial questions.
-4. Record every answer immediately — into `docs/discovery.md` during bootstrap, or into
-   the current phase/canonical artifact once it exists. An answer that lives only in
-   chat is lost.
+4. When writes are authorized, record every answer immediately — into discovery during
+   bootstrap, or into the current phase/canonical artifact once it exists. In read-only
+   work, retain answers in the report. An answer that lives only in chat is not durable.
 
 ## Subphases
 
@@ -44,8 +49,9 @@ A subphase is done only when **all** of the following hold:
   [gates.md](gates.md)).
 - New behavior covered by tests, and the change verified by actually running it —
   not only by tests and typecheck passing.
+- Every linked requirement has acceptance evidence recorded in the traceability table.
 - Docs updated in the same change (same-change rule).
-- `checklist.md` ticked; the `CLAUDE.md` status line updated if the completion is
+- `checklist.md` ticked; the agent-contract status line updated if the completion is
   externally meaningful.
 
 Commit granularity follows subphases; a commit message names the phase/subphase when
@@ -54,12 +60,15 @@ one applies.
 ## Phase definition of done
 
 - All subphases in `checklist.md` complete.
-- All `BLK-N` resolved or explicitly graduated to the register.
-- Consistency: intended behavior in PRD, stages, ADRs, and `CLAUDE.md` agrees with code
+- All `BLK-P<phase>-<seq>` resolved or explicitly graduated to the register.
+- Every requirement ID maps to a completed subphase and verification evidence.
+- Every requirement names applicable `PRINC-NNN` IDs or explicitly records that none
+  apply; no requirement contradicts a canonical product principle.
+- Consistency: intended behavior in PRD, stages, ADRs, and the agent contract agrees with code
   and runtime evidence. Resolve every mismatch by correcting the wrong layer; do not
   rewrite intent merely to match an incorrect implementation (walk them; do not assume).
 - Debt & risk register reviewed — new entries added, stale entries closed.
-- `CLAUDE.md` status line rewritten: phase closed, next phase named.
+- Agent-contract status line rewritten: phase closed, next phase named.
 
 ## Spike convention
 

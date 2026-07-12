@@ -1,6 +1,6 @@
 <!-- Template for docs/registers.md — debt & risk register. Known debt without an
      entry violates the standard. Review at every phase close. Phase blockers
-     (BLK-N) that outlive their phase graduate here. -->
+     (BLK-P<phase>-<seq>) that outlive their phase graduate here. -->
 
 # Registers — {{project}}
 
@@ -8,7 +8,7 @@
 
 | ID | Description | Origin | Owner | Review trigger | Status |
 |---|---|---|---|---|---|
-| DEBT-1 | {{what is knowingly imperfect and what "fixed" looks like}} | {{phase/ADR/BLK that created it}} | {{who}} | {{date or event: "before phase 3", "when users > 50"}} | open |
+| DEBT-1 | {{what is knowingly imperfect and what "fixed" looks like}} | {{phase / ADR / BLK-P2-001 that created it}} | {{who}} | {{date or event: "before phase 3", "when users > 50"}} | open |
 
 ## Risks
 

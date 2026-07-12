@@ -2,7 +2,7 @@
 
 This method assumes the code is built by an AI agent working with (and for) a solo
 engineer. That changes what documentation is *for* and adds rules that a human-only
-team would not need. These rules belong in every project's `CLAUDE.md` (adapted), and
+team would not need. These rules belong in the selected agent contract (adapted), and
 the agent executing this skill follows them itself.
 
 ## Docs are the agent's memory
@@ -10,12 +10,13 @@ the agent executing this skill follows them itself.
 - Chat context dies with the session; **anything worth remembering across sessions
   lives in the docs** — decisions in ADRs, state in the status line, traps in gotchas,
   open questions in blockers/registers. "I'll remember" is always false.
-- Record answers and decisions into artifacts **at the moment they land**, not in a
-  batch "afterwards" — afterwards is after the context is gone.
+- When writes are authorized, record answers and decisions into artifacts **at the
+  moment they land**, not in a batch "afterwards". In read-only work, retain them in
+  the report without writing project files.
 - During bootstrap, before canonical artifacts exist, `docs/discovery.md` is the
   landing place. Once high-impact unknowns close, promote each answer into its canonical
   destination and mark discovery complete; do not maintain it as a parallel authority.
-- The `CLAUDE.md` **status line** is the agent's resume point: it must let a fresh
+- The agent contract's **status line** is the resume point: it must let a fresh
   session reconstruct where the project stands without re-reading history.
 
 ## Truth discipline
@@ -37,11 +38,14 @@ the agent executing this skill follows them itself.
 
 ## Autonomy boundaries
 
-Define these in `CLAUDE.md` explicitly. The hard defaults:
+Define these in the agent contract explicitly. These are MUST boundaries:
 
-Proceed without asking:
+Proceed without asking only inside the user's agreed write scope:
 - reading anything; local edits; local commits; running local verification and tests; scaffolding
   inside the agreed scope.
+
+If the user requests read-only work, do not edit, scaffold, record artifacts, or commit;
+return findings and proposed changes only.
 
 Only on explicit instruction, each time:
 - `git push` (publishing) and **tagging** (tags release, publish, or deploy);
@@ -68,7 +72,7 @@ One approval is not a standing approval. When in doubt, the action is external.
 
 ## Session hygiene
 
-- Start of session: read `CLAUDE.md`, the status line, the current phase's checklist
+- Start of session: read the agent contract, its status line, the current phase's checklist
   and blockers. End of meaningful work: status line and checklist updated, so the next
   session (or the next model) resumes cleanly.
 - Long tasks: prefer finishing a subphase over leaving three half-done; a committable

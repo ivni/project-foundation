@@ -1,8 +1,7 @@
-<!-- Template for docs/architecture.md (architecture-lite). Keep two views: context
-     and runtime/package topology. Delete nodes for capabilities marked not applicable;
-     do not invent infrastructure to fill the template. No component-level diagrams:
-     they rot. Runtime units, consumer boundaries, and integrations follow the
-     same-change rule. -->
+<!-- Template for docs/architecture.md (architecture-lite). Keep the two baseline views:
+     context and runtime/package topology. Delete N/A nodes; do not invent infrastructure
+     to fill the template. Additional views are optional and must state purpose + update
+     trigger. Runtime units, consumer boundaries, and integrations follow same-change. -->
 
 # Architecture — {{project}}
 
@@ -50,3 +49,17 @@ graph TB
 
 {{One line per shown unit or boundary: responsibility, protocol or packaging relation,
 and lifecycle/scaling constraint if any. Remove every non-applicable placeholder.}}
+
+## Additional view — {{name}} (optional)
+
+**Purpose:** {{critical trust boundary / sequence / data lifecycle / failure path /
+migration decision that the baseline views cannot show clearly}}
+
+**Update trigger:** {{event that requires this view to change or be deleted}}
+
+```mermaid
+{{small decision-bearing diagram}}
+```
+
+<!-- Delete this entire section when no additional view earns its maintenance cost.
+     Do not add routine component diagrams. -->

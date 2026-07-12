@@ -1,15 +1,16 @@
 # The artifact core
 
-Every project carries this set. Locations are the hard default; deviating from the
-layout (not the existence) is a mini-ADR. Capability-dependent content may be omitted
-only when `docs/discovery.md` marks that capability not applicable with a rationale.
+The artifact core is MUST for every project. The listed locations are SHOULD defaults;
+use another layout with a short rationale, or a mini-ADR when the change is cross-cutting.
+Capability-dependent content may be omitted only when discovery marks that capability
+N/A with a rationale.
 
 ```
-CLAUDE.md                 # agent contract + status line (repo root)
+<agent-contract>          # selected instruction file + status line (repo root)
 docs/
   discovery.md            # applicability + bootstrap/audit unknowns; historical after promotion
   PRD.md                  # product: problem, users, features, boundaries
-  tech-stack.md           # pinned stack with verification dates and rationale
+  tech-stack.md           # constrained stack with official evidence and lifecycle
   stages.md               # phase plan: goal + DoD per phase
   architecture.md         # architecture-lite: context + runtime/package topology
   registers.md            # debt & risk register
@@ -23,37 +24,42 @@ docs/
 
 ## discovery.md — applicability and unknowns
 
-Create this first in bootstrap and during the initial inventory in audit mode
-(template: [templates/discovery.md](../templates/discovery.md)). It is the only project
-artifact written while high-impact unknowns remain open.
+When writes are authorized, create this first in bootstrap and during the initial
+inventory in audit mode (template: [templates/discovery.md](../templates/discovery.md)).
+It is the only project artifact written while high-impact unknowns remain open. In
+read-only work, return the same structure in the report without creating the file.
 
-It records the brief, artifact language, capability matrix, assumptions, and explicit
-unknowns. Record answers here as they land. Once high-impact unknowns are closed,
+It records the brief, agent-contract path, artifact language, capability matrix,
+assumptions, and explicit unknowns. Record answers here as they land. Once high-impact unknowns are closed,
 promote every decision into its canonical destination (PRD, tech-stack, stages,
-architecture, ADR, register, or `CLAUDE.md`), record that destination, and mark discovery
+architecture, ADR, register, or the agent contract), record that destination, and mark discovery
 complete. A completed discovery file is historical provenance, not a living authority;
 current decisions live in the canonical artifacts.
 
-## CLAUDE.md — the agent contract
+## Agent contract
 
 The authoritative contract for *how the project is intended to be built*. It is the
 first thing the agent reads each session, so it must be dense, current, and free of
 unmarked aspiration — implemented state and explicitly marked plans stay distinct.
 Code and runtime evidence still determine what is implemented and what actually runs.
 
-Required sections (template: [templates/claude-md.md](../templates/claude-md.md)):
+Required sections (template: [templates/agent-contract.md](../templates/agent-contract.md)):
 
 - **Status line** — a `> Status:` block near the top: what is implemented, what is in
   progress, what is next. Updated at every phase/subphase completion, in the same
   commit. This is the agent's resume point.
-- **Product principles (non-negotiable)** — 5–7 principles phrased so a violation is
-  detectable ("violating them is a bug, not a style choice"). These come out of
-  discovery, not out of a template.
+- **Product principles (canonical, non-negotiable)** — the sole editable list of 5–7
+  principles, promoted from discovery and assigned stable, never-reused `PRINC-NNN`
+  IDs. Each records its statement, operational meaning, detectable violation, and
+  source. PRD, phase slices, ADRs, and other artifacts reference these IDs instead of
+  mirroring the wording. Adding, removing, or semantically changing a principle MUST
+  have explicit user approval and an ADR; an editorial change that preserves meaning
+  MAY be made directly. Update affected references in the same change.
 - **Project shape & applicability** — the current capability classification promoted
   from discovery; planned capabilities link to stages or a register trigger.
 - **Repository layout** — annotated tree.
-- **Tech stack** — pinned versions with the rule "verify via official docs, never from
-  memory" stated inline; the full detail lives in `docs/tech-stack.md`.
+- **Tech stack** — version constraints and evidence with the rule "verify via official
+  docs, never from memory" stated inline; full detail lives in `docs/tech-stack.md`.
 - **Commands** — build, test, and the single local verification entry point (lint,
   format check, typecheck, fast tests, audit).
 - **Git & release workflow** — workflow profile, commit-message language, release
@@ -74,17 +80,23 @@ when implementation or runtime diverges, determine the intended behavior first. 
 the PRD in the same change only when intent changed; otherwise fix the implementation.
 Never rewrite the PRD merely to legitimize a defect. Detail level: enough that the
 stages plan can be derived from it; per-feature detail arrives in phase slices, not upfront.
+Its Product principles section MUST link to the canonical agent-contract section and
+MUST NOT contain a second editable copy. Product decisions and requirements reference
+applicable principles by `PRINC-NNN` ID.
 
 ## tech-stack.md
 
-Every entry pinned to a version, with the **date it was verified against official
-docs**. Recalled or invented version numbers are forbidden — this is the most common
-way an AI agent silently corrupts a project. Non-obvious picks (and rejected
-alternatives) get a sentence of rationale or a full ADR.
+Every entry records a **constraint type** (exact pin, compatible range, managed channel,
+API/protocol version, or unversioned), the constraint itself, an official source URL,
+verification date, and lifecycle/EOL state. Exact pins are the SHOULD default for
+direct dependencies when the ecosystem supports them; managed services record the
+provider channel, region/API constraints, and upgrade policy instead of inventing a
+package-like pin. Recalled or invented values are forbidden. Non-obvious picks and
+rejected alternatives get a sentence of rationale or a full ADR.
 
 ## stages.md
 
-The phase plan. Hard defaults:
+The phase plan. Normative rules:
 
 - **Phase 0 proves the thinnest releasable path** for the applicable project contour.
   It always covers build, verification, packaging, release, and rollback. A service
@@ -105,7 +117,8 @@ When to write one:
 - A decision that is hard to reverse (storage model, auth channel, protocol).
 - A cross-cutting convention (error handling, id scheme, event delivery).
 - Anything a future reader would find surprising without context.
-- A **deviation from this standard** (mini-ADR: three sentences are enough).
+- A cross-cutting **SHOULD deviation** (mini-ADR: three sentences are enough), or an
+  approved MUST deviation (full ADR with risk and compensating control).
 - A **spike outcome** (see [process.md](process.md)).
 - In audit mode: **retro-ADRs** for significant implicit decisions, status
   "accepted (retroactive)".
@@ -117,16 +130,19 @@ Superseded ADRs stay in place with status "superseded by NNNN".
 
 ## architecture.md (architecture-lite)
 
-Two text-based views (Mermaid or equivalent), adapted to the applicable contour:
+Two baseline text-based views (Mermaid or equivalent), adapted to the applicable contour:
 
 1. **Context** — the product or artifact, its users/consumers, and external systems.
 2. **Runtime / package topology** — deployable units and protocols for a service;
    host, package, and consumer boundaries for a library or CLI; application, platform,
    and backend boundaries for a client; execution units and data flow for a data job.
 
-Do not draw infrastructure marked not applicable merely to fill the template. Avoid
-component-level diagrams — they rot. Both views follow the same-change rule: changing
-a runtime unit, consumer boundary, or integration updates the diagram in the same commit.
+Additional diagrams MAY document a critical trust boundary, sequence, data lifecycle,
+event-failure path, or migration when the baseline views cannot carry the decision.
+Every additional view states its purpose and update trigger; delete it when it no longer
+earns its maintenance cost. Do not draw N/A infrastructure merely to fill the template.
+Avoid routine component diagrams — they rot. All retained views follow the same-change
+rule for the boundaries and decisions they document.
 
 ## registers.md — debt & risk
 
@@ -138,7 +154,7 @@ Rules:
 
 - Known debt without an entry is a standard violation — the register is what makes
   "we'll fix it later" honest.
-- Phase blockers (`BLK-N`, see [process.md](process.md)) that outlive their phase
+- Phase blockers (`BLK-P<phase>-<seq>`, see [process.md](process.md)) that outlive their phase
   graduate into this register; they do not silently disappear.
 - Review the register at every phase close.
 
@@ -153,7 +169,7 @@ performed — a deploy that has happened twice without a runbook is overdue.
 
 Any change that alters behavior, structure, or conventions updates the affected
 docs **in the same change** — status line, PRD, stages, architecture, registers,
-CLAUDE.md sections. When discovering an existing mismatch, first determine intent:
+agent-contract sections. When discovering an existing mismatch, first determine intent:
 fix stale docs when implementation is correct; fix or register the code when it violates
 the documented decision; report ambiguity or out-of-scope work instead of silently
 choosing a winner. Never leave planned behavior described as implemented, or vice versa.

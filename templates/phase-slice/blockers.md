@@ -7,6 +7,7 @@
 
 | ID | Blocker | Why it matters | Owner | Resolution path | Status |
 |---|---|---|---|---|---|
-| BLK-1 | {{unknown or external dependency}} | {{what it can invalidate}} | {{who}} | {{discovery question / spike / waiting on X; default if unresolved}} | open |
+| BLK-P{{N}}-001 | {{unknown or external dependency}} | {{what it can invalidate}} | {{who}} | {{discovery question / spike / waiting on X; default if unresolved}} | open |
 
 <!-- Statuses: open / resolved (say how) / graduated → DEBT-N or RISK-N. -->
+<!-- IDs use BLK-P<phase>-<sequence>, are globally unambiguous, and are never reused. -->

@@ -1,17 +1,16 @@
-<!-- Template for docs/tech-stack.md. Every version verified against official
-     docs — never from memory — with the verification date recorded. -->
+<!-- Template for docs/tech-stack.md. Record constraints and lifecycle evidence from
+     official sources — never from memory. -->
 
 # Tech stack — {{project}}
 
-> Versions below verified against official documentation on {{YYYY-MM-DD}}.
-> When touching anything version-sensitive, re-verify; do not invent or recall
-> version numbers.
+> When touching anything version-sensitive, re-verify against the linked official
+> source; do not invent or recall versions, channels, API levels, or EOL dates.
 
 ## {{Layer, e.g. Backend}}
 
-| Component | Version | Role | Notes |
-|---|---|---|---|
-| {{name}} | {{pinned}} | {{what it does here}} | {{rationale if non-obvious / ADR link}} |
+| Component | Constraint type | Constraint | Role | Official source | Verified | Lifecycle / EOL | Notes |
+|---|---|---|---|---|---|---|---|
+| {{name}} | {{exact pin / compatible range / managed channel / API version / unversioned}} | {{value}} | {{what it does here}} | {{official URL}} | {{YYYY-MM-DD}} | {{supported / EOL date / provider-managed}} | {{rationale / compatibility / ADR}} |
 
 ## Rejected alternatives
 
@@ -22,5 +21,5 @@
 
 ## Upgrade policy
 
-{{How versions move: e.g. "pin exact; review pins at each phase close; security
-patches immediately". Dependency audit runs in local verification and CI.}}
+{{How each constraint type moves; compatibility policy; review trigger; response to EOL
+and security advisories. Dependency audit runs in local verification and CI.}}

@@ -2,12 +2,14 @@
 
 Stack-agnostic questions that must be answered **early** — in bootstrap discovery or
 in the audit gap analysis — because retrofitting them is an order of magnitude more
-expensive than deciding them up front. Defaults are capability-conditional: apply a
-default when `docs/discovery.md` marks its capability applicable; do not build
-infrastructure for a capability marked not applicable. A planned capability enters
-stages or the register with a trigger. Answering an applicable question differently is
-fine with a mini-ADR; silently omitting it is not. Promote the answers into `CLAUDE.md`
-(Project shape & applicability / Security & platform rules / Observability rules) and,
+expensive than deciding them up front. Rules are capability-conditional: apply them
+when discovery marks the capability applicable; do not build infrastructure for an N/A
+capability. A planned capability enters stages or the register with a trigger. Unlabeled
+bullets and `Default:` statements are SHOULD unless the rule explicitly says MUST,
+never, or only. Record a rationale for a SHOULD deviation; use a mini-ADR when it is
+cross-cutting. Promote answers into the
+agent contract (Project shape & applicability / Security & platform rules /
+Observability rules) and,
 where the decision was contested, into an ADR.
 
 ## Observability
@@ -18,7 +20,7 @@ where the decision was contested, into an ADR.
   (API → DB logs → background jobs → outbound calls), echoed in responses. Default: yes.
 - **Health signals for deployed services**: liveness (`/health`) and readiness
   (`/ready`) or the platform's equivalent. Deploy verifies them. Default: yes for a
-  long-running deployable service; not applicable to packages and local-only tools.
+  long-running deployable service; N/A to packages and local-only tools.
 - **Error tracking** (Sentry-compatible or equivalent) wired before real users exist.
   Default: yes.
 - **Metrics** for hot paths and queues, scraped by something. Default: yes for anything
@@ -62,8 +64,10 @@ where the decision was contested, into an ADR.
 
 ## Data & integrity
 
-- **Time**: store UTC (`timestamptz` or equivalent), display in a configured timezone.
-  Default: yes, no exceptions; local-time storage is a permanent tax.
+- **Time (MUST when temporal data is persisted)**: store instants in UTC
+  (`timestamptz` or equivalent), display in a configured timezone, and preserve source
+  timezone/offset when the domain needs it. Model recurring local-time schedules
+  explicitly rather than pretending they are UTC instants.
 - **Idempotency**: write APIs with side effects accept an `Idempotency-Key`; the first
   result is stored and replayed on retry; key reuse with a different body is rejected.
   Default: yes for anything a client might retry (payments, task creation, sends).
@@ -83,10 +87,10 @@ where the decision was contested, into an ADR.
 - **Restore is rehearsed**: a backup that has never been restored is a hope, not a
   backup. Default: rehearse once during phase 0/1, then after any storage change.
 - **Single-instance components are named and enforced.** Anything that must not run
-  twice (schedulers, cron emitters, migration runners) is identified in `CLAUDE.md`
+  twice (schedulers, cron emitters, migration runners) is identified in the agent contract
   gotchas, and the deployment mechanically prevents duplicates.
-- **Bulk external actions are jittered** (notifications, emails) — never one burst;
-  never notify a user about their own action.
+- **Bulk external actions** SHOULD be jittered rather than emitted in one burst.
+  Suppress self-notifications by default; opt in only when the product requires them.
 - **Maintenance mode for user-facing deployed runtimes**: some way to say "down on
   purpose" that is distinguishable from "down by accident". Default: a simple flag or
-  page is enough. Not applicable to packages and local-only tools.
+  page is enough. N/A to packages and local-only tools.

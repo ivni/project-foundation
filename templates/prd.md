@@ -15,7 +15,10 @@ what they need to accomplish, what "good" looks like to them.}}
 
 ## Product principles
 
-{{Mirror of the non-negotiables in CLAUDE.md — or a pointer to them. One list, one home.}}
+Canonical list: [agent contract]({{agent_contract_path_from_docs}}#product-principles-canonical).
+
+All product decisions and requirements in this PRD MUST conform to that list and
+reference applicable `PRINC-NNN` IDs. Do not mirror principle wording here.
 
 ## Scope by phase
 

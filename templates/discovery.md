@@ -7,6 +7,7 @@
 - **Status:** draft
 - **Started:** {{YYYY-MM-DD}}
 - **Artifact language:** {{language}}
+- **Agent contract file:** {{CLAUDE.md / AGENTS.md / user-specified path}}
 
 ## Brief
 
@@ -16,24 +17,24 @@
 
 | Capability | Status | Rationale / evidence |
 |---|---|---|
-| Deployable runtime | applicable / planned / not applicable | {{why}} |
-| Persistent data | applicable / planned / not applicable | {{why}} |
-| Human authentication | applicable / planned / not applicable | {{why}} |
-| Machine authentication | applicable / planned / not applicable | {{why}} |
-| Background jobs / external delivery | applicable / planned / not applicable | {{why}} |
-| Public network exposure | applicable / planned / not applicable | {{why}} |
-| File storage | applicable / planned / not applicable | {{why}} |
-| Multiple deployable components | applicable / planned / not applicable | {{why}} |
+| Deployable runtime | applicable / planned / N/A | {{why}} |
+| Persistent data | applicable / planned / N/A | {{why}} |
+| Human authentication | applicable / planned / N/A | {{why}} |
+| Machine authentication | applicable / planned / N/A | {{why}} |
+| Background jobs / external delivery | applicable / planned / N/A | {{why}} |
+| Public network exposure | applicable / planned / N/A | {{why}} |
+| File storage | applicable / planned / N/A | {{why}} |
+| Multiple deployable components | applicable / planned / N/A | {{why}} |
 
-<!-- A hard default is mandatory only for an applicable capability. A planned
-     capability must name a phase or register trigger. Not applicable needs a one-line
-     rationale; it is not a deviation and does not require an ADR. -->
+<!-- MUST rules apply to applicable capabilities. SHOULD defaults may be changed with
+     rationale. A planned capability names a phase or register trigger. N/A needs a
+     one-line rationale and is not a deviation. -->
 
 ## Unknowns
 
 | ID | Question | Impact | Recommended default | Answer / evidence | Status | Canonical destination |
 |---|---|---|---|---|---|---|
-| UNK-001 | {{question}} | high / medium / low | {{default}} | — | open | {{PRD / ADR / stages / architecture / register / CLAUDE.md}} |
+| UNK-001 | {{question}} | high / medium / low | {{default}} | — | open | {{PRD / ADR / stages / architecture / register / agent contract}} |
 
 ## Assumptions
 
@@ -46,7 +47,10 @@
 - [ ] Every high-impact unknown is resolved
 - [ ] Every remaining unknown has a default and resolution path
 - [ ] The applicability matrix is complete
+- [ ] The agent contract path is selected and recorded
 - [ ] Every planned capability names a phase or register trigger
+- [ ] Confirmed product principles are promoted to the agent contract with stable
+      `PRINC-NNN` IDs; discovery keeps provenance, not a parallel editable list
 - [ ] Decisions are promoted into canonical artifacts and destinations recorded above
 - [ ] Status changed to complete
 
