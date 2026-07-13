@@ -9,7 +9,8 @@ Releases follow SemVer and [Keep a Changelog](https://keepachangelog.com/en/1.1.
 3. Re-check every source in `docs/compatibility.md` when paths or discovery behavior may be affected.
 4. Run `bun install --frozen-lockfile`.
 5. Run `bun run check`.
-6. Inspect `bun pm pack --dry-run --ignore-scripts` and confirm only the bundle, raw skill, and public package documents are present.
+6. Inspect `npm pack --dry-run --json --ignore-scripts` and confirm the bundle, complete registered
+   skill payloads, and public package documents are present.
 
 ## Publish
 

@@ -39,8 +39,8 @@ bun run check
 `verify:skills` checks frontmatter, UI metadata, size, placeholders, and local resource links for all
 three payloads. `verify:docs` checks public Markdown structure, local links, changelog state, and
 package metadata.
-`verify:package` inspects the generated tarball. `bun run check` runs both as part of the release-level
-local verification command.
+`verify:package` inspects the exact file manifest produced by npm, the tool used for publishing.
+`bun run check` runs it as part of the release-level local verification command.
 
 ## Architecture
 

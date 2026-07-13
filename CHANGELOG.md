@@ -7,6 +7,17 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-07-13
+
+### Fixed
+
+- Included every registered skill's `agents`, `assets`, `references`, `scripts`, and `templates`
+  resources in the npm package with npm-compatible recursive file patterns.
+- Aligned package verification with the `npm pack` manifest used by the release workflow, preventing
+  Bun and npm glob differences from producing a false successful release check.
+- Allowed updates to repair a managed installation when its receipt payload differs from the
+  packaged payload at the same version.
+
 ## [1.1.0] - 2026-07-13
 
 ### Added
@@ -65,7 +76,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/ivni/project-foundation/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/ivni/project-foundation/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/ivni/project-foundation/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/ivni/project-foundation/releases/tag/v1.0.1

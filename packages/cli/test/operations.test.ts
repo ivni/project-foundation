@@ -310,6 +310,35 @@ describe("installation operations", () => {
     expect(await readFile(join(target, "SKILL.md"), "utf8")).toContain("Version two");
   });
 
+  test("repairs a managed payload when package contents change at the same version", async () => {
+    const current = await workspace("1.1.1");
+    await installSkill({
+      agents: ["claude"],
+      scope: "user",
+      strategy: "copy",
+      context: current.context,
+    });
+    await writeFile(
+      join(current.payload, "references", "question-quality.md"),
+      "Decision-quality rules.\n",
+    );
+
+    const prepared = await prepareUpdateSkill({ scope: "user", context: current.context });
+    const target = getTargetPath("claude", "user", current.context);
+    expect(prepared.preview).toContainEqual({
+      action: "update",
+      path: target,
+      detail: "Repair v1.1.1 payload; Claude Code",
+    });
+
+    const result = await prepared.execute();
+    expect(result.changed).toContain(target);
+    expect((await readReceipt(target))?.version).toBe("1.1.1");
+    expect(await readFile(join(target, "references", "question-quality.md"), "utf8")).toBe(
+      "Decision-quality rules.\n",
+    );
+  });
+
   test("rejects package downgrades", async () => {
     const current = await workspace("2.0.0");
     await installSkill({

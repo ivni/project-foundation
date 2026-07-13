@@ -39,6 +39,15 @@ export { compareVersions, isBreakingUpdate } from "./version.ts";
 
 import { compareVersions, isBreakingUpdate } from "./version.ts";
 
+export function needsPackageUpdate(
+  receipt: Receipt,
+  targetVersion: string,
+  expectedPayloadHash: string,
+): boolean {
+  const comparison = compareVersions(receipt.version, targetVersion);
+  return comparison < 0 || (comparison === 0 && receipt.payloadHash !== expectedPayloadHash);
+}
+
 interface OperationBase {
   scope: Scope;
   context: RuntimeContext;
@@ -614,6 +623,7 @@ export async function prepareUpdateSkill(options: UpdateOptions): Promise<Prepar
   const requested = requestedGroupIds ? new Set(requestedGroupIds) : undefined;
   const candidates = scanned.groups.filter((group) => !requested || requested.has(group.id));
   const expectedFiles = await snapshotPackagedPayload(context.payloadRoot);
+  const expectedPayloadHash = hashSnapshot(expectedFiles);
   const decisions = new Map<string, "replace" | "backup-replace" | "skip">();
   const skipped: string[] = [];
   const backups: BackupRecord[] = [];
@@ -627,7 +637,10 @@ export async function prepareUpdateSkill(options: UpdateOptions): Promise<Prepar
         "Downgrades are not supported.",
       );
     }
-    if (comparison === 0) {
+    if (
+      comparison === 0 &&
+      !needsPackageUpdate(group.receipt, context.version, expectedPayloadHash)
+    ) {
       skipped.push(group.physicalRoot);
       preview.push({
         action: "skip",
@@ -671,7 +684,10 @@ export async function prepareUpdateSkill(options: UpdateOptions): Promise<Prepar
     preview.push({
       action: "update",
       path: group.physicalRoot,
-      detail: `v${group.receipt.version} -> v${context.version}; ${group.receipt.intendedAgents.map((agent) => AGENTS[agent].label).join(", ")}`,
+      detail:
+        group.receipt.version === context.version
+          ? `Repair v${context.version} payload; ${group.receipt.intendedAgents.map((agent) => AGENTS[agent].label).join(", ")}`
+          : `v${group.receipt.version} -> v${context.version}; ${group.receipt.intendedAgents.map((agent) => AGENTS[agent].label).join(", ")}`,
     });
   }
 
@@ -707,6 +723,7 @@ export async function prepareUpdateSkill(options: UpdateOptions): Promise<Prepar
             if (
               !persisted ||
               persisted.version !== context.version ||
+              persisted.payloadHash !== expectedPayloadHash ||
               hashSnapshot(currentFiles) !== persisted.payloadHash
             ) {
               throw new UserFacingError(

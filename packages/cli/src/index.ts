@@ -16,11 +16,12 @@ import { previewDiff } from "./diff.ts";
 import {
   compareVersions,
   getManagedInstallations,
+  needsPackageUpdate,
   prepareInstallSkill,
   prepareRemoveSkill,
   prepareUpdateSkill,
 } from "./operations.ts";
-import { resolvePublishedPayloadRoot } from "./payload.ts";
+import { hashSnapshot, resolvePublishedPayloadRoot, snapshotPackagedPayload } from "./payload.ts";
 import { SKILL_IDS, SKILLS } from "./skills.ts";
 import { combinePreparedOperations } from "./suite.ts";
 import { isRecoverableLinkPermissionError } from "./transaction.ts";
@@ -523,13 +524,26 @@ function groupLabel(entry: ManagedSkillGroup): string {
 
 async function updateFlow(ctx: RuntimeContext): Promise<void> {
   const selection = await chooseManagedScope(ctx);
+  const packagedPayloadHashes = new Map(
+    await Promise.all(
+      SKILL_IDS.map(async (skillId) => {
+        const skillContext = contextForSkill(ctx, skillId);
+        const files = await snapshotPackagedPayload(skillContext.payloadRoot);
+        return [skillId, hashSnapshot(files)] as const;
+      }),
+    ),
+  );
   const newer = selection.groups.filter(
     (entry) => compareVersions(entry.group.receipt.version, ctx.version) > 0,
   );
-  const outdated = selection.groups.filter(
-    (entry) => compareVersions(entry.group.receipt.version, ctx.version) < 0,
+  const updateable = selection.groups.filter((entry) =>
+    needsPackageUpdate(
+      entry.group.receipt,
+      ctx.version,
+      packagedPayloadHashes.get(entry.skillId) ?? "",
+    ),
   );
-  if (outdated.length === 0) {
+  if (updateable.length === 0) {
     if (newer.length > 0) {
       warn("Managed installations are newer than this package. Run with @latest.");
     } else {
@@ -542,19 +556,19 @@ async function updateFlow(ctx: RuntimeContext): Promise<void> {
     return;
   }
   const groupIds = await multiselect({
-    message: "Choose installations to update",
-    choices: outdated.map((entry) => ({
+    message: "Choose installations to update or repair",
+    choices: updateable.map((entry) => ({
       value: entry.key,
       label: groupLabel(entry),
       hint: entry.group.physicalRoot,
     })),
-    initialValues: outdated.map((entry) => entry.key),
+    initialValues: updateable.map((entry) => entry.key),
     required: true,
   });
   const selected = new Set(groupIds);
   const operations: PreparedOperation[] = [];
   for (const skillId of SKILL_IDS) {
-    const selectedGroupIds = outdated
+    const selectedGroupIds = updateable
       .filter((entry) => entry.skillId === skillId && selected.has(entry.key))
       .map((entry) => entry.group.id);
     if (selectedGroupIds.length === 0) continue;

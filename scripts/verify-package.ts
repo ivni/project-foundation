@@ -62,8 +62,9 @@ for (const path of required) {
   await lstat(join(root, ...path.split("/")));
 }
 
+const npmExecutable = process.platform === "win32" ? "npm.cmd" : "npm";
 const processResult = Bun.spawnSync(
-  [process.execPath, "pm", "pack", "--dry-run", "--ignore-scripts"],
+  [npmExecutable, "pack", "--dry-run", "--json", "--ignore-scripts"],
   {
     cwd: root,
     stdout: "pipe",
@@ -71,12 +72,28 @@ const processResult = Bun.spawnSync(
   },
 );
 if (processResult.exitCode !== 0) {
-  throw new Error(processResult.stderr.toString() || "bun pm pack failed");
+  throw new Error(processResult.stderr.toString() || "npm pack failed");
 }
 
 const output = processResult.stdout.toString();
+const packResults: unknown = JSON.parse(output);
+if (!Array.isArray(packResults) || packResults.length !== 1) {
+  throw new Error("npm pack returned an unexpected result.");
+}
+const packResult = packResults[0] as { files?: Array<{ path?: unknown }> };
+if (!Array.isArray(packResult.files)) {
+  throw new Error("npm pack did not return a file manifest.");
+}
+const packedFiles = new Set(
+  packResult.files.map((entry) => {
+    if (typeof entry.path !== "string") {
+      throw new Error("npm pack returned an invalid file manifest entry.");
+    }
+    return entry.path;
+  }),
+);
 for (const path of requiredPackedFiles) {
-  if (!output.includes(path)) throw new Error(`Published package is missing ${path}`);
+  if (!packedFiles.has(path)) throw new Error(`Published package is missing ${path}`);
 }
 
 const forbidden = [
@@ -87,7 +104,12 @@ const forbidden = [
   ".git/",
 ];
 for (const path of forbidden) {
-  if (output.includes(path)) throw new Error(`Published package unexpectedly includes ${path}`);
+  const normalized = path.replace(/\/$/, "");
+  if ([...packedFiles].some((file) => file === normalized || file.startsWith(`${normalized}/`))) {
+    throw new Error(`Published package unexpectedly includes ${path}`);
+  }
 }
 
-process.stdout.write(`Package contents verified (${SKILL_IDS.length} skill payloads).\n`);
+process.stdout.write(
+  `Package contents verified (${SKILL_IDS.length} skill payloads, ${packedFiles.size} files).\n`,
+);
