@@ -24,11 +24,14 @@ for (const path of required) {
   await lstat(join(root, ...path.split("/")));
 }
 
-const processResult = Bun.spawnSync(["bun", "pm", "pack", "--dry-run", "--ignore-scripts"], {
-  cwd: root,
-  stdout: "pipe",
-  stderr: "pipe",
-});
+const processResult = Bun.spawnSync(
+  [process.execPath, "pm", "pack", "--dry-run", "--ignore-scripts"],
+  {
+    cwd: root,
+    stdout: "pipe",
+    stderr: "pipe",
+  },
+);
 if (processResult.exitCode !== 0) {
   throw new Error(processResult.stderr.toString() || "bun pm pack failed");
 }
