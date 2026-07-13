@@ -593,6 +593,32 @@ describe("installation operations", () => {
     expect(groups[0]?.receipt.intendedAgents).toEqual(["codex"]);
   });
 
+  test("migrates links across logical roots with different canonical depths", async () => {
+    const current = await workspace();
+    const realRoot = join(current.root, "nested", "real-root");
+    const aliasRoot = join(current.root, "alias-root");
+    await Promise.all([
+      mkdir(join(realRoot, "home"), { recursive: true }),
+      mkdir(join(realRoot, "data"), { recursive: true }),
+    ]);
+    await symlink(realRoot, aliasRoot, process.platform === "win32" ? "junction" : "dir");
+    current.context.home = join(aliasRoot, "home");
+    current.context.env.LOCALAPPDATA = join(aliasRoot, "data");
+    current.context.env.XDG_DATA_HOME = join(aliasRoot, "data");
+
+    await installSkill({
+      agents: ["codex", "pi"],
+      scope: "user",
+      strategy: "link",
+      context: current.context,
+    });
+    await removeSkill({ agents: ["codex"], scope: "user", context: current.context });
+
+    const piTarget = getTargetPath("pi", "user", current.context);
+    expect((await lstat(piTarget)).isSymbolicLink()).toBe(true);
+    expect((await readReceipt(piTarget))?.intendedAgents).toEqual(["pi"]);
+  });
+
   test("prepared installs use captured inputs when caller options later mutate", async () => {
     const current = await workspace("1.0.0");
     const target = getTargetPath("codex", "user", current.context);

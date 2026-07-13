@@ -69,7 +69,7 @@ export function createRuntimeContext(overrides: Partial<RuntimeContext> = {}): R
     platform: overrides.platform ?? process.platform,
     env: overrides.env ?? env,
     payloadRoot: overrides.payloadRoot ?? "",
-    version: overrides.version ?? "1.0.0",
+    version: overrides.version ?? "1.0.1",
   };
 }
 

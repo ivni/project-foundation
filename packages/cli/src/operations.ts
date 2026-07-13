@@ -117,9 +117,14 @@ async function createLink(
   source: string,
   context: RuntimeContext,
 ): Promise<void> {
-  await mkdir(dirname(targetPath), { recursive: true });
+  const targetParent = dirname(targetPath);
+  await mkdir(targetParent, { recursive: true });
+  const [canonicalParent, canonicalSource] = await Promise.all([
+    realpath(targetParent),
+    realpath(source),
+  ]);
   const linkTarget =
-    context.platform === "win32" ? resolve(source) : relative(dirname(targetPath), source);
+    context.platform === "win32" ? canonicalSource : relative(canonicalParent, canonicalSource);
   await symlink(linkTarget, targetPath, context.platform === "win32" ? "junction" : "dir");
 }
 
@@ -780,10 +785,12 @@ export async function prepareRemoveSkill(options: RemoveOptions): Promise<Prepar
   const fingerprints = await captureFingerprints(touched);
   const preview: MutationPreviewEntry[] = [];
   for (const group of affected) {
+    const displayRoot =
+      group.strategy === "link" ? getManagedStore(scope, context, projectRoot) : group.physicalRoot;
     if (decisions.get(group.id) === "keep") {
       preview.push({
         action: "skip",
-        path: group.physicalRoot,
+        path: displayRoot,
         detail: "Keep modified installation",
       });
       continue;
@@ -791,7 +798,7 @@ export async function prepareRemoveSkill(options: RemoveOptions): Promise<Prepar
     if (decisions.get(group.id) === "backup-remove") {
       preview.push({
         action: "backup",
-        path: group.physicalRoot,
+        path: displayRoot,
         detail: "Back up before removal",
       });
     }
@@ -807,13 +814,13 @@ export async function prepareRemoveSkill(options: RemoveOptions): Promise<Prepar
       if (
         !group.targets.some((target) => resolve(target.targetPath) === resolve(group.physicalRoot))
       ) {
-        preview.push({ action: "remove", path: group.physicalRoot, detail: "Managed store" });
+        preview.push({ action: "remove", path: displayRoot, detail: "Managed store" });
       }
       continue;
     }
     const plans = planNativeTargets(remaining, scope, context, projectRoot);
     if (group.strategy === "link") {
-      preview.push({ action: "update", path: group.physicalRoot, detail: "Update shared receipt" });
+      preview.push({ action: "update", path: displayRoot, detail: "Update shared receipt" });
       for (const target of group.targets) {
         preview.push({
           action: "remove",
@@ -825,7 +832,7 @@ export async function prepareRemoveSkill(options: RemoveOptions): Promise<Prepar
         preview.push({
           action: "link",
           path: plan.path,
-          detail: `Link ${AGENTS[plan.owner].label} to ${group.physicalRoot}`,
+          detail: `Link ${AGENTS[plan.owner].label} to ${displayRoot}`,
         });
       }
     } else {
