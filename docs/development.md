@@ -28,11 +28,14 @@ bun run typecheck
 bun run lint
 bun test
 bun run build
+bun run verify:docs
 bun run verify:package
 bun run check
 ```
 
-`bun run check` is the release-level local verification command.
+`verify:docs` checks public Markdown structure, local links, changelog state, and package metadata.
+`verify:package` inspects the generated tarball. `bun run check` runs both as part of the release-level
+local verification command.
 
 ## Architecture
 

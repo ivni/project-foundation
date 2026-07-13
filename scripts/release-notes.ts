@@ -10,7 +10,9 @@ const changelog = await readFile(join(import.meta.dir, "..", "CHANGELOG.md"), "u
 const lines = changelog.split("\n");
 const start = lines.findIndex((line) => line.startsWith(`## [${version}]`));
 if (start === -1) throw new Error(`CHANGELOG.md has no section for ${version}`);
-const next = lines.findIndex((line, index) => index > start && line.startsWith("## ["));
+const next = lines.findIndex(
+  (line, index) => index > start && (line.startsWith("## [") || /^\[[^\]]+\]:\s+/.test(line)),
+);
 const section = lines
   .slice(start + 1, next === -1 ? undefined : next)
   .join("\n")

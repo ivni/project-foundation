@@ -2,7 +2,8 @@
 
 ## Link (recommended)
 
-Link keeps one managed payload and creates directory links in the native agent locations.
+Link keeps one managed payload and creates directory links in the native agent locations: symbolic
+directory links on macOS and Linux, and directory junctions on Windows.
 
 Benefits:
 
@@ -13,13 +14,17 @@ Benefits:
 
 Tradeoffs:
 
-- Windows may require Developer Mode or symbolic-link permission
+- Filesystem permissions or endpoint policy can block directory-link creation
 - Moving the managed store manually breaks native links
 - Some backup and sync tools treat links differently
 
-If Windows denies link creation, the installer rolls back the attempt and offers three choices:
-install copies, show permission help, or cancel. It never asks for elevation and never launches an
-elevated process.
+Windows junctions do not normally require Developer Mode. If Windows denies link creation, the
+installer rolls back the attempt and offers three choices: install copies, show permission help, or
+cancel. It never asks for elevation and never launches an elevated process.
+
+Not every agent explicitly documents whether its scanner follows directory links. See
+[Compatibility sources](compatibility.md#managed-link-evidence) for the current evidence. Use copy
+strategy when link following is restricted or uncertain in the target environment.
 
 ## Copy
 

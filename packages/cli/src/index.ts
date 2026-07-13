@@ -390,9 +390,10 @@ async function installFlow(ctx: RuntimeContext): Promise<void> {
         });
         if (fallback === "cancel") throw new CancelledError();
         if (fallback === "help") {
-          note("Enable links on Windows", [
-            "Turn on Developer Mode in Windows Settings, then retry.",
-            "Alternatively, run the terminal with permission to create symbolic links.",
+          note("Allow directory junctions on Windows", [
+            "Project Foundation uses directory junctions, which normally do not need Developer Mode.",
+            "Check write access to the target and whether endpoint policy blocks junctions.",
+            "You can use the copy strategy when directory links are restricted.",
             "The installer never elevates itself.",
           ]);
           continue;

@@ -6,9 +6,13 @@ Security fixes are released for the latest published major version.
 
 ## Reporting a vulnerability
 
-Do not open a public issue for a suspected vulnerability. Use GitHub's private vulnerability reporting
-for this repository. Include the affected version, operating system, reproduction steps, impact, and
-any suggested mitigation.
+Do not open a public issue containing vulnerability details. Email the maintainer at
+[rus.nikiv@gmail.com](mailto:rus.nikiv@gmail.com) with the subject `Project Foundation security`.
+Include the affected version, operating system, reproduction steps, impact, and any suggested
+mitigation.
+
+If email is unavailable, open a minimal GitHub issue asking the maintainer to establish a private
+contact channel. Do not include technical details in that issue.
 
 Do not include real credentials or private repository data. Use isolated temporary directories in
 proofs of concept.

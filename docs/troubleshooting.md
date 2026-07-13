@@ -15,10 +15,12 @@ Project Foundation requires Bun 1.3 or newer.
 Install, update, and remove are intentionally interactive. Run the command directly in a terminal,
 not through a pipe, redirected input, or a non-interactive CI step.
 
-## Windows cannot create links
+## Windows cannot create directory junctions
 
-Choose `Install copies instead` in the wizard, or enable Windows Developer Mode and retry. The
-installer does not elevate itself. If an endpoint policy blocks symbolic links, use copy strategy.
+Choose `Install copies instead` in the wizard. Project Foundation uses directory junctions on
+Windows, which do not normally require Developer Mode. Check write access to the target parent and
+managed store; if an endpoint policy blocks junctions, use copy strategy. The installer does not
+elevate itself.
 
 Because every operation is transactional, a failed link attempt should leave the original targets
 unchanged.

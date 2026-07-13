@@ -9,6 +9,7 @@ const required = [
   "packages/skill/agents/openai.yaml",
   "packages/skill/references",
   "packages/skill/templates",
+  "docs",
 ] as const;
 
 const requiredPackedFiles = [
@@ -18,6 +19,11 @@ const requiredPackedFiles = [
   "packages/skill/agents/openai.yaml",
   "packages/skill/references/artifacts.md",
   "packages/skill/templates/discovery.md",
+  "docs/installation.md",
+  "docs/release.md",
+  "CHANGELOG.md",
+  "LICENSE",
+  "README.md",
 ] as const;
 
 for (const path of required) {

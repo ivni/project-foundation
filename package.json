@@ -1,6 +1,6 @@
 {
   "name": "@ivni/project-foundation",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Interactive Bun installer for the Project Foundation agent skill.",
   "type": "module",
   "private": false,
@@ -32,6 +32,7 @@
     "packages/skill/agents",
     "packages/skill/references",
     "packages/skill/templates",
+    "docs",
     "CHANGELOG.md",
     "LICENSE",
     "README.md"
@@ -41,12 +42,13 @@
   ],
   "scripts": {
     "build": "bun build ./packages/cli/src/index.ts --target=bun --outdir=./dist --entry-naming=cli.js --sourcemap=external",
-    "check": "bun run lint && bun run typecheck && bun test && bun run build && bun run verify:package",
+    "check": "bun run lint && bun run typecheck && bun test && bun run build && bun run verify:docs && bun run verify:package",
     "format": "biome format --write .",
     "format:check": "biome format .",
     "lint": "biome check .",
     "start": "bun ./packages/cli/src/index.ts",
     "typecheck": "tsc --noEmit",
+    "verify:docs": "bun ./scripts/verify-docs.ts",
     "verify:package": "bun ./scripts/verify-package.ts"
   },
   "engines": {

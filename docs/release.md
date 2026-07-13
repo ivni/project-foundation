@@ -13,11 +13,11 @@ Releases follow SemVer and [Keep a Changelog](https://keepachangelog.com/en/1.1.
 
 ## Publish
 
-Create and push a tag matching the package version:
+Create and push an annotated tag matching the package version. Replace `X.Y.Z` in both commands:
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
+git tag -a vX.Y.Z -m "vX.Y.Z"
+git push origin vX.Y.Z
 ```
 
 The release workflow:
@@ -27,7 +27,8 @@ The release workflow:
 3. Publishes the package to npm with the `latest` dist-tag using trusted publishing (OIDC).
 4. Creates a GitHub Release using the changelog entry.
 
-The npm package must configure GitHub Actions as its trusted publisher:
+The npm package must configure GitHub Actions as its
+[trusted publisher](https://docs.npmjs.com/trusted-publishers):
 
 - Organization or user: `ivni`
 - Repository: `project-foundation`
