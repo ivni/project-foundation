@@ -24,10 +24,20 @@ The release workflow:
 
 1. Checks that the tag and `package.json` version match.
 2. Runs the complete test and package verification suite.
-3. Publishes the package to npm with the `latest` dist-tag.
+3. Publishes the package to npm with the `latest` dist-tag using trusted publishing (OIDC).
 4. Creates a GitHub Release using the changelog entry.
 
-The repository must define an npm automation token as the `NPM_TOKEN` Actions secret.
+The npm package must configure GitHub Actions as its trusted publisher:
+
+- Organization or user: `ivni`
+- Repository: `project-foundation`
+- Workflow filename: `release.yml`
+- Environment: `npm`
+- Allowed action: `npm publish`
+
+The workflow uses short-lived OIDC credentials and does not require a long-lived npm publish token.
+Trusted publishing can only be configured after the package exists in the npm registry, so the very
+first release must be published interactively before enabling automated releases.
 
 ## Recovery
 
