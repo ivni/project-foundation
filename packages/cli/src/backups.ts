@@ -1,7 +1,10 @@
+import { randomUUID } from "node:crypto";
 import { cp, lstat, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join, relative, resolve } from "node:path";
 import { AGENTS, getUserDataRoot } from "./agents.ts";
-import type { AgentId, BackupRecord, RuntimeContext, Scope } from "./types.ts";
+import { isSkillId } from "./skills.ts";
+import type { AgentId, BackupRecord, RuntimeContext, Scope, SkillId } from "./types.ts";
+import { AGENT_IDS } from "./types.ts";
 
 const METADATA_FILE = "backup.json";
 
@@ -32,8 +35,27 @@ function containedChild(root: string, name: string): string {
   return destination;
 }
 
+function isBackupRecord(value: unknown): value is BackupRecord {
+  if (!value || typeof value !== "object") return false;
+  const record = value as Partial<BackupRecord>;
+  return (
+    typeof record.path === "string" &&
+    isSkillId(record.skillId) &&
+    typeof record.agent === "string" &&
+    AGENT_IDS.includes(record.agent as AgentId) &&
+    (record.scope === "user" || record.scope === "project") &&
+    typeof record.version === "string" &&
+    typeof record.createdAt === "string" &&
+    Number.isFinite(Date.parse(record.createdAt)) &&
+    typeof record.bytes === "number" &&
+    Number.isFinite(record.bytes) &&
+    record.bytes >= 0
+  );
+}
+
 export async function createBackup(options: {
   source: string;
+  skillId: SkillId;
   agent: AgentId;
   scope: Scope;
   version: string;
@@ -41,14 +63,17 @@ export async function createBackup(options: {
   now?: Date;
 }): Promise<BackupRecord> {
   const createdAt = (options.now ?? new Date()).toISOString();
+  const skillId = options.skillId;
   const root = join(getUserDataRoot(options.context), "backups");
   const destination = containedChild(
     root,
     [
       safeTimestamp(new Date(createdAt)),
+      safeSegment(skillId),
       safeSegment(options.agent),
       safeSegment(options.scope),
       safeSegment(options.version),
+      randomUUID(),
     ].join("-"),
   );
   await mkdir(destination, { recursive: true });
@@ -56,6 +81,7 @@ export async function createBackup(options: {
   const bytes = await directorySize(join(destination, "skill"));
   const record: BackupRecord = {
     path: destination,
+    skillId,
     agent: options.agent,
     scope: options.scope,
     version: options.version,
@@ -74,9 +100,19 @@ export async function listBackups(context: RuntimeContext): Promise<BackupRecord
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
       try {
-        const value = JSON.parse(await readFile(join(root, entry.name, METADATA_FILE), "utf8"));
-        if (value && typeof value.createdAt === "string" && typeof value.bytes === "number") {
-          records.push({ ...(value as BackupRecord), path: join(root, entry.name) });
+        const value: unknown = JSON.parse(
+          await readFile(join(root, entry.name, METADATA_FILE), "utf8"),
+        );
+        if (isBackupRecord(value)) {
+          records.push({
+            path: join(root, entry.name),
+            skillId: value.skillId,
+            agent: value.agent,
+            scope: value.scope,
+            version: value.version,
+            createdAt: value.createdAt,
+            bytes: value.bytes,
+          });
         }
       } catch {
         // Ignore incomplete backup entries. They remain user-owned.
@@ -105,7 +141,7 @@ export function selectBackupsForCleanup(
 
   const groups = new Map<string, BackupRecord[]>();
   for (const backup of backups) {
-    const key = `${backup.agent}:${backup.scope}`;
+    const key = `${backup.skillId}:${backup.agent}:${backup.scope}`;
     const current = groups.get(key) ?? [];
     current.push(backup);
     groups.set(key, current);
@@ -131,5 +167,5 @@ export async function deleteBackups(
 }
 
 export function describeBackup(backup: BackupRecord): string {
-  return `${AGENTS[backup.agent].label} ${backup.scope} ${backup.version}`;
+  return `${backup.skillId} · ${AGENTS[backup.agent].label} ${backup.scope} ${backup.version}`;
 }

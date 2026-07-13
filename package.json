@@ -1,7 +1,7 @@
 {
   "name": "@ivni/project-foundation",
-  "version": "1.0.2",
-  "description": "Interactive Bun installer for the Project Foundation agent skill.",
+  "version": "1.1.0",
+  "description": "Interactive Bun installer for the Project Foundation agent skill suite.",
   "type": "module",
   "private": false,
   "license": "MIT",
@@ -28,10 +28,12 @@
   "files": [
     "dist/cli.js",
     "dist/cli.js.map",
-    "packages/skill/SKILL.md",
-    "packages/skill/agents",
-    "packages/skill/references",
-    "packages/skill/templates",
+    "packages/*/SKILL.md",
+    "packages/*/agents",
+    "packages/*/assets",
+    "packages/*/references",
+    "packages/*/scripts",
+    "packages/*/templates",
     "docs",
     "CHANGELOG.md",
     "LICENSE",
@@ -42,13 +44,14 @@
   ],
   "scripts": {
     "build": "bun build ./packages/cli/src/index.ts --target=bun --outdir=./dist --entry-naming=cli.js --sourcemap=external",
-    "check": "bun run lint && bun run typecheck && bun test && bun run build && bun run verify:docs && bun run verify:package",
+    "check": "bun run lint && bun run typecheck && bun test && bun run build && bun run verify:skills && bun run verify:docs && bun run verify:package",
     "format": "biome format --write .",
     "format:check": "biome format .",
     "lint": "biome check .",
     "start": "bun ./packages/cli/src/index.ts",
     "typecheck": "tsc --noEmit",
     "verify:docs": "bun ./scripts/verify-docs.ts",
+    "verify:skills": "bun ./scripts/verify-skills.ts",
     "verify:package": "bun ./scripts/verify-package.ts"
   },
   "engines": {

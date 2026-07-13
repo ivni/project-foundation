@@ -2,13 +2,13 @@
 
 ## Link (recommended)
 
-Link keeps one managed payload and creates directory links in the native agent locations: symbolic
-directory links on macOS and Linux, and directory junctions on Windows.
+Link keeps one managed payload per selected skill and creates directory links in the native agent
+locations: symbolic directory links on macOS and Linux, and directory junctions on Windows.
 
 Benefits:
 
-- One physical payload for all selected agents
-- Updates replace one managed directory
+- One physical payload per skill for all selected agents
+- Updates replace one managed directory per skill
 - Cross-agent deduplication is easy to inspect
 - Partial removal can re-plan links without duplicating content
 
@@ -47,6 +47,7 @@ Tradeoffs:
 Every managed physical payload includes `.project-foundation.json`. The receipt records:
 
 - package and schema identity
+- the required skill ID
 - installed version
 - scope and strategy
 - intended agent environments
@@ -55,3 +56,6 @@ Every managed physical payload includes `.project-foundation.json`. The receipt 
 
 The receipt lets update and remove distinguish managed content from unrelated user content and detect
 local modifications without a network request.
+
+All skills use schema 2. A receipt is valid only for the matching registered `skillId`, so content
+cannot be accepted or updated under a different skill name. Schema 1 receipts are unmanaged.

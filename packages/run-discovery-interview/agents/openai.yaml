@@ -1,0 +1,7 @@
+interface:
+  display_name: "Discovery Interview"
+  short_description: "Resolve product decisions one question at a time"
+  default_prompt: "Use $run-discovery-interview to interview me and resolve this feature before implementation."
+
+policy:
+  allow_implicit_invocation: true

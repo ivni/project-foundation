@@ -33,18 +33,19 @@ safe merely because it has the same name.
 
 ## The skill does not appear in an agent
 
-1. Confirm the target contains `project-foundation/SKILL.md`.
+1. Confirm the target contains `<skill-id>/SKILL.md`, for example
+   `find-blind-spots/SKILL.md`.
 2. Check the agent's skill permissions or exclusions.
 3. Restart the agent if the top-level skill directory was created after the session started.
 4. Use the optional discovery checks shown at the end of installation.
 
 Agent-specific checks:
 
-- Codex: run `/skills` or type `$project-foundation`.
-- Claude Code: run `/project-foundation`.
-- Pi: run `/skill:project-foundation`.
-- OpenCode: verify skill permissions and ask it to use `project-foundation`.
-- Hermes Agent: run `/skills`, then invoke `/project-foundation`.
+- Codex: open the skill picker or type `$<skill-id>`.
+- Claude Code: run `/<skill-id>`.
+- Pi: run `/skill:<skill-id>`.
+- OpenCode: verify skill permissions and ask it to use `<skill-id>`.
+- Hermes Agent: run `/skills`, then invoke `/<skill-id>`.
 
 ## Update reports local changes
 

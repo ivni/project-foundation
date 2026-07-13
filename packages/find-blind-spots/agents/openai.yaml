@@ -1,0 +1,7 @@
+interface:
+  display_name: "Find Blind Spots"
+  short_description: "Expose consequential unknowns before planning"
+  default_prompt: "Use $find-blind-spots to identify the highest-impact unknowns in this feature brief."
+
+policy:
+  allow_implicit_invocation: true

@@ -21,6 +21,8 @@ import {
   prepareUpdateSkill,
 } from "./operations.ts";
 import { resolvePublishedPayloadRoot } from "./payload.ts";
+import { SKILL_IDS, SKILLS } from "./skills.ts";
+import { combinePreparedOperations } from "./suite.ts";
 import { isRecoverableLinkPermissionError } from "./transaction.ts";
 import type {
   AgentId,
@@ -31,8 +33,10 @@ import type {
   MutationPreviewEntry,
   OperationHooks,
   OperationResult,
+  PreparedOperation,
   RuntimeContext,
   Scope,
+  SkillId,
   Strategy,
   TargetInspection,
 } from "./types.ts";
@@ -65,9 +69,20 @@ async function pathIsDirectory(path: string): Promise<boolean> {
 
 function context(): RuntimeContext {
   return createRuntimeContext({
-    payloadRoot: resolvePublishedPayloadRoot(),
     version: packageJson.version,
   });
+}
+
+function contextForSkill(ctx: RuntimeContext, skillId: SkillId): RuntimeContext {
+  return { ...ctx, payloadRoot: resolvePublishedPayloadRoot(skillId) };
+}
+
+function skillChoices(skillIds: SkillId[] = [...SKILL_IDS]) {
+  return skillIds.map((skillId) => ({
+    value: skillId,
+    label: SKILLS[skillId].label,
+    hint: SKILLS[skillId].summary,
+  }));
 }
 
 function agentChoices(scope?: Scope) {
@@ -81,7 +96,7 @@ function agentChoices(scope?: Scope) {
 
 async function chooseScope(initialValue: Scope = "user"): Promise<Scope> {
   return select({
-    message: "Where should the skill be available?",
+    message: "Where should the skills be available?",
     initialValue,
     choices: [
       { value: "user", label: "User", hint: "Available across projects" },
@@ -186,10 +201,20 @@ function hooks(): OperationHooks {
   };
 }
 
-function formatTargets(agents: AgentId[], scope: Scope, ctx: RuntimeContext, projectRoot?: string) {
-  return agents.map(
-    (agent) => `${AGENTS[agent].label}: ${getTargetPath(agent, scope, ctx, projectRoot)}`,
-  );
+function formatTargets(
+  agents: AgentId[],
+  skills: SkillId[],
+  scope: Scope,
+  ctx: RuntimeContext,
+  projectRoot?: string,
+) {
+  return agents.flatMap((agent) => [
+    `${AGENTS[agent].label}:`,
+    ...skills.map(
+      (skillId) =>
+        `  ${SKILLS[skillId].label}: ${getTargetPath(agent, scope, ctx, skillId, projectRoot)}`,
+    ),
+  ]);
 }
 
 async function maybeCleanBackups(ctx: RuntimeContext, result: OperationResult): Promise<void> {
@@ -205,7 +230,7 @@ async function maybeCleanBackups(ctx: RuntimeContext, result: OperationResult): 
     initialValue: "keep-all",
     choices: [
       { value: "keep-all", label: "Keep all" },
-      { value: "keep-three", label: "Keep latest 3", hint: "Per agent and scope" },
+      { value: "keep-three", label: "Keep latest 3", hint: "Per skill, agent, and scope" },
       { value: "older-than-30-days", label: "Remove older than 30 days" },
       { value: "delete-all", label: "Remove all backups" },
     ],
@@ -246,6 +271,7 @@ function formatBytes(bytes: number): string {
 
 async function confirmScopeCoexistence(options: {
   agents: AgentId[];
+  skills: SkillId[];
   scope: Scope;
   projectRoot?: string;
   context: RuntimeContext;
@@ -253,25 +279,43 @@ async function confirmScopeCoexistence(options: {
   const otherScope: Scope = options.scope === "user" ? "project" : "user";
   const otherProjectRoot =
     otherScope === "project" ? findProjectRoot(options.context.cwd) : undefined;
-  const groups = await getManagedInstallations(otherScope, options.context, otherProjectRoot);
-  const overlapping = [
-    ...new Set(
-      groups
-        .flatMap((group) => group.receipt.intendedAgents)
-        .filter((agent) => options.agents.includes(agent)),
-    ),
-  ];
-  if (overlapping.length === 0) return;
-  const labels = overlapping.map((agent) => AGENTS[agent].label).join(", ");
-  note("Both scopes will contain this skill", [
-    `Existing ${otherScope} scope: ${labels}`,
-    `New ${options.scope} scope: ${labels}`,
+  const overlapLines: string[] = [];
+  for (const skillId of options.skills) {
+    const groups = await getManagedInstallations(
+      otherScope,
+      contextForSkill(options.context, skillId),
+      skillId,
+      otherProjectRoot,
+    );
+    const overlapping = [
+      ...new Set(
+        groups
+          .flatMap((group) => group.receipt.intendedAgents)
+          .filter((agent) => options.agents.includes(agent)),
+      ),
+    ];
+    if (overlapping.length > 0) {
+      overlapLines.push(
+        `${SKILLS[skillId].label}: ${overlapping.map((agent) => AGENTS[agent].label).join(", ")}`,
+      );
+    }
+  }
+  if (overlapLines.length === 0) return;
+  note("Both scopes will contain the same skills", [
+    ...overlapLines,
+    `New scope: ${options.scope}; existing scope: ${otherScope}`,
     "Agent precedence rules decide which same-name skill is selected.",
   ]);
   if (!(await confirm("Continue with both scopes?"))) throw new CancelledError();
 }
 
 async function installFlow(ctx: RuntimeContext): Promise<void> {
+  let skills = await multiselect<SkillId>({
+    message: "Choose skills",
+    choices: skillChoices(),
+    initialValues: [...SKILL_IDS],
+    required: true,
+  });
   const detected = AGENT_IDS.filter((agent) => detectAgent(agent, ctx));
   let agents = await multiselect<AgentId>({
     message: "Choose agent environments",
@@ -297,9 +341,10 @@ async function installFlow(ctx: RuntimeContext): Promise<void> {
 
   while (true) {
     note("Selection", [
+      `Skills: ${skills.map((skillId) => SKILLS[skillId].label).join(", ")}`,
       `Scope: ${scope}`,
       `Method: ${strategy}`,
-      ...formatTargets(agents, scope, ctx, projectRoot),
+      ...formatTargets(agents, skills, scope, ctx, projectRoot),
       "No mutating Git commands or .git writes. Project scope can change the working tree.",
     ]);
     const action = await select({
@@ -307,6 +352,7 @@ async function installFlow(ctx: RuntimeContext): Promise<void> {
       initialValue: "install",
       choices: [
         { value: "install", label: "Review exact changes" },
+        { value: "skills", label: "Change skills" },
         { value: "agents", label: "Change agents" },
         { value: "scope", label: "Change scope" },
         { value: "strategy", label: "Change method" },
@@ -314,6 +360,15 @@ async function installFlow(ctx: RuntimeContext): Promise<void> {
       ],
     });
     if (action === "cancel") throw new CancelledError();
+    if (action === "skills") {
+      skills = await multiselect({
+        message: "Choose skills",
+        choices: skillChoices(),
+        initialValues: skills,
+        required: true,
+      });
+      continue;
+    }
     if (action === "agents") {
       agents = await multiselect({
         message: "Choose agent environments",
@@ -350,6 +405,7 @@ async function installFlow(ctx: RuntimeContext): Promise<void> {
   }
   await confirmScopeCoexistence({
     agents,
+    skills,
     scope,
     context: ctx,
     ...(projectRoot ? { projectRoot } : {}),
@@ -357,14 +413,21 @@ async function installFlow(ctx: RuntimeContext): Promise<void> {
   let result: OperationResult;
   while (true) {
     try {
-      const prepared = await prepareInstallSkill({
-        agents,
-        scope,
-        strategy,
-        context: ctx,
-        ...(projectRoot ? { projectRoot } : {}),
-        hooks: hooks(),
-      });
+      const operations: PreparedOperation[] = [];
+      for (const skillId of skills) {
+        operations.push(
+          await prepareInstallSkill({
+            agents,
+            skillId,
+            scope,
+            strategy,
+            context: contextForSkill(ctx, skillId),
+            ...(projectRoot ? { projectRoot } : {}),
+            hooks: hooks(),
+          }),
+        );
+      }
+      const prepared = combinePreparedOperations(operations);
       note("Exact mutation preview", previewLines(prepared.preview));
       if (!(await confirm("Apply exactly these changes?"))) throw new CancelledError();
       info("Applying the installation plan...");
@@ -409,35 +472,62 @@ async function installFlow(ctx: RuntimeContext): Promise<void> {
   if (await confirm("Show agent discovery checks?", false)) {
     note(
       "Check the installation",
-      agents.map((agent) => `${AGENTS[agent].label}: ${AGENTS[agent].manualCheck}`),
+      agents.flatMap((agent) =>
+        skills.map(
+          (skillId) =>
+            `${AGENTS[agent].label} · ${SKILLS[skillId].label}: ${AGENTS[agent].manualCheck(skillId)}`,
+        ),
+      ),
     );
   }
-  outro("Project Foundation is ready.");
+  outro("Selected skills are ready.");
+}
+
+interface ManagedSkillGroup {
+  key: string;
+  skillId: SkillId;
+  group: InstallationGroup;
 }
 
 async function chooseManagedScope(ctx: RuntimeContext): Promise<{
   scope: Scope;
   projectRoot?: string;
-  groups: InstallationGroup[];
+  groups: ManagedSkillGroup[];
 }> {
   const scope = await chooseScope();
   const projectRoot = scope === "project" ? await chooseProjectRoot(ctx) : undefined;
-  const groups = await getManagedInstallations(scope, ctx, projectRoot);
+  const groups: ManagedSkillGroup[] = [];
+  for (const skillId of SKILL_IDS) {
+    const installations = await getManagedInstallations(
+      scope,
+      contextForSkill(ctx, skillId),
+      skillId,
+      projectRoot,
+    );
+    groups.push(
+      ...installations.map((group) => ({
+        key: `${skillId}:${group.id}`,
+        skillId,
+        group,
+      })),
+    );
+  }
   return { scope, ...(projectRoot ? { projectRoot } : {}), groups };
 }
 
-function groupLabel(group: InstallationGroup): string {
+function groupLabel(entry: ManagedSkillGroup): string {
+  const group = entry.group;
   const agents = group.receipt.intendedAgents.map((agent) => AGENTS[agent].label).join(", ");
-  return `${agents}  ${theme.muted(`v${group.receipt.version} ${group.strategy}`)}`;
+  return `${SKILLS[entry.skillId].label} · ${agents}  ${theme.muted(`v${group.receipt.version} ${group.strategy}`)}`;
 }
 
 async function updateFlow(ctx: RuntimeContext): Promise<void> {
   const selection = await chooseManagedScope(ctx);
   const newer = selection.groups.filter(
-    (group) => compareVersions(group.receipt.version, ctx.version) > 0,
+    (entry) => compareVersions(entry.group.receipt.version, ctx.version) > 0,
   );
   const outdated = selection.groups.filter(
-    (group) => compareVersions(group.receipt.version, ctx.version) < 0,
+    (entry) => compareVersions(entry.group.receipt.version, ctx.version) < 0,
   );
   if (outdated.length === 0) {
     if (newer.length > 0) {
@@ -453,21 +543,33 @@ async function updateFlow(ctx: RuntimeContext): Promise<void> {
   }
   const groupIds = await multiselect({
     message: "Choose installations to update",
-    choices: outdated.map((group) => ({
-      value: group.id,
-      label: groupLabel(group),
-      hint: group.physicalRoot,
+    choices: outdated.map((entry) => ({
+      value: entry.key,
+      label: groupLabel(entry),
+      hint: entry.group.physicalRoot,
     })),
-    initialValues: outdated.map((group) => group.id),
+    initialValues: outdated.map((entry) => entry.key),
     required: true,
   });
-  const prepared = await prepareUpdateSkill({
-    scope: selection.scope,
-    context: ctx,
-    groupIds,
-    ...(selection.projectRoot ? { projectRoot: selection.projectRoot } : {}),
-    hooks: hooks(),
-  });
+  const selected = new Set(groupIds);
+  const operations: PreparedOperation[] = [];
+  for (const skillId of SKILL_IDS) {
+    const selectedGroupIds = outdated
+      .filter((entry) => entry.skillId === skillId && selected.has(entry.key))
+      .map((entry) => entry.group.id);
+    if (selectedGroupIds.length === 0) continue;
+    operations.push(
+      await prepareUpdateSkill({
+        skillId,
+        scope: selection.scope,
+        context: contextForSkill(ctx, skillId),
+        groupIds: selectedGroupIds,
+        ...(selection.projectRoot ? { projectRoot: selection.projectRoot } : {}),
+        hooks: hooks(),
+      }),
+    );
+  }
+  const prepared = combinePreparedOperations(operations);
   if (prepared.breaking) {
     note("Breaking update", [
       ...previewLines(prepared.preview.filter((entry) => entry.action === "update")),
@@ -491,8 +593,19 @@ async function removeFlow(ctx: RuntimeContext): Promise<void> {
     info("No managed installations found.");
     return;
   }
+  const installedSkills = SKILL_IDS.filter((skillId) =>
+    selection.groups.some((entry) => entry.skillId === skillId),
+  );
+  const skills = await multiselect<SkillId>({
+    message: "Choose skills to remove",
+    choices: skillChoices(installedSkills),
+    initialValues: installedSkills,
+    required: true,
+  });
+  const selectedSkills = new Set(skills);
+  const relevantGroups = selection.groups.filter((entry) => selectedSkills.has(entry.skillId));
   const installedAgents = [
-    ...new Set(selection.groups.flatMap((group) => group.receipt.intendedAgents)),
+    ...new Set(relevantGroups.flatMap((entry) => entry.group.receipt.intendedAgents)),
   ];
   const agents = await multiselect<AgentId>({
     message: "Choose agents to remove",
@@ -502,13 +615,20 @@ async function removeFlow(ctx: RuntimeContext): Promise<void> {
     initialValues: [],
     required: true,
   });
-  const prepared = await prepareRemoveSkill({
-    agents,
-    scope: selection.scope,
-    context: ctx,
-    ...(selection.projectRoot ? { projectRoot: selection.projectRoot } : {}),
-    hooks: hooks(),
-  });
+  const operations: PreparedOperation[] = [];
+  for (const skillId of skills) {
+    operations.push(
+      await prepareRemoveSkill({
+        agents,
+        skillId,
+        scope: selection.scope,
+        context: contextForSkill(ctx, skillId),
+        ...(selection.projectRoot ? { projectRoot: selection.projectRoot } : {}),
+        hooks: hooks(),
+      }),
+    );
+  }
+  const prepared = combinePreparedOperations(operations);
   note("Exact mutation preview", [
     ...previewLines(prepared.preview),
     "Shared installations may be migrated so unselected agents keep working.",
@@ -551,7 +671,7 @@ async function main(): Promise<void> {
     );
   }
   const ctx = context();
-  intro("Project Foundation", "Install one skill across your coding agents.");
+  intro("Project Foundation", "Install a focused skill suite across your coding agents.");
   const valid = ["install", "update", "remove"] as const;
   if (argument && !valid.includes(argument as (typeof valid)[number])) {
     throw new UserFacingError(`Unknown command: ${argument}`, "Use install, update, or remove.");
@@ -562,7 +682,7 @@ async function main(): Promise<void> {
         message: "What would you like to do?",
         initialValue: "install",
         choices: [
-          { value: "install", label: "Install", hint: "Add the skill to agent environments" },
+          { value: "install", label: "Install", hint: "Add skills to agent environments" },
           { value: "update", label: "Update", hint: "Replace older managed installations" },
           { value: "remove", label: "Remove", hint: "Remove selected agent access" },
           { value: "exit", label: "Exit" },

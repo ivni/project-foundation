@@ -1,5 +1,5 @@
 import { AGENTS, getTargetPath } from "./agents.ts";
-import type { AgentId, RuntimeContext, Scope } from "./types.ts";
+import type { AgentId, RuntimeContext, Scope, SkillId } from "./types.ts";
 
 const TARGET_PRIORITY: AgentId[] = ["codex", "claude", "pi", "opencode", "hermes"];
 
@@ -13,6 +13,7 @@ export function planNativeTargets(
   intendedAgents: AgentId[],
   scope: Scope,
   context: RuntimeContext,
+  skillId: SkillId,
   projectRoot?: string,
 ): PlannedTarget[] {
   const remaining = new Set(intendedAgents);
@@ -26,7 +27,7 @@ export function planNativeTargets(
     targets.push({
       owner,
       intendedAgents: covered,
-      path: getTargetPath(owner, scope, context, projectRoot),
+      path: getTargetPath(owner, scope, context, skillId, projectRoot),
     });
     for (const agent of covered) remaining.delete(agent);
   }

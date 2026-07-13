@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import type { AgentId, RuntimeContext, Scope } from "./types.ts";
+import type { AgentId, RuntimeContext, Scope, SkillId } from "./types.ts";
 
 export interface AgentDefinition {
   id: AgentId;
@@ -10,7 +10,7 @@ export interface AgentDefinition {
   projectDirectory?: string;
   userDirectory: (context: RuntimeContext) => string;
   discoveredBy: AgentId[];
-  manualCheck: string;
+  manualCheck: (skillId: SkillId) => string;
 }
 
 export const AGENTS: Record<AgentId, AgentDefinition> = {
@@ -21,7 +21,7 @@ export const AGENTS: Record<AgentId, AgentDefinition> = {
     projectDirectory: join(".agents", "skills"),
     userDirectory: ({ home }) => join(home, ".agents", "skills"),
     discoveredBy: ["codex", "pi", "opencode"],
-    manualCheck: "Open the skills picker or type $project-foundation.",
+    manualCheck: (skillId) => `Open the skills picker or type $${skillId}.`,
   },
   claude: {
     id: "claude",
@@ -30,7 +30,7 @@ export const AGENTS: Record<AgentId, AgentDefinition> = {
     projectDirectory: join(".claude", "skills"),
     userDirectory: ({ home }) => join(home, ".claude", "skills"),
     discoveredBy: ["claude", "opencode"],
-    manualCheck: "Start Claude Code and run /project-foundation.",
+    manualCheck: (skillId) => `Start Claude Code and run /${skillId}.`,
   },
   pi: {
     id: "pi",
@@ -39,7 +39,7 @@ export const AGENTS: Record<AgentId, AgentDefinition> = {
     projectDirectory: join(".pi", "skills"),
     userDirectory: ({ home }) => join(home, ".pi", "agent", "skills"),
     discoveredBy: ["pi"],
-    manualCheck: "Start Pi and run /skill:project-foundation.",
+    manualCheck: (skillId) => `Start Pi and run /skill:${skillId}.`,
   },
   opencode: {
     id: "opencode",
@@ -49,7 +49,7 @@ export const AGENTS: Record<AgentId, AgentDefinition> = {
     userDirectory: ({ home, env }) =>
       join(env.XDG_CONFIG_HOME || join(home, ".config"), "opencode", "skills"),
     discoveredBy: ["opencode"],
-    manualCheck: "Start OpenCode and ask it to use project-foundation.",
+    manualCheck: (skillId) => `Start OpenCode and ask it to use ${skillId}.`,
   },
   hermes: {
     id: "hermes",
@@ -57,7 +57,7 @@ export const AGENTS: Record<AgentId, AgentDefinition> = {
     command: "hermes",
     userDirectory: ({ home }) => join(home, ".hermes", "skills"),
     discoveredBy: ["hermes"],
-    manualCheck: "Start Hermes and run /project-foundation.",
+    manualCheck: (skillId) => `Start Hermes and run /${skillId}.`,
   },
 };
 
@@ -96,9 +96,10 @@ export function getTargetPath(
   agent: AgentId,
   scope: Scope,
   context: RuntimeContext,
+  skillId: SkillId,
   projectRoot?: string,
 ): string {
-  return join(getTargetDirectory(agent, scope, context, projectRoot), "project-foundation");
+  return join(getTargetDirectory(agent, scope, context, projectRoot), skillId);
 }
 
 export function getUserDataRoot(context: RuntimeContext): string {
@@ -120,13 +121,14 @@ export function getUserDataRoot(context: RuntimeContext): string {
 export function getManagedStore(
   scope: Scope,
   context: RuntimeContext,
+  skillId: SkillId,
   projectRoot?: string,
 ): string {
   if (scope === "project") {
     if (!projectRoot) throw new Error("Project root is required for project scope.");
-    return resolve(projectRoot, ".agents", "project-foundation", "skill");
+    return resolve(projectRoot, ".agents", "project-foundation", "skills", skillId);
   }
-  return join(getUserDataRoot(context), "store", "skill");
+  return join(getUserDataRoot(context), "store", "skills", skillId);
 }
 
 export function detectAgent(agent: AgentId, context: RuntimeContext): boolean {

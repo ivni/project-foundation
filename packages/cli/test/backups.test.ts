@@ -14,6 +14,7 @@ import { createTestWorkspace } from "./helpers.ts";
 function backup(day: number): BackupRecord {
   return {
     path: `/backup/${day}`,
+    skillId: "project-foundation",
     agent: "codex",
     scope: "user",
     version: "1.0.0",
@@ -34,17 +35,46 @@ test("backup cleanup presets are deterministic", () => {
   ).toHaveLength(5);
 });
 
+test("backup retention is isolated by skill", () => {
+  const projectFoundation = [backup(1), backup(2), backup(3), backup(4)];
+  const blindSpots = [1, 2, 3, 4].map((day) => ({
+    ...backup(day + 10),
+    skillId: "find-blind-spots" as const,
+  }));
+  const removals = selectBackupsForCleanup([...projectFoundation, ...blindSpots], "keep-three");
+  expect(removals.map((entry) => [entry.skillId, entry.bytes])).toEqual([
+    ["project-foundation", 1],
+    ["find-blind-spots", 11],
+  ]);
+});
+
 test("backup metadata cannot redirect cleanup outside the managed root", async () => {
   const workspace = await createTestWorkspace();
   const important = join(workspace.root, "important.txt");
   const backupDirectory = join(getUserDataRoot(workspace.context), "backups", "tampered");
+  const schemaOneDirectory = join(getUserDataRoot(workspace.context), "backups", "schema-one");
   try {
-    await mkdir(backupDirectory, { recursive: true });
+    await Promise.all([
+      mkdir(backupDirectory, { recursive: true }),
+      mkdir(schemaOneDirectory, { recursive: true }),
+    ]);
     await writeFile(important, "keep\n");
     await writeFile(
       join(backupDirectory, "backup.json"),
       JSON.stringify({
         path: important,
+        skillId: "project-foundation",
+        agent: "codex",
+        scope: "user",
+        version: "1.0.0",
+        createdAt: "2026-01-01T00:00:00.000Z",
+        bytes: 1,
+      }),
+    );
+    await writeFile(
+      join(schemaOneDirectory, "backup.json"),
+      JSON.stringify({
+        path: schemaOneDirectory,
         agent: "codex",
         scope: "user",
         version: "1.0.0",
@@ -54,6 +84,7 @@ test("backup metadata cannot redirect cleanup outside the managed root", async (
     );
 
     const listed = await listBackups(workspace.context);
+    expect(listed).toHaveLength(1);
     expect(listed[0]?.path).toBe(backupDirectory);
     await deleteBackups(listed, workspace.context);
     expect(await readFile(important, "utf8")).toBe("keep\n");
@@ -70,6 +101,7 @@ test("backup names cannot escape through untrusted version text", async () => {
   try {
     const record = await createBackup({
       source: workspace.payload,
+      skillId: "project-foundation",
       agent: "codex",
       scope: "user",
       version: "0.9.0/../../../escaped\\payload",

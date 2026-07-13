@@ -7,6 +7,7 @@ import type {
   InstallationGroup,
   RuntimeContext,
   Scope,
+  SkillId,
   TargetInspection,
 } from "./types.ts";
 import { AGENT_IDS } from "./types.ts";
@@ -42,9 +43,10 @@ export async function inspectTarget(
   agent: AgentId,
   scope: Scope,
   context: RuntimeContext,
+  skillId: SkillId,
   projectRoot?: string,
 ): Promise<TargetInspection> {
-  const targetPath = getTargetPath(agent, scope, context, projectRoot);
+  const targetPath = getTargetPath(agent, scope, context, skillId, projectRoot);
   const stat = await statOrUndefined(targetPath);
   if (!stat) {
     return {
@@ -80,13 +82,14 @@ export async function inspectTarget(
   }
 
   let receipt = await readReceipt(physicalRoot);
+  if (receipt?.skillId !== skillId) receipt = undefined;
   if (receipt) {
     const linkIsCanonical =
       receipt.strategy === "link" &&
       link &&
       (await isCanonicalManagedStore(
         physicalRoot,
-        getManagedStore(scope, context, projectRoot),
+        getManagedStore(scope, context, skillId, projectRoot),
         context,
       ));
     const topologyIsManaged =
@@ -118,11 +121,12 @@ export async function inspectTarget(
 export async function scanScope(
   scope: Scope,
   context: RuntimeContext,
+  skillId: SkillId,
   projectRoot?: string,
 ): Promise<{ inspections: TargetInspection[]; groups: InstallationGroup[] }> {
   const supported = AGENT_IDS.filter((agent) => !(scope === "project" && agent === "hermes"));
   const inspections = await Promise.all(
-    supported.map((agent) => inspectTarget(agent, scope, context, projectRoot)),
+    supported.map((agent) => inspectTarget(agent, scope, context, skillId, projectRoot)),
   );
   const grouped = new Map<string, TargetInspection[]>();
 

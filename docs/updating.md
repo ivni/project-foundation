@@ -6,8 +6,9 @@ Use the latest published installer explicitly:
 bunx @ivni/project-foundation@latest update
 ```
 
-The update flow asks for a scope, discovers managed receipts, and preselects installations older than
-the package being run. It never replaces a newer installed version with an older package.
+The update flow asks for a scope, discovers managed receipts for all three packaged skills, and
+preselects installations older than the package being run. Every choice includes the skill name. It
+never replaces a newer installed version with an older package.
 
 ## Normal update
 
@@ -16,8 +17,13 @@ the package being run. It never replaces a newer installed version with an older
 3. Review the version transitions and physical paths.
 4. Confirm the operation.
 
-Link installations update their shared managed payload. Native links remain in place. Copy
-installations update each selected physical payload.
+Link installations update their per-skill shared managed payload. Native links remain in place. Copy
+installations update each selected physical payload. Updating several skills uses the same outer
+rollback boundary as installation.
+
+Schema 1 content is not an update candidate because it has no required `skillId`. Run the install
+flow instead; the existing target appears as unmanaged content and must be explicitly replaced,
+backed up and replaced, or kept.
 
 ## Local modifications
 

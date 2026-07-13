@@ -11,12 +11,20 @@ import {
   writeFile,
 } from "node:fs/promises";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
-import type { AgentId, Receipt, Scope, Strategy } from "./types.ts";
+import { isSkillId } from "./skills.ts";
+import type { AgentId, Receipt, Scope, SkillId, Strategy } from "./types.ts";
 import { AGENT_IDS } from "./types.ts";
 import { isSemanticVersion } from "./version.ts";
 
 export const RECEIPT_FILE = ".project-foundation.json";
-const PAYLOAD_ENTRIES = ["SKILL.md", "agents", "references", "templates"] as const;
+const REQUIRED_PAYLOAD_ENTRIES = ["SKILL.md"] as const;
+const OPTIONAL_PAYLOAD_ENTRIES = [
+  "agents",
+  "assets",
+  "references",
+  "scripts",
+  "templates",
+] as const;
 
 async function pathExists(path: string): Promise<boolean> {
   try {
@@ -26,6 +34,20 @@ async function pathExists(path: string): Promise<boolean> {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
     throw error;
   }
+}
+
+async function packagedEntries(root: string): Promise<string[]> {
+  const entries: string[] = [];
+  for (const entry of REQUIRED_PAYLOAD_ENTRIES) {
+    if (!(await pathExists(join(root, entry)))) {
+      throw new Error(`Published payload is missing ${entry}.`);
+    }
+    entries.push(entry);
+  }
+  for (const entry of OPTIONAL_PAYLOAD_ENTRIES) {
+    if (await pathExists(join(root, entry))) entries.push(entry);
+  }
+  return entries;
 }
 
 function normalizeRelativePath(path: string): string {
@@ -92,9 +114,8 @@ export async function snapshotPayload(root: string): Promise<Record<string, stri
 
 export async function snapshotPackagedPayload(root: string): Promise<Record<string, string>> {
   const files: Record<string, string> = {};
-  for (const entry of PAYLOAD_ENTRIES) {
+  for (const entry of await packagedEntries(root)) {
     const entryRoot = join(root, entry);
-    if (!(await pathExists(entryRoot))) throw new Error(`Published payload is missing ${entry}.`);
     const stat = await lstat(entryRoot);
     if (stat.isSymbolicLink()) {
       throw new Error(`Published payload must not contain symbolic links: ${entryRoot}`);
@@ -128,14 +149,16 @@ export function createReceipt(options: {
   strategy: Strategy;
   intendedAgents: AgentId[];
   files: Record<string, string>;
+  skillId: SkillId;
 }): Receipt {
   if (!isSemanticVersion(options.version)) {
     throw new Error(`Cannot create a receipt with invalid SemVer: ${options.version}`);
   }
   return {
     kind: "project-foundation-installation",
-    schema: 1,
+    schema: 2,
     package: "@ivni/project-foundation",
+    skillId: options.skillId,
     version: options.version,
     scope: options.scope,
     strategy: options.strategy,
@@ -152,8 +175,9 @@ export function isReceipt(value: unknown): value is Receipt {
   const files = receipt.files;
   return (
     receipt.kind === "project-foundation-installation" &&
-    receipt.schema === 1 &&
+    receipt.schema === 2 &&
     receipt.package === "@ivni/project-foundation" &&
+    isSkillId(receipt.skillId) &&
     typeof receipt.version === "string" &&
     isSemanticVersion(receipt.version) &&
     (receipt.scope === "user" || receipt.scope === "project") &&
@@ -211,11 +235,8 @@ export async function materializePayload(
   await rm(temporary, { recursive: true, force: true });
   await mkdir(temporary, { recursive: true });
   try {
-    for (const entry of PAYLOAD_ENTRIES) {
+    for (const entry of await packagedEntries(payloadRoot)) {
       const source = join(payloadRoot, entry);
-      if (!(await pathExists(source))) {
-        throw new Error(`Published payload is missing ${entry}.`);
-      }
       await cp(source, join(temporary, entry), { recursive: true, errorOnExist: true });
     }
     await writeReceipt(temporary, receipt);
@@ -239,13 +260,13 @@ export async function payloadMatches(
   }
 }
 
-export function resolvePublishedPayloadRoot(): string {
+export function resolvePublishedPayloadRoot(skillId: SkillId): string {
   const candidates = [
-    resolve(import.meta.dir, "..", "packages", "skill"),
-    resolve(import.meta.dir, "..", "..", "skill"),
+    resolve(import.meta.dir, "..", "packages", skillId),
+    resolve(import.meta.dir, "..", "..", skillId),
   ];
   for (const candidate of candidates) {
     if (Bun.file(join(candidate, "SKILL.md")).size > 0) return candidate;
   }
-  throw new Error(`Could not locate the bundled skill payload from ${import.meta.dir}.`);
+  throw new Error(`Could not locate the bundled ${skillId} payload from ${import.meta.dir}.`);
 }

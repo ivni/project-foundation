@@ -1,9 +1,14 @@
 # Project Foundation
 
-Project Foundation is an opinionated, stack-agnostic Agent Skill for establishing a durable
-project architecture, delivery process, and artifact set. It supports greenfield bootstrap,
-brownfield audit, and focused work such as ADRs, phase slices, risk registers, and docs-to-code
-consistency checks.
+Project Foundation is a focused Agent Skill suite for moving from uncertainty to an agreed,
+durable project foundation:
+
+- **Find Blind Spots** performs a read-only search for consequential unknowns and hidden
+  assumptions.
+- **Discovery Interview** resolves product, UX, and architecture decisions one question at a time
+  while writing only one scratch discovery record.
+- **Project Foundation** establishes or audits the architecture, delivery process, and canonical
+  artifact set.
 
 The package includes an interactive Bun installer for Codex, Claude Code, Pi, OpenCode, and
 Hermes Agent.
@@ -16,8 +21,13 @@ Install [Bun](https://bun.com/docs/installation), then run:
 bunx @ivni/project-foundation
 ```
 
-Choose the agent environments, a user or project scope, and a copy or managed-link installation.
-The wizard shows a complete preview before writing anything.
+Choose any combination of the three skills, the agent environments, a user or project scope, and a
+copy or managed-link installation. All three skills are preselected. The wizard shows a complete
+preview before writing anything.
+
+The skill registry is the source of truth: each registry key is also the package directory, native
+target name, managed-store name, and receipt `skillId`. Adding another skill does not require a new
+installer code path.
 
 You can also open a flow directly:
 
@@ -47,6 +57,8 @@ one `.agents/skills` target instead of receiving redundant copies.
 ## Safety model
 
 - Every mutation is preceded by a preview.
+- A multi-skill operation uses an outer compensating transaction, so a later skill failure rolls
+  back earlier skill mutations from the same confirmation.
 - Existing unmanaged content is never overwritten silently.
 - Locally modified managed installs can be shown as a diff, kept, removed, or backed up first.
 - Multi-path operations use compensating rollback when a write fails.
@@ -74,8 +86,8 @@ bun run check
 ```
 
 The public package is the repository root. The private workspaces under `packages/` separate the
-CLI source from the raw skill payload. See [Development](docs/development.md) for the full layout
-and verification workflow.
+CLI source from the three raw skill payloads. See [Development](docs/development.md) for the full
+layout and verification workflow.
 
 ## License
 

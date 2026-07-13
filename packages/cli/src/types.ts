@@ -1,6 +1,9 @@
+import type { SkillId } from "./skills.ts";
+
 export const AGENT_IDS = ["codex", "claude", "pi", "opencode", "hermes"] as const;
 
 export type AgentId = (typeof AGENT_IDS)[number];
+export type { SkillId } from "./skills.ts";
 export type Scope = "user" | "project";
 export type Strategy = "copy" | "link";
 
@@ -15,8 +18,9 @@ export interface RuntimeContext {
 
 export interface Receipt {
   kind: "project-foundation-installation";
-  schema: 1;
+  schema: 2;
   package: "@ivni/project-foundation";
+  skillId: SkillId;
   version: string;
   scope: Scope;
   strategy: Strategy;
@@ -54,6 +58,7 @@ export type ModifiedRemoveAction = "remove" | "backup-remove" | "keep";
 
 export interface BackupRecord {
   path: string;
+  skillId: SkillId;
   agent: AgentId;
   scope: Scope;
   version: string;

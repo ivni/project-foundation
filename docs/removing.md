@@ -6,14 +6,18 @@ Run:
 bunx @ivni/project-foundation remove
 ```
 
-Choose a scope and then choose the agent environments that should stop discovering the skill. No
-agents are preselected for removal.
+Choose a scope, choose the skills to remove, and then choose the agent environments that should stop
+discovering those skills. All installed skills are preselected; no agents are preselected for
+removal.
+
+Remove operates only on schema 2 receipts from the current registry. Older schema 1 content is
+unmanaged and is never deleted by this flow.
 
 ## Shared installations
 
-One physical installation may serve several agents. Removing a subset does not blindly delete the
-shared payload. The installer computes a new topology and can move native links or copies so every
-unselected agent continues to discover Project Foundation.
+One physical installation of a skill may serve several agents. Removing a subset does not blindly
+delete the shared payload. For each selected skill, the installer computes a new topology and can
+move native links or copies so every unselected agent continues to discover it.
 
 Example: a Codex target may also serve Pi. If Codex is removed but Pi remains, the installer can move
 discovery to Pi's native skill root before removing the Codex target.
@@ -36,7 +40,7 @@ When the entire modified installation would be removed, the wizard offers:
 After creating a backup, the wizard can review retention:
 
 - Keep all
-- Keep the latest three per agent and scope
+- Keep the latest three per skill, agent, and scope
 - Remove backups older than 30 days
 - Remove all backups
 

@@ -1,6 +1,8 @@
 # Targets and scopes
 
-Every installed skill lives in a `project-foundation` child directory under one of the roots below.
+Every installed skill lives in an immediate child directory under one of the roots below. The
+packaged child names are `project-foundation`, `find-blind-spots`, and
+`run-discovery-interview`.
 
 | Agent | User root | Project root | Shared discovery |
 | --- | --- | --- | --- |
@@ -14,20 +16,20 @@ On Linux, OpenCode honors `XDG_CONFIG_HOME` when set.
 
 ## User scope
 
-Use user scope when Project Foundation should be available in all projects for the current OS user.
-Managed-link payloads live in the platform user-data directory:
+Use user scope when the selected skills should be available in all projects for the current OS user.
+Every selected skill uses the same managed-store rule:
 
-- Windows: `%LOCALAPPDATA%\project-foundation\store\skill`
-- macOS: `~/Library/Application Support/project-foundation/store/skill`
-- Linux: `${XDG_DATA_HOME:-~/.local/share}/project-foundation/store/skill`
+- Windows: `%LOCALAPPDATA%\project-foundation\store\skills\<skill-id>`
+- macOS: `~/Library/Application Support/project-foundation/store/skills/<skill-id>`
+- Linux: `${XDG_DATA_HOME:-~/.local/share}/project-foundation/store/skills/<skill-id>`
 
 ## Project scope
 
-Use project scope when the skill should be discovered only from one project. The shared managed-link
-payload is stored at:
+Use project scope when selected skills should be discovered only from one project. Every selected
+skill uses the same managed-store rule:
 
 ```text
-<project>/.agents/project-foundation/skill
+<project>/.agents/project-foundation/skills/<skill-id>
 ```
 
 The installer uses `git rev-parse --show-toplevel` only as a read-only hint for the project root. It
@@ -43,9 +45,13 @@ scope is selected.
 
 The installer plans the smallest native topology that remains discoverable:
 
-- Selecting Codex, Pi, and OpenCode can produce one `.agents/skills/project-foundation` target.
-- Selecting Claude Code and OpenCode can produce one `.claude/skills/project-foundation` target.
+- Selecting Codex, Pi, and OpenCode can produce one `.agents/skills/<skill-id>` target per selected
+  skill.
+- Selecting Claude Code and OpenCode can produce one `.claude/skills/<skill-id>` target per selected
+  skill.
 - Removing one agent from a shared installation can migrate the target so remaining agents continue
   to discover it.
 
-The receipt records the intended agents even when several agents share one physical payload.
+Each skill has its own receipt, target topology, and managed store. A receipt records the intended
+agents even when several agents share that physical payload. A multi-skill confirmation adds an outer
+rollback boundary across those independent operations.

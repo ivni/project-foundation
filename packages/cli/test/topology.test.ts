@@ -7,7 +7,12 @@ describe("native target planning", () => {
   test("deduplicates agents that discover Codex skill paths", async () => {
     const workspace = await createTestWorkspace();
     try {
-      const plans = planNativeTargets(["codex", "pi", "opencode"], "user", workspace.context);
+      const plans = planNativeTargets(
+        ["codex", "pi", "opencode"],
+        "user",
+        workspace.context,
+        "project-foundation",
+      );
       expect(plans).toHaveLength(1);
       expect(plans[0]?.owner).toBe("codex");
       expect(plans[0]?.intendedAgents).toEqual(["codex", "pi", "opencode"]);
@@ -19,12 +24,17 @@ describe("native target planning", () => {
   test("uses Claude as the shared location for Claude and OpenCode", async () => {
     const workspace = await createTestWorkspace();
     try {
-      const plans = planNativeTargets(["claude", "opencode"], "user", workspace.context);
+      const plans = planNativeTargets(
+        ["claude", "opencode"],
+        "user",
+        workspace.context,
+        "project-foundation",
+      );
       expect(plans).toEqual([
         {
           owner: "claude",
           intendedAgents: ["claude", "opencode"],
-          path: getTargetPath("claude", "user", workspace.context),
+          path: getTargetPath("claude", "user", workspace.context, "project-foundation"),
         },
       ]);
     } finally {

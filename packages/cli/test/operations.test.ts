@@ -1,15 +1,19 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { lstat, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { getManagedStore, getTargetPath } from "../src/agents.ts";
 import {
-  getManagedInstallations,
-  installSkill,
-  prepareInstallSkill,
-  prepareRemoveSkill,
-  prepareUpdateSkill,
-  removeSkill,
-  updateSkill,
+  getManagedStore as resolveManagedStore,
+  getTargetPath as resolveTargetPath,
+} from "../src/agents.ts";
+import type { InstallOptions, RemoveOptions, UpdateOptions } from "../src/operations.ts";
+import {
+  getManagedInstallations as findManagedInstallations,
+  prepareInstallSkill as prepareInstallOperation,
+  prepareRemoveSkill as prepareRemoveOperation,
+  prepareUpdateSkill as prepareUpdateOperation,
+  installSkill as runInstallSkill,
+  removeSkill as runRemoveSkill,
+  updateSkill as runUpdateSkill,
 } from "../src/operations.ts";
 import {
   createReceipt,
@@ -17,10 +21,68 @@ import {
   readReceipt,
   snapshotPackagedPayload,
 } from "../src/payload.ts";
+import type { SkillId } from "../src/types.ts";
 import type { TestWorkspace } from "./helpers.ts";
 import { createTestWorkspace } from "./helpers.ts";
 
 const workspaces: TestWorkspace[] = [];
+const DEFAULT_SKILL: SkillId = "project-foundation";
+
+type OptionalSkill<T extends { skillId: SkillId }> = Omit<T, "skillId"> & {
+  skillId?: SkillId;
+};
+
+function installSkill(options: OptionalSkill<InstallOptions>) {
+  return runInstallSkill({ ...options, skillId: options.skillId ?? DEFAULT_SKILL });
+}
+
+function prepareInstallSkill(options: OptionalSkill<InstallOptions>) {
+  return prepareInstallOperation({ ...options, skillId: options.skillId ?? DEFAULT_SKILL });
+}
+
+function updateSkill(options: OptionalSkill<UpdateOptions>) {
+  return runUpdateSkill({ ...options, skillId: options.skillId ?? DEFAULT_SKILL });
+}
+
+function prepareUpdateSkill(options: OptionalSkill<UpdateOptions>) {
+  return prepareUpdateOperation({ ...options, skillId: options.skillId ?? DEFAULT_SKILL });
+}
+
+function removeSkill(options: OptionalSkill<RemoveOptions>) {
+  return runRemoveSkill({ ...options, skillId: options.skillId ?? DEFAULT_SKILL });
+}
+
+function prepareRemoveSkill(options: OptionalSkill<RemoveOptions>) {
+  return prepareRemoveOperation({ ...options, skillId: options.skillId ?? DEFAULT_SKILL });
+}
+
+function getTargetPath(
+  agent: Parameters<typeof resolveTargetPath>[0],
+  scope: Parameters<typeof resolveTargetPath>[1],
+  context: Parameters<typeof resolveTargetPath>[2],
+  projectRoot?: string,
+  skillId: SkillId = DEFAULT_SKILL,
+) {
+  return resolveTargetPath(agent, scope, context, skillId, projectRoot);
+}
+
+function getManagedStore(
+  scope: Parameters<typeof resolveManagedStore>[0],
+  context: Parameters<typeof resolveManagedStore>[1],
+  projectRoot?: string,
+  skillId: SkillId = DEFAULT_SKILL,
+) {
+  return resolveManagedStore(scope, context, skillId, projectRoot);
+}
+
+function getManagedInstallations(
+  scope: Parameters<typeof findManagedInstallations>[0],
+  context: Parameters<typeof findManagedInstallations>[1],
+  projectRoot?: string,
+  skillId: SkillId = DEFAULT_SKILL,
+) {
+  return findManagedInstallations(scope, context, skillId, projectRoot);
+}
 
 afterEach(async () => {
   await Promise.all(workspaces.splice(0).map((workspace) => workspace.cleanup()));
@@ -58,9 +120,119 @@ describe("installation operations", () => {
 
     const store = getManagedStore("project", current.context, current.project);
     const claude = getTargetPath("claude", "project", current.context, current.project);
+    expect(store).toBe(
+      join(current.project, ".agents", "project-foundation", "skills", "project-foundation"),
+    );
     expect((await lstat(claude)).isSymbolicLink()).toBe(true);
-    expect((await readReceipt(store))?.intendedAgents).toEqual(["claude", "opencode"]);
+    expect(await readReceipt(store)).toMatchObject({
+      schema: 2,
+      skillId: "project-foundation",
+      intendedAgents: ["claude", "opencode"],
+    });
     expect(await Bun.file(join(current.project, ".git")).exists()).toBe(false);
+  });
+
+  test("installs each skill ID into an independent target and managed store", async () => {
+    const current = await workspace();
+    const skillId = "find-blind-spots";
+    await installSkill({
+      agents: ["codex", "pi"],
+      skillId,
+      scope: "user",
+      strategy: "link",
+      context: current.context,
+    });
+
+    const target = getTargetPath("codex", "user", current.context, undefined, skillId);
+    const store = getManagedStore("user", current.context, undefined, skillId);
+    expect((await lstat(target)).isSymbolicLink()).toBe(true);
+    expect(await readReceipt(store)).toMatchObject({
+      schema: 2,
+      skillId,
+      intendedAgents: ["codex", "pi"],
+    });
+    expect(await Bun.file(getTargetPath("codex", "user", current.context)).exists()).toBe(false);
+    expect(await Bun.file(getManagedStore("user", current.context)).exists()).toBe(false);
+  });
+
+  test("does not manage a receipt that belongs to another skill ID", async () => {
+    const current = await workspace();
+    const target = getTargetPath("hermes", "user", current.context, undefined, "find-blind-spots");
+    const files = await snapshotPackagedPayload(current.payload);
+    await materializePayload(
+      current.payload,
+      target,
+      createReceipt({
+        version: current.context.version,
+        scope: "user",
+        strategy: "copy",
+        intendedAgents: ["hermes"],
+        files,
+        skillId: "project-foundation",
+      }),
+    );
+
+    expect(
+      await getManagedInstallations("user", current.context, undefined, "find-blind-spots"),
+    ).toEqual([]);
+  });
+
+  test("adopting a matching store does not inherit agents from another skill receipt", async () => {
+    const current = await workspace();
+    const skillId = "find-blind-spots";
+    const store = getManagedStore("user", current.context, undefined, skillId);
+    const files = await snapshotPackagedPayload(current.payload);
+    await materializePayload(
+      current.payload,
+      store,
+      createReceipt({
+        version: current.context.version,
+        scope: "user",
+        strategy: "link",
+        intendedAgents: ["hermes"],
+        files,
+        skillId: "project-foundation",
+      }),
+    );
+
+    await installSkill({
+      agents: ["codex"],
+      skillId,
+      scope: "user",
+      strategy: "link",
+      context: current.context,
+    });
+
+    expect(await readReceipt(store)).toMatchObject({
+      schema: 2,
+      skillId,
+      intendedAgents: ["codex"],
+    });
+  });
+
+  test("materializes optional asset directories without requiring templates", async () => {
+    const current = await workspace();
+    await rm(join(current.payload, "templates"), { recursive: true, force: true });
+    await mkdir(join(current.payload, "assets"));
+    await writeFile(join(current.payload, "assets", "record.md"), "Scratch record.\n");
+
+    await installSkill({
+      agents: ["hermes"],
+      skillId: "run-discovery-interview",
+      scope: "user",
+      strategy: "copy",
+      context: current.context,
+    });
+
+    const target = getTargetPath(
+      "hermes",
+      "user",
+      current.context,
+      undefined,
+      "run-discovery-interview",
+    );
+    expect(await Bun.file(join(target, "assets", "record.md")).text()).toBe("Scratch record.\n");
+    expect(await Bun.file(join(target, "templates")).exists()).toBe(false);
   });
 
   test("installs one managed copy for overlapping copy targets", async () => {
@@ -103,6 +275,7 @@ describe("installation operations", () => {
       strategy: "copy",
       intendedAgents: ["codex"],
       files,
+      skillId: "project-foundation",
     });
     await materializePayload(current.payload, target, receipt);
     await rm(join(target, ".project-foundation.json"));
@@ -323,6 +496,7 @@ describe("installation operations", () => {
         strategy: "copy",
         intendedAgents: ["codex"],
         files,
+        skillId: "project-foundation",
       }),
     );
     await mkdir(join(target, ".."), { recursive: true });
@@ -351,6 +525,7 @@ describe("installation operations", () => {
         strategy: "link",
         intendedAgents: ["codex"],
         files,
+        skillId: "project-foundation",
       }),
     );
     await mkdir(join(store, ".."), { recursive: true });
@@ -384,6 +559,7 @@ describe("installation operations", () => {
         strategy: "copy",
         intendedAgents: ["claude"],
         files,
+        skillId: "project-foundation",
       }),
     );
     expect(await getManagedInstallations("user", current.context)).toEqual([]);
@@ -394,7 +570,14 @@ describe("installation operations", () => {
       strategy: "copy",
       intendedAgents: ["claude"],
       files,
+      skillId: "project-foundation",
     });
+    await writeFile(
+      join(target, ".project-foundation.json"),
+      JSON.stringify({ ...receipt, schema: 1, skillId: undefined }),
+    );
+    expect(await readReceipt(target)).toBeUndefined();
+
     await writeFile(
       join(target, ".project-foundation.json"),
       JSON.stringify({ ...receipt, version: "1.0.0/../../../escaped" }),

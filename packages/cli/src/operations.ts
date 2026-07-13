@@ -29,6 +29,7 @@ import type {
   Receipt,
   RuntimeContext,
   Scope,
+  SkillId,
   Strategy,
   TargetInspection,
 } from "./types.ts";
@@ -41,6 +42,7 @@ import { compareVersions, isBreakingUpdate } from "./version.ts";
 interface OperationBase {
   scope: Scope;
   context: RuntimeContext;
+  skillId: SkillId;
   projectRoot?: string;
   hooks?: OperationHooks;
 }
@@ -131,10 +133,12 @@ async function createLink(
 async function backupGroup(
   group: InstallationGroup,
   context: RuntimeContext,
+  skillId: SkillId,
 ): Promise<BackupRecord> {
   const agent = group.targets[0]?.agent ?? group.receipt.intendedAgents[0] ?? "codex";
   return createBackup({
     source: group.physicalRoot,
+    skillId,
     agent,
     scope: group.scope,
     version: group.receipt.version,
@@ -158,8 +162,9 @@ async function verifyManagedTarget(
   context: RuntimeContext,
   projectRoot: string | undefined,
   intendedAgents: AgentId[],
+  skillId: SkillId,
 ): Promise<void> {
-  const inspection = await inspectTarget(agent, scope, context, projectRoot);
+  const inspection = await inspectTarget(agent, scope, context, skillId, projectRoot);
   const targetPath = inspection.targetPath;
   if (inspection.brokenLink || !inspection.receipt) {
     throw new UserFacingError(
@@ -209,6 +214,7 @@ async function resolveConflict(
   scope: Scope,
   strategy: Strategy,
   context: RuntimeContext,
+  skillId: SkillId,
   hooks: OperationHooks,
 ): Promise<{ action: ConflictAction; receipt: Receipt; exact: boolean; diff: string }> {
   const expectedFiles = await snapshotPackagedPayload(context.payloadRoot);
@@ -261,12 +267,14 @@ async function resolveConflict(
       strategy,
       intendedAgents,
       files: exact ? currentFiles : expectedFiles,
+      skillId,
     }),
   };
 }
 
 export async function prepareInstallSkill(options: InstallOptions): Promise<PreparedOperation> {
   const context = snapshotContext(options.context);
+  const skillId = options.skillId;
   const agents = [...options.agents];
   const scope = options.scope;
   const strategy = options.strategy;
@@ -280,7 +288,7 @@ export async function prepareInstallSkill(options: InstallOptions): Promise<Prep
 
   const hooks = options.hooks ?? {};
   const expectedFiles = await snapshotPackagedPayload(context.payloadRoot);
-  const scanned = await scanScope(scope, context, projectRoot);
+  const scanned = await scanScope(scope, context, skillId, projectRoot);
   const selected = new Set(agents);
   const covered = new Set<AgentId>();
   const receiptUpdates = new Map<string, Receipt>();
@@ -314,20 +322,28 @@ export async function prepareInstallSkill(options: InstallOptions): Promise<Prep
   }
 
   const remaining = agents.filter((agent) => !covered.has(agent));
-  const plans = planNativeTargets(remaining, scope, context, projectRoot);
+  const plans = planNativeTargets(remaining, scope, context, skillId, projectRoot);
   const conflictActions = new Map<string, Awaited<ReturnType<typeof resolveConflict>>>();
   const backups: BackupRecord[] = [];
 
   for (const plan of plans) {
     if (!(await exists(plan.path))) continue;
-    const inspection = await inspectTarget(plan.owner, scope, context, projectRoot);
+    const inspection = await inspectTarget(plan.owner, scope, context, skillId, projectRoot);
     if (inspection.receipt) {
       notes.push(`${AGENTS[plan.owner].label} is already managed at ${plan.path}.`);
       continue;
     }
     conflictActions.set(
       plan.path,
-      await resolveConflict(inspection, plan.intendedAgents, scope, strategy, context, hooks),
+      await resolveConflict(
+        inspection,
+        plan.intendedAgents,
+        scope,
+        strategy,
+        context,
+        skillId,
+        hooks,
+      ),
     );
   }
 
@@ -338,19 +354,20 @@ export async function prepareInstallSkill(options: InstallOptions): Promise<Prep
   let linkReceipt: Receipt | undefined;
   let storeExisted = false;
   if (strategy === "link" && viablePlans.length > 0) {
-    linkStore = getManagedStore(scope, context, projectRoot);
+    linkStore = getManagedStore(scope, context, skillId, projectRoot);
     storeExisted = await exists(linkStore);
     const storeEntry = storeExisted ? await lstat(linkStore) : undefined;
-    const existingReceipt =
+    const candidateReceipt =
       storeEntry?.isDirectory() && !storeEntry.isSymbolicLink()
         ? await readReceipt(linkStore)
         : undefined;
+    const existingReceipt = candidateReceipt?.skillId === skillId ? candidateReceipt : undefined;
     if (storeExisted) {
       if (!existingReceipt) {
         const inspection = await syntheticInspection(viablePlans[0]?.owner ?? "codex", linkStore);
         conflictActions.set(
           linkStore,
-          await resolveConflict(inspection, viableAgents, scope, "link", context, hooks),
+          await resolveConflict(inspection, viableAgents, scope, "link", context, skillId, hooks),
         );
       } else {
         if (compareVersions(existingReceipt.version, context.version) > 0) {
@@ -371,6 +388,7 @@ export async function prepareInstallSkill(options: InstallOptions): Promise<Prep
       strategy: "link",
       intendedAgents: viableAgents,
       files: expectedFiles,
+      skillId,
     });
   }
 
@@ -386,7 +404,9 @@ export async function prepareInstallSkill(options: InstallOptions): Promise<Prep
     const activeAgents = plans
       .filter((plan) => !skippedPlans.has(plan.path))
       .flatMap((plan) => plan.intendedAgents);
-    const existingAgents = (await readReceipt(linkStore))?.intendedAgents ?? [];
+    const currentStoreReceipt = await readReceipt(linkStore);
+    const existingAgents =
+      currentStoreReceipt?.skillId === skillId ? currentStoreReceipt.intendedAgents : [];
     linkReceipt = {
       ...linkReceipt,
       intendedAgents: mergeAgents(existingAgents, activeAgents),
@@ -487,6 +507,7 @@ export async function prepareInstallSkill(options: InstallOptions): Promise<Prep
               backups.push(
                 await createBackup({
                   source: path,
+                  skillId,
                   agent: plan?.owner ?? "codex",
                   scope,
                   version: "unmanaged",
@@ -537,6 +558,7 @@ export async function prepareInstallSkill(options: InstallOptions): Promise<Prep
                 strategy: "copy",
                 intendedAgents: plan.intendedAgents,
                 files: expectedFiles,
+                skillId,
               });
               await materializePayload(context.payloadRoot, plan.path, receipt);
             }
@@ -557,7 +579,14 @@ export async function prepareInstallSkill(options: InstallOptions): Promise<Prep
           }
           for (const plan of plans) {
             if (skippedPlans.has(plan.path) || skippedPlans.has(linkStore)) continue;
-            await verifyManagedTarget(plan.owner, scope, context, projectRoot, plan.intendedAgents);
+            await verifyManagedTarget(
+              plan.owner,
+              scope,
+              context,
+              projectRoot,
+              plan.intendedAgents,
+              skillId,
+            );
           }
         },
         {
@@ -577,10 +606,11 @@ export async function installSkill(options: InstallOptions): Promise<OperationRe
 
 export async function prepareUpdateSkill(options: UpdateOptions): Promise<PreparedOperation> {
   const context = snapshotContext(options.context);
+  const skillId = options.skillId;
   const scope = options.scope;
   const projectRoot = options.projectRoot;
   const requestedGroupIds = options.groupIds ? [...options.groupIds] : undefined;
-  const scanned = await scanScope(scope, context, projectRoot);
+  const scanned = await scanScope(scope, context, skillId, projectRoot);
   const requested = requestedGroupIds ? new Set(requestedGroupIds) : undefined;
   const candidates = scanned.groups.filter((group) => !requested || requested.has(group.id));
   const expectedFiles = await snapshotPackagedPayload(context.payloadRoot);
@@ -660,7 +690,7 @@ export async function prepareUpdateSkill(options: UpdateOptions): Promise<Prepar
         async (transaction) => {
           for (const group of selected) {
             if (decisions.get(group.id) === "backup-replace") {
-              backups.push(await backupGroup(group, context));
+              backups.push(await backupGroup(group, context, skillId));
             }
             const receipt = createReceipt({
               version: context.version,
@@ -668,6 +698,7 @@ export async function prepareUpdateSkill(options: UpdateOptions): Promise<Prepar
               strategy: group.strategy,
               intendedAgents: group.receipt.intendedAgents,
               files: expectedFiles,
+              skillId,
             });
             await transaction.beforeMutation(group.physicalRoot);
             await materializePayload(context.payloadRoot, group.physicalRoot, receipt);
@@ -724,10 +755,11 @@ async function ensureMigrationTargetsFree(
 
 export async function prepareRemoveSkill(options: RemoveOptions): Promise<PreparedOperation> {
   const context = snapshotContext(options.context);
+  const skillId = options.skillId;
   const scope = options.scope;
   const projectRoot = options.projectRoot;
   const agents = [...options.agents];
-  const scanned = await scanScope(scope, context, projectRoot);
+  const scanned = await scanScope(scope, context, skillId, projectRoot);
   const selected = new Set(agents);
   const affected = scanned.groups.filter((group) =>
     group.receipt.intendedAgents.some((agent) => selected.has(agent)),
@@ -750,7 +782,7 @@ export async function prepareRemoveSkill(options: RemoveOptions): Promise<Prepar
     }
 
     if (remaining.length > 0) {
-      const plans = planNativeTargets(remaining, scope, context, projectRoot);
+      const plans = planNativeTargets(remaining, scope, context, skillId, projectRoot);
       await ensureMigrationTargetsFree(
         group,
         plans.map((plan) => plan.path),
@@ -777,7 +809,7 @@ export async function prepareRemoveSkill(options: RemoveOptions): Promise<Prepar
   });
   const touched = active.flatMap((group) => {
     const remaining = group.receipt.intendedAgents.filter((agent) => !selected.has(agent));
-    const newTargets = planNativeTargets(remaining, scope, context, projectRoot).map(
+    const newTargets = planNativeTargets(remaining, scope, context, skillId, projectRoot).map(
       (plan) => plan.path,
     );
     return [group.physicalRoot, ...group.targets.map((target) => target.targetPath), ...newTargets];
@@ -786,7 +818,9 @@ export async function prepareRemoveSkill(options: RemoveOptions): Promise<Prepar
   const preview: MutationPreviewEntry[] = [];
   for (const group of affected) {
     const displayRoot =
-      group.strategy === "link" ? getManagedStore(scope, context, projectRoot) : group.physicalRoot;
+      group.strategy === "link"
+        ? getManagedStore(scope, context, skillId, projectRoot)
+        : group.physicalRoot;
     if (decisions.get(group.id) === "keep") {
       preview.push({
         action: "skip",
@@ -818,7 +852,7 @@ export async function prepareRemoveSkill(options: RemoveOptions): Promise<Prepar
       }
       continue;
     }
-    const plans = planNativeTargets(remaining, scope, context, projectRoot);
+    const plans = planNativeTargets(remaining, scope, context, skillId, projectRoot);
     if (group.strategy === "link") {
       preview.push({ action: "update", path: displayRoot, detail: "Update shared receipt" });
       for (const target of group.targets) {
@@ -869,7 +903,7 @@ export async function prepareRemoveSkill(options: RemoveOptions): Promise<Prepar
           for (const group of active) {
             const remaining = group.receipt.intendedAgents.filter((agent) => !selected.has(agent));
             if (decisions.get(group.id) === "backup-remove") {
-              backups.push(await backupGroup(group, context));
+              backups.push(await backupGroup(group, context, skillId));
             }
 
             if (remaining.length === 0) {
@@ -890,7 +924,7 @@ export async function prepareRemoveSkill(options: RemoveOptions): Promise<Prepar
               continue;
             }
 
-            const plans = planNativeTargets(remaining, scope, context, projectRoot);
+            const plans = planNativeTargets(remaining, scope, context, skillId, projectRoot);
             if (group.strategy === "link") {
               await transaction.beforeMutation(group.physicalRoot);
               await writeReceipt(group.physicalRoot, {
@@ -950,13 +984,14 @@ export async function prepareRemoveSkill(options: RemoveOptions): Promise<Prepar
               }
               continue;
             }
-            for (const plan of planNativeTargets(remaining, scope, context, projectRoot)) {
+            for (const plan of planNativeTargets(remaining, scope, context, skillId, projectRoot)) {
               await verifyManagedTarget(
                 plan.owner,
                 scope,
                 context,
                 projectRoot,
                 plan.intendedAgents,
+                skillId,
               );
             }
           }
@@ -979,17 +1014,19 @@ export async function removeSkill(options: RemoveOptions): Promise<OperationResu
 export async function getManagedInstallations(
   scope: Scope,
   context: RuntimeContext,
+  skillId: SkillId,
   projectRoot?: string,
 ): Promise<InstallationGroup[]> {
-  return (await scanScope(scope, context, projectRoot)).groups;
+  return (await scanScope(scope, context, skillId, projectRoot)).groups;
 }
 
 export async function getUnmanagedTargets(
   scope: Scope,
   context: RuntimeContext,
+  skillId: SkillId,
   projectRoot?: string,
 ): Promise<TargetInspection[]> {
-  const scanned = await scanScope(scope, context, projectRoot);
+  const scanned = await scanScope(scope, context, skillId, projectRoot);
   return scanned.inspections.filter(
     (inspection) => inspection.exists && (!inspection.receipt || inspection.brokenLink),
   );
