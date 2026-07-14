@@ -7,6 +7,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-07-14
+
 ### Changed
 
 - Reworked Discovery Interview around a non-technical product-owner track with hard value, behavior,
@@ -87,7 +89,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/ivni/project-foundation/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/ivni/project-foundation/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/ivni/project-foundation/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/ivni/project-foundation/compare/v1.0.1...v1.0.2
