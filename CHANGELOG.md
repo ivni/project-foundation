@@ -7,6 +7,17 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Reworked Discovery Interview around a non-technical product-owner track with hard value, behavior,
+  experience, business, and handoff gates; technical mechanisms now route to agent research,
+  engineering synthesis, ADRs, or bounded spikes.
+- Added decision lanes, resolution ownership, product value, functional and UX contracts, and
+  separate engineering implications to the discovery records and Project Foundation workflow.
+- Expanded the PRD contract with problem evidence, current alternatives, desired value, success
+  signals, guardrails, the minimum useful outcome, primary journey, trust, recovery, and business
+  constraints.
+
 ## [1.1.1] - 2026-07-13
 
 ### Fixed

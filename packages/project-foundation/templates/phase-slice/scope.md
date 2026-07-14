@@ -4,12 +4,14 @@
 
 # Phase {{N}} — scope
 
-**Goal:** {{one sentence, same as docs/stages.md}}
+**Goal:** {{one user, business, or enabling outcome; same as docs/stages.md}}
 
 ## In scope
 
-<!-- Requirements at build-ready detail: behavior, invariants, edge cases decided.
-     Group by feature area. IDs are stable and never reused within the project. -->
+<!-- Requirements at build-ready detail: observable behavior, value-bearing outcome,
+     domain invariants, and edge cases decided. Keep implementation mechanisms in
+     ADRs or architecture unless they are themselves externally required. Group by
+     feature area. IDs are stable and never reused within the project. -->
 
 ### {{Feature area}}
 

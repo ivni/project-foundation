@@ -6,15 +6,15 @@ export interface SkillDefinition {
 export const SKILLS = {
   "project-foundation": {
     label: "Project Foundation",
-    summary: "Architecture, process, and project artifacts",
+    summary: "Product contract, technical synthesis, and project artifacts",
   },
   "find-blind-spots": {
     label: "Find Blind Spots",
-    summary: "Read-only search for consequential unknowns",
+    summary: "Read-only classification and routing of unknowns",
   },
   "run-discovery-interview": {
     label: "Discovery Interview",
-    summary: "One-decision-at-a-time product discovery",
+    summary: "Product value, functionality, and UX discovery",
   },
 } as const satisfies Record<string, SkillDefinition>;
 

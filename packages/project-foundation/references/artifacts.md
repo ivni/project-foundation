@@ -8,8 +8,8 @@ N/A with a rationale.
 ```
 <agent-contract>          # selected instruction file + status line (repo root)
 docs/
-  discovery.md            # applicability + bootstrap/audit unknowns; historical after promotion
-  PRD.md                  # product: problem, users, features, boundaries
+  discovery.md            # value/UX contract + routed unknowns; historical after promotion
+  PRD.md                  # product: value, users, outcomes, journey, scope, boundaries
   tech-stack.md           # constrained stack with official evidence and lifecycle
   stages.md               # phase plan: goal + DoD per phase
   architecture.md         # architecture-lite: context + runtime/package topology
@@ -29,12 +29,15 @@ inventory in audit mode (template: [templates/discovery.md](../templates/discove
 It is the only project artifact written while high-impact unknowns remain open. In
 read-only work, return the same structure in the report without creating the file.
 
-It records the brief, agent-contract path, artifact language, capability matrix,
-assumptions, and explicit unknowns. Record answers here as they land. Once high-impact unknowns are closed,
-promote every decision into its canonical destination (PRD, tech-stack, stages,
+It records the brief, product value, functional and UX contract, business constraints,
+agent-contract path, artifact language, capability matrix, assumptions, routed unknowns, and derived
+engineering implications. Record stakeholder answers and resolution routes as they land, keeping
+product decisions distinct from implementation mechanisms. Once high-impact stakeholder unknowns
+are closed and high-impact engineering unknowns are resolved or contained with an owner, method, and
+interim default, promote every decision into its canonical destination (PRD, tech-stack, stages,
 architecture, ADR, register, or the agent contract), record that destination, and mark discovery
-complete. A completed discovery file is historical provenance, not a living authority;
-current decisions live in the canonical artifacts.
+complete. A completed discovery file is historical provenance, not a living authority; current
+decisions live in the canonical artifacts.
 
 ## Agent contract
 
@@ -74,15 +77,17 @@ Required sections (template: [templates/agent-contract.md](../templates/agent-co
 
 ## PRD
 
-Problem, users and their jobs, the feature set sketched per phase, and — as important —
-explicit non-goals. The PRD is a living document: phase requirements slices refine it;
-when implementation or runtime diverges, determine the intended behavior first. Update
-the PRD in the same change only when intent changed; otherwise fix the implementation.
-Never rewrite the PRD merely to legitimize a defect. Detail level: enough that the
-stages plan can be derived from it; per-feature detail arrives in phase slices, not upfront.
-Its Product principles section MUST link to the canonical agent-contract section and
-MUST NOT contain a second editable copy. Product decisions and requirements reference
-applicable principles by `PRINC-NNN` ID.
+Problem evidence, users and buyers, current alternatives, desired value, success and guardrails,
+minimum useful outcome, core journey, the feature set sketched per phase, and — as important —
+explicit non-goals. Record applicable trust, failure, recovery, business, and domain constraints
+without embedding architecture choices. The PRD is a living document: phase requirements slices
+refine it; when implementation or runtime diverges, determine the intended behavior first. Update
+the PRD in the same change only when intent changed; otherwise fix the implementation. Never rewrite
+the PRD merely to legitimize a defect. Detail level: enough that the stages plan and technical
+synthesis can be derived from it; per-feature detail arrives in phase slices, not upfront. Its
+Product principles section MUST link to the canonical agent-contract section and MUST NOT contain a
+second editable copy. Product decisions and requirements reference applicable principles by
+`PRINC-NNN` ID.
 
 ## tech-stack.md
 

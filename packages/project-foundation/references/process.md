@@ -25,20 +25,31 @@ Before writing any code for phase N, create `docs/phase-N/` with four files
   resolution (doc corrected, ADR written, or requirement changed). An empty
   consistency-check on a non-trivial phase is a red flag, not a good sign.
 
-The slice is complete when every high-impact unknown is closed — via the discovery
-technique below, via a spike, or by explicitly parking it as a blocker with a
-resolution path. **Unknowns are closed before build, not during.**
+The slice is complete when every high-impact stakeholder unknown is closed and every high-impact
+engineering unknown is resolved or contained — via agent research, engineering synthesis, the
+discovery technique below, a spike, or an explicit blocker with an owner, interim default, and
+resolution path. **Unknowns are resolved or correctly routed before build, not discovered
+accidentally during it.**
 
 ## Closing unknowns (discovery technique)
 
-1. Collect the brief (or read the existing code/docs in audit mode) *first* — never
-   interrogate before absorbing what already exists.
-2. Write the unknowns down as an explicit list, ordered by impact.
-3. Ask the user **one question at a time**, most impactful first. Each question comes
-   with concrete options and a recommended default. Batch only trivial questions.
-4. When writes are authorized, record every answer immediately — into discovery during
-   bootstrap, or into the current phase/canonical artifact once it exists. In read-only
-   work, retain answers in the report. An answer that lives only in chat is not durable.
+1. Collect the brief (or read the existing code/docs in audit mode) *first* — never interrogate
+   before absorbing what already exists.
+2. Classify every unknown by decision lane: product value, functionality and domain, UX, business
+   constraint, or engineering.
+3. Route each unknown to stakeholder decision, agent research, user research, engineering synthesis,
+   a bounded spike, or a deferred default. Do not send facts or implementation mechanisms to the user
+   merely because they are consequential.
+4. Close stakeholder decisions through value, behavior, experience and business, then handoff gates.
+   Ask **one question at a time** using observable, plain-language options and a recommended default.
+   Batch only trivial questions.
+5. Translate the resulting product and UX contract into technical constraints. Research available
+   evidence, apply safe reversible defaults, record ADR candidates, and use a spike only for
+   uncertainty that reasoning cannot close.
+6. When writes are authorized, record every answer and route immediately — into discovery during
+   bootstrap, or into the current phase or canonical artifact once it exists. In read-only work,
+   retain them in the report. An answer or engineering assumption that lives only in chat is not
+   durable.
 
 ## Subphases
 

@@ -1,6 +1,6 @@
 ---
 name: project-foundation
-description: Opinionated, stack-agnostic method for laying a project's foundation — architecture, process, and artifact set. Use when starting a new project (bootstrap discovery → artifact core → gates), when overhauling or inheriting an existing codebase (audit → gap plan → retro-ADRs), or for point tasks — start or close a phase requirements slice, write an ADR, check docs-vs-code drift, register tech debt or risks, run a spike.
+description: Opinionated, stack-agnostic method for laying a project's product and engineering foundation — product value and UX contract, agent-led technical synthesis, architecture, process, and artifact set. Use when starting a new project (product discovery → technical synthesis → artifact core → gates), when overhauling or inheriting an existing codebase (audit → gap plan → retro-ADRs), or for point tasks — start or close a phase requirements slice, write an ADR, check docs-vs-code drift, register tech debt or risks, run a spike.
 ---
 
 # Project Foundation
@@ -33,14 +33,17 @@ applicable capability. Elsewhere, `must`, `never`, and `only` mean MUST; a label
    observation records current behavior. A mismatch is a defect to investigate, not
    permission to overwrite either side blindly.
 2. **Discovery exists from day one; the artifact core exists before build:**
-   `docs/discovery.md` captures applicability and unknowns, then the agent contract, PRD,
+   `docs/discovery.md` captures product value, functional and UX intent, applicability, routed
+   unknowns, and engineering implications, then the agent contract, PRD,
    tech-stack, stages, ADR log with index, architecture-lite sketch, and registers
    become canonical before phase 0 starts.
 3. **Phase 0 proves the thinnest releasable path appropriate to the project.** It always
    exercises build, verification, packaging, release, and rollback. Deploy, auth,
    health checks, migrations, backups, and observability join it when applicable.
 4. **Every phase starts with a requirements slice** — scope, checklist, blockers,
-   consistency-check — and unknowns are closed *before* code is written.
+   consistency-check — and unknowns are resolved or correctly routed with a safe interim default
+   *before* code is written. Stakeholders decide outcomes and constraints; the agent researches and
+   synthesizes implementation mechanisms.
 5. **Non-negotiables are written down:** the agent contract is the sole canonical home
    for 5–7 product principles with stable `PRINC-NNN` IDs, plus the domain rules code
    must enforce. Other artifacts reference principle IDs instead of mirroring their
@@ -52,9 +55,10 @@ applicable capability. Elsewhere, `must`, `never`, and `only` mean MUST; a label
    SHOULD deviations get a mini-ADR.
 8. **Debt and risk live in a register** with an owner and a review trigger. Known debt
    without a register entry violates the standard.
-9. **Applicable platform questions are answered early** — observability, auth model,
-   time handling, idempotency, backups — using the capability-conditional defaults in
-   [references/platform.md](references/platform.md).
+9. **Applicable platform questions are answered early through agent-led synthesis** — observability,
+   auth model, time handling, idempotency, backups — using the capability-conditional defaults in
+   [references/platform.md](references/platform.md). Ask the user only for product-visible policy,
+   budget, timing, or risk trade-offs that the evidence cannot supply.
 10. **Releases are deliberate:** every released artifact is versioned; applicable
     deploy or publish paths run from the version, backup precedes applicable migrations,
     rollback is documented, and the real release path is rehearsed in phase 0.
@@ -85,6 +89,10 @@ background jobs or external delivery, public network exposure, file storage, and
 multiple independently deployed components. Mark each **applicable**, **planned**, or
 **N/A**, with evidence or a one-line rationale.
 
+Derive applicability from the brief, product behavior, code, and runtime evidence whenever possible.
+Ask the user about externally meaningful behavior or constraints, not about the infrastructure that
+implements them.
+
 A capability-conditional rule applies only when its capability is applicable: MUST is
 required, SHOULD is recommended, and N/A is not a deviation. A capability marked planned
 enters stages or the register with a trigger. Silently omitting an applicable MUST is a
@@ -114,24 +122,38 @@ If ambiguous, ask which mode the user wants before doing anything else.
 ## Mode: Bootstrap (greenfield)
 
 1. **Intake.** Read the brief. If there is none, ask the user for a free-form brain dump
-   (product idea, users, constraints, stack preferences, deployment target). Do not
-   interrogate before letting them talk.
+   (problem, users, current alternative, desired value, essential functionality, UX priorities,
+   business constraints, stack preferences, deployment target). Do not interrogate before letting
+   them talk or assume they can choose implementation mechanisms.
 2. **Open discovery.** When writes are authorized, create `docs/discovery.md` from
    [templates/discovery.md](templates/discovery.md); it is the only project artifact
    created while high-impact unknowns remain open. In read-only work, use the same
    structure in the response without creating the file.
 3. **Fix the agent contract path, artifact language, and applicability** in discovery
    (see above). Do not implement infrastructure for capabilities marked N/A.
-4. **Build the unknowns register inside discovery.** List every open question the
-   artifact core needs answered, grouped by impact. Typical unknowns: target users and
-   core jobs, scale, product non-negotiables, stack constraints, release target, auth
-   model, data sensitivity, timezone/locale, solo-vs-team process expectations.
-5. **Close unknowns one question at a time**, most impactful first, per
-   [references/ai-collaboration.md](references/ai-collaboration.md). Batch only trivia.
-   Record every answer immediately in discovery, or in the read-only report when writes
-   are not authorized. Do not generate the canonical artifact core while high-impact
-   unknowns remain open.
-6. **When writes are authorized, generate the artifact core and promote decisions**
+4. **Build the routed unknowns register inside discovery.** For every unknown record its decision
+   lane — product value, functionality and domain, UX, business constraint, or engineering — and its
+   resolution route: stakeholder decision, agent research, user research, engineering synthesis,
+   spike, or deferred default. Typical stakeholder unknowns include target users, current
+   alternatives, desired value, success and guardrails, minimum useful outcome, core journey,
+   non-goals, product principles, domain rules, policy, budget, and timing. Typical engineering
+   unknowns include scale, stack constraints, release target, auth mechanism, data representation,
+   and deployment topology.
+5. **Close stakeholder unknowns one question at a time** through value, behavior, experience and
+   business, then handoff gates, per
+   [references/ai-collaboration.md](references/ai-collaboration.md). Batch only trivia. Ask for
+   outcomes, observable behavior, policy, priorities, and constraints; do not ask the user to choose
+   schemas, indexes, frameworks, API patterns, or migration mechanisms unless they explicitly
+   request technical collaboration. Record every answer immediately in discovery, or in the
+   read-only report when writes are not authorized.
+6. **Perform agent-led technical synthesis.** Translate the agreed product, domain, UX, and business
+   contract into architecture and quality constraints. Research repository and official-source facts,
+   apply safe capability defaults, identify ADR candidates, and route irreducible uncertainty to a
+   bounded spike. Ask the user only when the remaining choice changes observable behavior, policy,
+   budget, timing, or accepted risk. Product discovery may complete while technical mechanisms remain
+   routed to synthesis; do not generate the canonical artifact core while a high-impact stakeholder
+   decision is open or a high-impact engineering unknown lacks containment and an owner or method.
+7. **When writes are authorized, generate the artifact core and promote decisions**
    from discovery into their canonical destinations, in dependency order: product
    intent into PRD → product principles with stable `PRINC-NNN` IDs and domain rules
    into the agent contract (the sole editable principle list; PRD and phase slices
@@ -142,11 +164,11 @@ If ambiguous, ask which mode the user wants before doing anything else.
    complete the agent contract last, referencing the rest.
    Record each destination in discovery, mark it complete, and thereafter treat it as
    historical context rather than a parallel authority.
-7. **Set up the applicable gates** per [references/gates.md](references/gates.md): local
+8. **Set up the applicable gates** per [references/gates.md](references/gates.md): local
    verification script, pre-push feedback hook, required CI checks, and a recorded git
    workflow profile — concrete commands come from the chosen stack.
-8. **Open phase 0** with a requirements slice per [references/process.md](references/process.md).
-9. **Consistency pass.** Re-read the generated set as a whole; fix contradictions,
+9. **Open phase 0** with a requirements slice per [references/process.md](references/process.md).
+10. **Consistency pass.** Re-read the generated set as a whole; fix contradictions,
    duplicated editable principle lists, and unresolved `PRINC-NNN` references before
    showing the result. Present a summary: artifacts created, decisions recorded,
    unknowns that remain (they go to the blockers file or the register, never silently).

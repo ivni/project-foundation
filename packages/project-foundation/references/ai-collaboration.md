@@ -14,8 +14,11 @@ the agent executing this skill follows them itself.
   moment they land**, not in a batch "afterwards". In read-only work, retain them in
   the report without writing project files.
 - During bootstrap, before canonical artifacts exist, `docs/discovery.md` is the
-  landing place. Once high-impact unknowns close, promote each answer into its canonical
-  destination and mark discovery complete; do not maintain it as a parallel authority.
+  landing place. Record product value, functional and UX intent, resolution routes, and derived
+  engineering implications separately. Once high-impact stakeholder unknowns close and technical
+  unknowns are resolved or contained with an owner, method, and interim default, promote each answer
+  into its canonical destination and mark discovery complete; do not maintain it as a parallel
+  authority.
 - The agent contract's **status line** is the resume point: it must let a fresh
   session reconstruct where the project stands without re-reading history.
 
@@ -65,10 +68,19 @@ One approval is not a standing approval. When in doubt, the action is external.
 ## Discovery technique
 
 - Absorb first (brief, code, docs), interrogate second.
-- Maintain an explicit unknowns list; ask **one question at a time**, most impactful
-  first; each question offers concrete options with a recommended default.
-- Batch only trivia. Stop asking when remaining unknowns are cheap to reverse — park
-  those as blockers/register entries with a named default instead.
+- Classify every unknown as product value, functionality and domain, UX, business constraint, or
+  engineering. Route it to stakeholder decision, agent research, user research, engineering
+  synthesis, a bounded spike, or a deferred default before deciding whether to ask.
+- Default to a non-technical product-owner track. Ask **one stakeholder-owned question at a time**
+  through value, behavior, experience and business, then handoff gates; each question offers
+  plain-language options with a recommended default.
+- Ask for outcomes, observable behavior, policy, priorities, budget, timing, and risk tolerance. Do
+  not ask the user to select a schema, framework, API pattern, index, migration mechanism, or other
+  implementation choice unless they explicitly requested technical collaboration.
+- Translate product and UX decisions into engineering constraints after the stakeholder gate. Let
+  the agent research facts, apply safe reversible defaults, prepare ADRs, and propose spikes.
+- Batch only trivia. Stop asking when remaining stakeholder decisions are cheap to reverse or every
+  unknown has the correct route, owner or source, interim default, and revisit trigger.
 
 ## Session hygiene
 

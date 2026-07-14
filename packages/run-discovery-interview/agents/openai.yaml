@@ -1,7 +1,7 @@
 interface:
   display_name: "Discovery Interview"
-  short_description: "Resolve product decisions one question at a time"
-  default_prompt: "Use $run-discovery-interview to interview me and resolve this feature before implementation."
+  short_description: "Clarify product value, behavior, and UX"
+  default_prompt: "Use $run-discovery-interview to clarify this feature's value, functionality, UX, and business rules before implementation."
 
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false

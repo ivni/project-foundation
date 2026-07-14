@@ -12,6 +12,11 @@ agent contract (Project shape & applicability / Security & platform rules /
 Observability rules) and,
 where the decision was contested, into an ADR.
 
+Answer these questions through agent-led technical synthesis from the agreed product, UX, domain,
+and business constraints. Ask the stakeholder only when a remaining choice changes observable
+behavior, policy, budget, timing, or accepted risk; do not ask them to select an infrastructure
+mechanism by default.
+
 ## Observability
 
 - **Structured logging** (JSON or equivalent) from day one, everywhere — app, workers,

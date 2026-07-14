@@ -3,12 +3,14 @@
 Project Foundation is a focused Agent Skill suite for moving from uncertainty to an agreed,
 durable project foundation:
 
-- **Find Blind Spots** performs a read-only search for consequential unknowns and hidden
-  assumptions.
-- **Discovery Interview** resolves product, UX, and architecture decisions one question at a time
-  while writing only one scratch discovery record.
-- **Project Foundation** establishes or audits the architecture, delivery process, and canonical
-  artifact set.
+- **Find Blind Spots** performs a read-only search for consequential unknowns, classifies them by
+  product, UX, business, domain, or engineering concern, and routes each to the right owner or
+  validation method.
+- **Discovery Interview** defaults to a non-technical product-owner track for product value,
+  functionality, domain rules, UX, and business constraints. It asks one stakeholder-owned decision
+  at a time while writing only one scratch discovery record.
+- **Project Foundation** turns the resulting product and UX contract into agent-led technical
+  synthesis, architecture, delivery process, and a canonical artifact set.
 
 The package includes an interactive Bun installer for Codex, Claude Code, Pi, OpenCode, and
 Hermes Agent.
