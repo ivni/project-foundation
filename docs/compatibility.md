@@ -34,6 +34,33 @@ Windows. Target discovery and link following are separate compatibility question
 An undocumented entry does not mean links are known to fail. Use the copy strategy when an agent or
 managed endpoint does not follow directory links reliably.
 
+## Codex Review Loop adapter boundary
+
+The `run-codex-review-loop` payload uses one workflow but not one delegation mechanism:
+
+| Primary host | Reviewer runtime | Explicit-only enforcement |
+| --- | --- | --- |
+| Codex | Fresh native Codex subagent pinned to Sol/xhigh; a read-only custom agent or sandbox override is required | `agents/openai.yaml` disables implicit invocation |
+| Claude Code | `codex exec` through the packaged Bun wrapper | Hard enforcement requires a local Claude-specific `disable-model-invocation: true` override |
+| Pi | `codex exec` through the packaged Bun wrapper | Instruction-level boundary; no equivalent per-skill hard flag was verified |
+| OpenCode | `codex exec` through the packaged Bun wrapper | Skill permission `ask` plus an instruction-level boundary |
+| Hermes Agent | `codex exec` through the packaged Bun wrapper | Instruction-level boundary; no equivalent per-skill hard flag was verified |
+
+The external adapters intentionally do not relabel host-native agents configured with OpenAI models
+as Codex. Their wrapper pins the model, reasoning effort, ephemeral mode, read-only sandbox, output
+schema, and timeout without shell interpolation. Codex's read-only sandbox enforces filesystem
+access, while the prohibition on test and validation commands is reviewer-contract-only. The primary
+host retains all edits and test execution.
+
+The payload does not install a global Codex custom-agent profile. A Codex host whose delegation
+interface only inherits the writable parent sandbox must block before pass 1 and ask whether the user
+approves the external wrapper fallback.
+
+This adapter behavior was reviewed on 2026-07-20 against the primary sources above plus
+[OpenAI Codex non-interactive mode](https://developers.openai.com/codex/noninteractive/). Lack of a
+documented hard explicit-only switch is reported as a limitation, not treated as proof that a host
+cannot add one later.
+
 ## Maintenance policy
 
 - Re-check all five primary sources before a compatibility-affecting release.

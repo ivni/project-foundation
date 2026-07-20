@@ -47,6 +47,25 @@ Agent-specific checks:
 - OpenCode: verify skill permissions and ask it to use `<skill-id>`.
 - Hermes Agent: run `/skills`, then invoke `/<skill-id>`.
 
+## Codex Review Loop cannot launch its reviewer
+
+From Claude Code, Pi, OpenCode, or Hermes, the skill requires both Bun and an authenticated Codex
+CLI. Check the local executables without starting a review:
+
+```bash
+bun --version
+codex --version
+codex exec --help
+```
+
+The wrapper requires the exact `gpt-5.6-sol` model, `xhigh` reasoning, and Codex's `read-only`
+sandbox. It never falls back automatically. If one is unavailable, the primary agent should report
+the capability blocker and ask before changing the reviewer profile.
+
+An `invalid_output` error means the Codex result did not satisfy the JSON schema or the semantic
+state rules. It is not a clean review. Keep the reported error, verify the CLI version and model
+access, and retry only after the capability problem is understood.
+
 ## Update reports local changes
 
 The receipt hash differs from the current files. Review the diff. If those edits matter, choose

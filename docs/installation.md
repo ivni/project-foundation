@@ -44,8 +44,16 @@ release.
 ## What bunx installs
 
 `bunx` runs the package without creating a permanent global CLI installation. The package contains
-the installer and exact payloads for `project-foundation`, `find-blind-spots`, and
-`run-discovery-interview`. The selected skill directories remain after `bunx` exits.
+the installer and exact payloads for `project-foundation`, `find-blind-spots`,
+`run-discovery-interview`, and `run-codex-review-loop`. The selected skill directories remain after
+`bunx` exits.
+
+`run-codex-review-loop` has additional runtime requirements when invoked from Claude Code, Pi,
+OpenCode, or Hermes: `bun` and an authenticated `codex` CLI with access to `gpt-5.6-sol` and `xhigh`
+reasoning. Codex-hosted use delegates to a native Codex subagent. The installer copies the wrapper
+and adapter instructions but does not install or authenticate the Codex CLI or install a global
+read-only Codex custom-agent profile. Without a native read-only reviewer override, the Codex adapter
+asks before using the external wrapper.
 
 Each skill is installed as an independent immediate child of the agent's skill root, so agent
 discovery does not depend on nested-skill behavior. Its package directory, target directory,

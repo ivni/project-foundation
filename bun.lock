@@ -25,6 +25,10 @@
       "name": "@ivni/project-foundation-skill",
       "version": "1.2.0",
     },
+    "packages/run-codex-review-loop": {
+      "name": "@ivni/run-codex-review-loop-skill",
+      "version": "1.2.0",
+    },
     "packages/run-discovery-interview": {
       "name": "@ivni/run-discovery-interview-skill",
       "version": "1.2.0",
@@ -56,6 +60,8 @@
     "@ivni/project-foundation-cli": ["@ivni/project-foundation-cli@workspace:packages/cli"],
 
     "@ivni/project-foundation-skill": ["@ivni/project-foundation-skill@workspace:packages/project-foundation"],
+
+    "@ivni/run-codex-review-loop-skill": ["@ivni/run-codex-review-loop-skill@workspace:packages/run-codex-review-loop"],
 
     "@ivni/run-discovery-interview-skill": ["@ivni/run-discovery-interview-skill@workspace:packages/run-discovery-interview"],
 

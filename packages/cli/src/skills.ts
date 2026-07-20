@@ -16,6 +16,10 @@ export const SKILLS = {
     label: "Discovery Interview",
     summary: "Product value, functionality, and UX discovery",
   },
+  "run-codex-review-loop": {
+    label: "Codex Review Loop",
+    summary: "Independent review, bounded fixes, and clean rechecks",
+  },
 } as const satisfies Record<string, SkillDefinition>;
 
 export type SkillId = keyof typeof SKILLS;

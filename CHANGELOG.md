@@ -7,6 +7,12 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Added `run-codex-review-loop` with an explicit-invocation workflow contract, an independent Codex
+  Sol/xhigh reviewer, bounded fix authority, primary-agent testing, a five-pass clean-or-blocked
+  loop, host-specific enforcement notes, a deterministic Bun wrapper, and structured results.
+
 ## [1.2.0] - 2026-07-14
 
 ### Changed
