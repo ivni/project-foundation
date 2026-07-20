@@ -3,5 +3,6 @@ dist/
 coverage/
 .firecrawl/
 .codex-remote-attachments/
+.agents/
 *.tgz
 .DS_Store
