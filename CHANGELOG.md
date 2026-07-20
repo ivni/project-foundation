@@ -12,6 +12,9 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Added `run-codex-review-loop` with an explicit-invocation workflow contract, an independent Codex
   Sol/xhigh reviewer, bounded fix authority, primary-agent testing, a five-pass clean-or-blocked
   loop, host-specific enforcement notes, a deterministic Bun wrapper, and structured results.
+- Added `run-claude-review-loop` with the same bounded workflow, an actual Claude Fable/xhigh
+  reviewer, a Claude-tool-surface-enforced read-only and test-free allowlist, profile preflight,
+  host adapters, a deterministic Bun wrapper, and structured results.
 
 ## [1.2.0] - 2026-07-14
 

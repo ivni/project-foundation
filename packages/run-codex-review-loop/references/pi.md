@@ -4,10 +4,11 @@ Use this adapter only when Pi is the primary implementing agent.
 
 ## Explicit invocation
 
-Invoke the installed skill with `/skill:run-codex-review-loop`. Pi does not provide a verified
-per-skill hard explicit-only flag equivalent to Codex metadata. The restrictive description and this
-instruction form a semantic boundary, not a host-enforced guarantee. Report that limitation if the
-user asks whether implicit activation is technically impossible.
+Invoke the installed skill with `/skill:run-codex-review-loop`. Pi supports
+`disable-model-invocation: true`, but this portable payload omits that frontmatter field because the
+shared repository validator permits only `name` and `description`. The installed payload therefore
+has an instruction-level boundary. For hard Pi enforcement, create and validate a Pi-specific copy
+that adds the field; the installer does not generate that override automatically.
 
 ## Launch the reviewer
 

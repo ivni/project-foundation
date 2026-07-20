@@ -41,8 +41,8 @@ The `run-codex-review-loop` payload uses one workflow but not one delegation mec
 | Primary host | Reviewer runtime | Explicit-only enforcement |
 | --- | --- | --- |
 | Codex | Fresh native Codex subagent pinned to Sol/xhigh; a read-only custom agent or sandbox override is required | `agents/openai.yaml` disables implicit invocation |
-| Claude Code | `codex exec` through the packaged Bun wrapper | Hard enforcement requires a local Claude-specific `disable-model-invocation: true` override |
-| Pi | `codex exec` through the packaged Bun wrapper | Instruction-level boundary; no equivalent per-skill hard flag was verified |
+| Claude Code | `codex exec` through the packaged Bun wrapper | Hard enforcement requires `user-invocable-only` in `skillOverrides` or a Claude-specific wrapper with `disable-model-invocation: true` |
+| Pi | `codex exec` through the packaged Bun wrapper | The portable payload is instruction-level; a Pi-specific copy can add supported `disable-model-invocation: true` |
 | OpenCode | `codex exec` through the packaged Bun wrapper | Skill permission `ask` plus an instruction-level boundary |
 | Hermes Agent | `codex exec` through the packaged Bun wrapper | Instruction-level boundary; no equivalent per-skill hard flag was verified |
 
@@ -56,10 +56,39 @@ The payload does not install a global Codex custom-agent profile. A Codex host w
 interface only inherits the writable parent sandbox must block before pass 1 and ask whether the user
 approves the external wrapper fallback.
 
+## Claude Review Loop adapter boundary
+
+The `run-claude-review-loop` payload keeps the same workflow and selects the actual Claude runtime:
+
+| Primary host | Reviewer runtime | Explicit-only enforcement |
+| --- | --- | --- |
+| Codex | Claude Code CLI through the packaged Bun wrapper | `agents/openai.yaml` disables implicit invocation |
+| Claude Code | Fresh native custom subagent when every strict control is provable; otherwise the wrapper after approval | Hard enforcement requires `user-invocable-only` in `skillOverrides` or a Claude-specific wrapper with `disable-model-invocation: true` |
+| Pi | Claude Code CLI through the packaged Bun wrapper | The portable payload is instruction-level; a Pi-specific copy can add supported `disable-model-invocation: true` |
+| OpenCode | Claude Code CLI through the packaged Bun wrapper | Skill permission `ask` plus an instruction-level boundary |
+| Hermes Agent | Claude Code CLI through the packaged Bun wrapper | Instruction-level boundary; no equivalent per-skill hard flag was verified |
+
+The wrapper pins `--model fable` and `--effort xhigh`, removes conflicting model, effort, update, and
+content-telemetry inputs from the child environment, enables safe mode and plan permissions, disables session
+persistence, and exposes only `Read`, `Grep`, and `Glob`. This prevents model-initiated tests and
+edits, while those responsibilities stay with the primary agent. Organization-managed policy hooks
+remain outside the model tool allowlist even in safe mode, so a whole-process guarantee additionally
+requires verified harmless hooks or OS-level isolation. The wrapper runs a plain-text profile probe,
+then requires non-empty Fable model usage from the JSON review result.
+
+Claude Code's portable skill frontmatter and the shared repository validator have different
+contracts. This payload keeps only `name` and `description` in `SKILL.md`; users who need a hard
+Claude-only explicit invocation boundary must select the `user-only` state in `/skills` or add a
+Claude-specific wrapper instead of weakening portability for every target. Pi also understands
+`disable-model-invocation`, but needs its own validated copy because this portable payload omits it.
+
 This adapter behavior was reviewed on 2026-07-20 against the primary sources above plus
-[OpenAI Codex non-interactive mode](https://developers.openai.com/codex/noninteractive/). Lack of a
-documented hard explicit-only switch is reported as a limitation, not treated as proof that a host
-cannot add one later.
+[OpenAI Codex non-interactive mode](https://developers.openai.com/codex/noninteractive/),
+[Claude Code CLI reference](https://code.claude.com/docs/en/cli-reference), and
+[Claude Code subagents](https://code.claude.com/docs/en/sub-agents), and the
+[Pi skills reference](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/skills.md).
+Lack of a documented hard explicit-only switch is reported as a limitation, not treated as proof
+that a host cannot add one later.
 
 ## Maintenance policy
 

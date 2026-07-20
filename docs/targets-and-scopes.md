@@ -1,8 +1,8 @@
 # Targets and scopes
 
 Every installed skill lives in an immediate child directory under one of the roots below. The
-packaged child names are `project-foundation`, `find-blind-spots`, `run-discovery-interview`, and
-`run-codex-review-loop`.
+packaged child names are `project-foundation`, `find-blind-spots`, `run-discovery-interview`,
+`run-codex-review-loop`, and `run-claude-review-loop`.
 
 | Agent | User root | Project root | Shared discovery |
 | --- | --- | --- | --- |

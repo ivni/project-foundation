@@ -44,7 +44,7 @@ function reviewResult(
 }
 
 describe("run-codex-review-loop registry", () => {
-  test("registers the fourth packaged skill", () => {
+  test("registers the packaged skill", () => {
     expect(SKILL_IDS).toContain("run-codex-review-loop");
     expect(SKILLS["run-codex-review-loop"].label).toBe("Codex Review Loop");
   });

@@ -66,6 +66,27 @@ An `invalid_output` error means the Codex result did not satisfy the JSON schema
 state rules. It is not a clean review. Keep the reported error, verify the CLI version and model
 access, and retry only after the capability problem is understood.
 
+## Claude Review Loop cannot launch its reviewer
+
+The packaged wrapper requires Bun and an authenticated Claude Code CLI. Check the executables without
+starting a review:
+
+```bash
+bun --version
+claude --version
+claude --help
+```
+
+The wrapper requires `fable`, `xhigh`, safe mode, plan permissions, and the `Read,Grep,Glob` tool
+allowlist. It never changes profile or runtime automatically. An `authentication_required` error,
+including an expired OAuth token, requires the user to authenticate Claude Code before retrying. A
+`model_unavailable` error requires access to the exact Fable profile or explicit approval for a
+fallback.
+
+An `invalid_output` error means Claude Code omitted or violated `structured_output`, the JSON schema,
+or the semantic state rules. It is not a clean review. Preserve the error and resolve the capability
+problem before retrying.
+
 ## Update reports local changes
 
 The receipt hash differs from the current files. Review the diff. If those edits matter, choose

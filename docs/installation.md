@@ -45,8 +45,8 @@ release.
 
 `bunx` runs the package without creating a permanent global CLI installation. The package contains
 the installer and exact payloads for `project-foundation`, `find-blind-spots`,
-`run-discovery-interview`, and `run-codex-review-loop`. The selected skill directories remain after
-`bunx` exits.
+`run-discovery-interview`, `run-codex-review-loop`, and `run-claude-review-loop`. The selected skill
+directories remain after `bunx` exits.
 
 `run-codex-review-loop` has additional runtime requirements when invoked from Claude Code, Pi,
 OpenCode, or Hermes: `bun` and an authenticated `codex` CLI with access to `gpt-5.6-sol` and `xhigh`
@@ -54,6 +54,15 @@ reasoning. Codex-hosted use delegates to a native Codex subagent. The installer 
 and adapter instructions but does not install or authenticate the Codex CLI or install a global
 read-only Codex custom-agent profile. Without a native read-only reviewer override, the Codex adapter
 asks before using the external wrapper.
+
+`run-claude-review-loop` requires Bun plus an authenticated Claude Code CLI with access to the
+`fable` model alias and `xhigh` effort when the packaged wrapper is used. The wrapper invokes a
+direct Claude executable, strips conflicting profile and content-telemetry variables, disables
+updates and nonessential traffic, runs a no-tool profile probe, enables safe and plan modes, and
+exposes only `Read`, `Grep`, and `Glob`. The probe is an additional small model call for every wrapper
+invocation. The installer does not install or authenticate Claude Code. A Claude Code host may use a
+native fresh custom subagent only when it can prove the same model, effort, read-only, test-free, and
+context-isolation controls.
 
 Each skill is installed as an independent immediate child of the agent's skill root, so agent
 discovery does not depend on nested-skill behavior. Its package directory, target directory,

@@ -20,6 +20,10 @@ export const SKILLS = {
     label: "Codex Review Loop",
     summary: "Independent review, bounded fixes, and clean rechecks",
   },
+  "run-claude-review-loop": {
+    label: "Claude Review Loop",
+    summary: "Independent Claude review, bounded fixes, and clean rechecks",
+  },
 } as const satisfies Record<string, SkillDefinition>;
 
 export type SkillId = keyof typeof SKILLS;

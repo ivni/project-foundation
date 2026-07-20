@@ -1,0 +1,6 @@
+interface:
+  display_name: "Claude Review Loop"
+  short_description: "Run an independent Claude review-fix loop"
+  default_prompt: "Use $run-claude-review-loop to review the uncommitted changes for this task, fix accepted findings, and re-review until clean or blocked."
+policy:
+  allow_implicit_invocation: false
