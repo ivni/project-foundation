@@ -7,6 +7,13 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-07-23
+
+### Changed
+
+- Raised the maximum completed reviewer passes for both review-loop skills from five to eight,
+  including host adapters, wrapper validation, terminal-state contracts, and boundary tests.
+
 ## [1.3.0] - 2026-07-20
 
 ### Added
@@ -100,7 +107,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/ivni/project-foundation/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/ivni/project-foundation/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/ivni/project-foundation/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/ivni/project-foundation/compare/v1.1.0...v1.1.1

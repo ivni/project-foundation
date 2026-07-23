@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 const DEFAULT_MODEL = "gpt-5.6-sol";
 const DEFAULT_REASONING_EFFORT = "xhigh";
 const DEFAULT_TIMEOUT_MS = 30 * 60 * 1000;
-const MAX_PASS = 5;
+const MAX_PASS = 8;
 const DIAGNOSTIC_LIMIT = 32 * 1024;
 const TERMINATION_GRACE_MS = 2000;
 const TERMINATION_DEADLINE_MS = 5000;
@@ -76,11 +76,11 @@ class RunnerError extends Error {
 }
 
 const usage = `Usage:
-  bun run-codex-review.ts --context-file <path> --pass <1-5> [options]
+  bun run-codex-review.ts --context-file <path> --pass <1-8> [options]
 
 Required:
   --context-file <path>       Neutral task and scope context outside the repository
-  --pass <1-5>                Completed reviewer pass number
+  --pass <1-8>                Completed reviewer pass number
 
 Options:
   --cwd <path>                Repository root (default: current directory)

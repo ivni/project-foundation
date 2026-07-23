@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 const MODEL = "fable";
 const EFFORT = "xhigh";
 const TOOLS = "Read,Grep,Glob";
-const MAX_PASS = 5;
+const MAX_PASS = 8;
 const DEFAULT_TIMEOUT_MS = 30 * 60 * 1000;
 const MAX_PROMPT_BYTES = 8 * 1024 * 1024;
 const MAX_STDOUT_LENGTH = 4 * 1024 * 1024;
@@ -78,11 +78,11 @@ class RunnerError extends Error {
 }
 
 const usage = `Usage:
-  bun run-claude-review.ts --context-file <path> --pass <1-5> [options]
+  bun run-claude-review.ts --context-file <path> --pass <1-8> [options]
 
 Required:
   --context-file <path>       Neutral task and scope context outside the repository
-  --pass <1-5>                Completed reviewer pass number
+  --pass <1-8>                Completed reviewer pass number
 
 Options:
   --cwd <path>                Repository root (default: current directory)

@@ -16,7 +16,7 @@ Do not use a Pi-native subagent or model alias. Launch the actual Claude Code CL
 Bun wrapper:
 
 ```text
-bun <skill-root>/scripts/run-claude-review.ts --cwd <repository> --context-file <temporary-context> --pass <1-5>
+bun <skill-root>/scripts/run-claude-review.ts --cwd <repository> --context-file <temporary-context> --pass <1-8>
 ```
 
 Create the context file outside the repository and pass paths as separate process arguments. Wait for

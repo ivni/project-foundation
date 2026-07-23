@@ -105,8 +105,9 @@ describe("Claude review wrapper arguments", () => {
 
   test("requires a context file and a bounded pass number", () => {
     expect(() => parseArguments(["--pass", "1"])).toThrow("--context-file is required");
-    expect(() => parseArguments(["--context-file", "context.md", "--pass", "6"])).toThrow(
-      "--pass must be between 1 and 5",
+    expect(parseArguments(["--context-file", "context.md", "--pass", "8"]).pass).toBe(8);
+    expect(() => parseArguments(["--context-file", "context.md", "--pass", "9"])).toThrow(
+      "--pass must be between 1 and 8",
     );
   });
 
@@ -137,7 +138,7 @@ describe("Claude review wrapper arguments", () => {
     ]);
     const prompt = buildReviewerPrompt("Stay read-only.", "Task: fix the parser.", options.pass);
     expect(options.timeoutMs).toBe(9000);
-    expect(prompt).toContain("reviewer pass 3 of at most 5");
+    expect(prompt).toContain("reviewer pass 3 of at most 8");
     expect(prompt).toContain("<reviewer_contract>");
     expect(prompt).toContain("<task_context>");
     expect(prompt).toContain("Return only one JSON");

@@ -79,7 +79,7 @@ and pass it to the wrapper with `--context-file`. The wrapper prepends the canon
 
 ## Run the bounded loop
 
-Allow at most five completed reviewer passes.
+Allow at most eight completed reviewer passes.
 
 For each pass:
 
@@ -97,9 +97,9 @@ For each pass:
    - `BLOCKED` consumes the completed pass and ends the loop immediately with its limitations.
    - `CLEAN` is a final candidate; preserve its low findings in the ledger and continue only to the
      terminal-state checks.
-   - `FINDINGS` on pass 5 ends the loop as `BLOCKED` before any further fix. A pass-6 review would be
+   - `FINDINGS` on pass 8 ends the loop as `BLOCKED` before any further fix. A pass-9 review would be
      required to verify another edit and is not authorized.
-   - `FINDINGS` on passes 1 through 4 continues to finding validation.
+   - `FINDINGS` on passes 1 through 7 continues to finding validation.
 6. Independently validate each critical, high, or medium finding against the current code and task.
    Do not edit merely because the reviewer asserted it.
 7. Mark a false positive `rejected-with-evidence`. If the same finding returns without material new
@@ -129,9 +129,9 @@ Return `Review: BLOCKED` immediately when:
 - the task scope cannot be separated from unrelated work;
 - an exact required capability is unavailable and no fallback is approved;
 - reviewer output is invalid or cannot be obtained reliably; or
-- pass 5 still returns `FINDINGS` or `BLOCKED`.
+- pass 8 still returns `FINDINGS` or `BLOCKED`.
 
-Do not start pass 6 without a new user instruction.
+Do not start pass 9 without a new user instruction.
 
 ## Report the outcome
 

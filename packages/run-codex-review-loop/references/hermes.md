@@ -15,7 +15,7 @@ Launch the actual Codex CLI through the shared Bun wrapper, either directly with
 through Hermes's Codex CLI integration when that integration can execute this exact command:
 
 ```text
-bun <skill-root>/scripts/run-codex-review.ts --cwd <repository> --context-file <temporary-context> --pass <1-5>
+bun <skill-root>/scripts/run-codex-review.ts --cwd <repository> --context-file <temporary-context> --pass <1-8>
 ```
 
 Store the context file outside the repository and avoid shell interpolation of repository content.

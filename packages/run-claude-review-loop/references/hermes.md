@@ -14,7 +14,7 @@ Do not use Hermes `delegate_task` as the reviewer. A delegated Hermes child rema
 Launch the actual Claude Code CLI through the shared Bun wrapper:
 
 ```text
-bun <skill-root>/scripts/run-claude-review.ts --cwd <repository> --context-file <temporary-context> --pass <1-5>
+bun <skill-root>/scripts/run-claude-review.ts --cwd <repository> --context-file <temporary-context> --pass <1-8>
 ```
 
 Store the context file outside the repository and avoid shell interpolation of repository content.
