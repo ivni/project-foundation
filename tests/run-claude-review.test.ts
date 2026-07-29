@@ -55,6 +55,14 @@ describe("run-claude-review-loop registry", () => {
     expect(SKILL_IDS).toContain("run-claude-review-loop");
     expect(SKILLS["run-claude-review-loop"].label).toBe("Claude Review Loop");
   });
+
+  test("declares an explicit type for the structured output schema version", async () => {
+    const schema = await Bun.file(
+      join(process.cwd(), "packages/run-claude-review-loop/assets/review-result.schema.json"),
+    ).json();
+
+    expect(schema.properties.schema_version).toEqual({ type: "integer", const: 1 });
+  });
 });
 
 describe("Claude review wrapper arguments", () => {

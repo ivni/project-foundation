@@ -5,7 +5,7 @@
   "additionalProperties": false,
   "required": ["schema_version", "status", "scope", "findings", "limitations", "summary"],
   "properties": {
-    "schema_version": { "const": 1 },
+    "schema_version": { "type": "integer", "const": 1 },
     "status": { "type": "string", "enum": ["CLEAN", "FINDINGS", "BLOCKED"] },
     "scope": {
       "type": "object",

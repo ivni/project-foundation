@@ -48,6 +48,14 @@ describe("run-codex-review-loop registry", () => {
     expect(SKILL_IDS).toContain("run-codex-review-loop");
     expect(SKILLS["run-codex-review-loop"].label).toBe("Codex Review Loop");
   });
+
+  test("declares an explicit type for the structured output schema version", async () => {
+    const schema = await Bun.file(
+      join(process.cwd(), "packages/run-codex-review-loop/assets/review-result.schema.json"),
+    ).json();
+
+    expect(schema.properties.schema_version).toEqual({ type: "integer", const: 1 });
+  });
 });
 
 describe("Codex review wrapper arguments", () => {

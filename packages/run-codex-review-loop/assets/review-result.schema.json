@@ -6,6 +6,7 @@
   "required": ["schema_version", "status", "scope", "findings", "limitations", "summary"],
   "properties": {
     "schema_version": {
+      "type": "integer",
       "const": 1
     },
     "status": {

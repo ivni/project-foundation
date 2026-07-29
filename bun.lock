@@ -15,27 +15,27 @@
     },
     "packages/cli": {
       "name": "@ivni/project-foundation-cli",
-      "version": "1.3.1",
+      "version": "1.3.2",
     },
     "packages/find-blind-spots": {
       "name": "@ivni/find-blind-spots-skill",
-      "version": "1.3.1",
+      "version": "1.3.2",
     },
     "packages/project-foundation": {
       "name": "@ivni/project-foundation-skill",
-      "version": "1.3.1",
+      "version": "1.3.2",
     },
     "packages/run-claude-review-loop": {
       "name": "@ivni/run-claude-review-loop-skill",
-      "version": "1.3.1",
+      "version": "1.3.2",
     },
     "packages/run-codex-review-loop": {
       "name": "@ivni/run-codex-review-loop-skill",
-      "version": "1.3.1",
+      "version": "1.3.2",
     },
     "packages/run-discovery-interview": {
       "name": "@ivni/run-discovery-interview-skill",
-      "version": "1.3.1",
+      "version": "1.3.2",
     },
   },
   "packages": {

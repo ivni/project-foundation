@@ -7,6 +7,14 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-07-29
+
+### Fixed
+
+- Declared the integer type explicitly for `schema_version` in both review-loop result schemas so
+  strict structured-output validators accept them, with regression coverage for both packaged
+  skills.
+
 ## [1.3.1] - 2026-07-23
 
 ### Changed
@@ -107,7 +115,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.3.1...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.3.2...HEAD
+[1.3.2]: https://github.com/ivni/project-foundation/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/ivni/project-foundation/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/ivni/project-foundation/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/ivni/project-foundation/compare/v1.1.1...v1.2.0
