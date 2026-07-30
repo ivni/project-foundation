@@ -5,16 +5,37 @@
   "additionalProperties": false,
   "required": ["schema_version", "status", "scope", "findings", "limitations", "summary"],
   "properties": {
-    "schema_version": { "type": "integer", "const": 1 },
-    "status": { "type": "string", "enum": ["CLEAN", "FINDINGS", "BLOCKED"] },
+    "schema_version": {
+      "type": "integer",
+      "const": 2
+    },
+    "status": {
+      "type": "string",
+      "enum": ["REVIEWED", "BLOCKED"]
+    },
     "scope": {
       "type": "object",
       "additionalProperties": false,
       "required": ["reviewed_paths", "excluded_paths", "notes"],
       "properties": {
-        "reviewed_paths": { "type": "array", "items": { "type": "string" } },
-        "excluded_paths": { "type": "array", "items": { "type": "string" } },
-        "notes": { "type": "array", "items": { "type": "string" } }
+        "reviewed_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "excluded_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
       }
     },
     "findings": {
@@ -25,6 +46,7 @@
         "required": [
           "id",
           "fingerprint",
+          "class",
           "severity",
           "title",
           "path",
@@ -34,24 +56,65 @@
           "recommendation"
         ],
         "properties": {
-          "id": { "type": "string", "pattern": "^F-[0-9]{3}$" },
-          "fingerprint": { "type": "string", "minLength": 3 },
+          "id": {
+            "type": "string",
+            "pattern": "^F-[0-9]{3}$"
+          },
+          "fingerprint": {
+            "type": "string",
+            "minLength": 3
+          },
+          "class": {
+            "type": "string",
+            "enum": ["DEFECT", "ADVISORY"]
+          },
           "severity": {
             "type": "string",
             "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
           },
-          "title": { "type": "string", "minLength": 1 },
-          "path": { "type": "string", "minLength": 1 },
-          "line": {
-            "anyOf": [{ "type": "integer", "minimum": 1 }, { "type": "null" }]
+          "title": {
+            "type": "string",
+            "minLength": 1
           },
-          "evidence": { "type": "string", "minLength": 1 },
-          "impact": { "type": "string", "minLength": 1 },
-          "recommendation": { "type": "string", "minLength": 1 }
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "line": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1
+          },
+          "impact": {
+            "type": "string",
+            "minLength": 1
+          },
+          "recommendation": {
+            "type": "string",
+            "minLength": 1
+          }
         }
       }
     },
-    "limitations": { "type": "array", "items": { "type": "string" } },
-    "summary": { "type": "string", "minLength": 1 }
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    }
   }
 }

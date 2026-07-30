@@ -14,7 +14,7 @@ Do not use a Codex subagent as the reviewer. Launch the actual Claude Code CLI t
 wrapper:
 
 ```text
-bun <skill-root>/scripts/run-claude-review.ts --cwd <repository> --context-file <temporary-context> --pass <1-8>
+bun <skill-root>/scripts/run-claude-review.ts --cwd <repository> --context-file <temporary-context> --run-id <run-id> --pass <1-8>
 ```
 
 Create `<temporary-context>` outside the repository. Pass command arguments as an array or quote only

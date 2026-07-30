@@ -7,6 +7,37 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-07-30
+
+### Changed
+
+- Reworked the fix step of both review-loop skills around root causes instead of the smallest
+  symptom patch. A fix must now name the root cause separately from the reported symptom, enumerate
+  and record the callers, implementers, serialized forms, and tests that depend on the behavior being
+  changed, and remove the cause for every dependent. Fixes may no longer add a file, public
+  interface, dependency, or abstraction; a finding that needs one is escalated to the user.
+- Split reviewer findings into `DEFECT` and `ADVISORY` classes. Every validated defect is fixed at
+  any severity, while missing tests and maintainability concerns are reported and left to the user
+  instead of driving edits that grow the reviewed surface without removing a defect. A defect at
+  `CRITICAL`, `HIGH`, or `MEDIUM` blocks a clean result.
+- Withheld the clean-or-findings verdict from the reviewer. Reviewers now report only `REVIEWED` or
+  `BLOCKED` plus classified findings, and the wrapper derives the verdict, so the reviewer no longer
+  knows which severity blocks and cannot classify to clear or trip that threshold.
+- Kept full-diff re-review on every pass but added judgment continuity. The context packet now
+  carries a confirmed-clean inventory and the paths each earlier fix touched, and the reviewer
+  contract requires materially new evidence before re-reporting code an earlier pass cleared,
+  while still re-reading it for regressions introduced through dependencies.
+- Raised `schema_version` to 2 in both structured-output schemas for the new status set and the
+  required finding `class`.
+
+### Added
+
+- Added `introduced_by_pass` to the finding ledger and a fix-regression ratio to the reported
+  outcome, distinguishing fixes that create new defects from a reviewer re-deciding settled code.
+- Added a required `--run-id` to both review wrappers with pass state recorded outside the
+  repository, so the eight-pass budget is enforced across invocations instead of validated only as
+  an argument value. Passes are admitted in sequence and a ninth pass is refused.
+
 ## [1.3.2] - 2026-07-29
 
 ### Fixed
@@ -115,7 +146,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.3.2...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/ivni/project-foundation/compare/v1.3.2...v1.4.0
 [1.3.2]: https://github.com/ivni/project-foundation/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/ivni/project-foundation/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/ivni/project-foundation/compare/v1.2.0...v1.3.0

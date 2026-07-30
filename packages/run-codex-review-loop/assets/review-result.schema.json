@@ -7,11 +7,11 @@
   "properties": {
     "schema_version": {
       "type": "integer",
-      "const": 1
+      "const": 2
     },
     "status": {
       "type": "string",
-      "enum": ["CLEAN", "FINDINGS", "BLOCKED"]
+      "enum": ["REVIEWED", "BLOCKED"]
     },
     "scope": {
       "type": "object",
@@ -46,6 +46,7 @@
         "required": [
           "id",
           "fingerprint",
+          "class",
           "severity",
           "title",
           "path",
@@ -62,6 +63,10 @@
           "fingerprint": {
             "type": "string",
             "minLength": 3
+          },
+          "class": {
+            "type": "string",
+            "enum": ["DEFECT", "ADVISORY"]
           },
           "severity": {
             "type": "string",

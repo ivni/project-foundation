@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 import { existsSync } from "node:fs";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -10,6 +10,8 @@ const DEFAULT_MODEL = "gpt-5.6-sol";
 const DEFAULT_REASONING_EFFORT = "xhigh";
 const DEFAULT_TIMEOUT_MS = 30 * 60 * 1000;
 const MAX_PASS = 8;
+const RUN_STATE_DIRECTORY = "codex-review-runs";
+const RUN_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{7,63}$/;
 const DIAGNOSTIC_LIMIT = 32 * 1024;
 const TERMINATION_GRACE_MS = 2000;
 const TERMINATION_DEADLINE_MS = 5000;
@@ -18,11 +20,20 @@ const TREE_KILL_COMMAND_TIMEOUT_MS = 1000;
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 
 export type ReviewSeverity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
-export type ReviewStatus = "CLEAN" | "FINDINGS" | "BLOCKED";
+export type ReviewClass = "DEFECT" | "ADVISORY";
+
+/** What the reviewer itself may report. It is never told which findings block. */
+export type ReviewStatus = "REVIEWED" | "BLOCKED";
+
+/** Derived here, outside the reviewer's context, from the reported classes and severities. */
+export type ReviewVerdict = "CLEAN" | "FINDINGS" | "BLOCKED";
+
+const BLOCKING_SEVERITIES = new Set<ReviewSeverity>(["CRITICAL", "HIGH", "MEDIUM"]);
 
 export interface ReviewFinding {
   id: string;
   fingerprint: string;
+  class: ReviewClass;
   severity: ReviewSeverity;
   title: string;
   path: string;
@@ -33,7 +44,7 @@ export interface ReviewFinding {
 }
 
 export interface ReviewResult {
-  schema_version: 1;
+  schema_version: 2;
   status: ReviewStatus;
   scope: {
     reviewed_paths: string[];
@@ -45,12 +56,26 @@ export interface ReviewResult {
   summary: string;
 }
 
+export interface ReviewVerdictSummary {
+  value: ReviewVerdict;
+  blocking_defects: number;
+  defects: number;
+  advisories: number;
+}
+
+export interface RunState {
+  schema_version: 1;
+  run_id: string;
+  completed_passes: number[];
+}
+
 export interface ParsedArguments {
   help: boolean;
   cwd: string;
   contextFile: string;
   contractFile: string;
   schemaFile: string;
+  runId: string;
   pass: number;
   timeoutMs: number;
 }
@@ -60,6 +85,7 @@ type RunnerErrorKind =
   | "codex_unavailable"
   | "authentication_required"
   | "model_unavailable"
+  | "pass_budget"
   | "timeout"
   | "cancelled"
   | "codex_failed"
@@ -76,11 +102,14 @@ class RunnerError extends Error {
 }
 
 const usage = `Usage:
-  bun run-codex-review.ts --context-file <path> --pass <1-8> [options]
+  bun run-codex-review.ts --context-file <path> --run-id <token> --pass <1-8> [options]
 
 Required:
   --context-file <path>       Neutral task and scope context outside the repository
-  --pass <1-8>                Completed reviewer pass number
+  --run-id <token>            Stable identifier for one review run; 8-64 characters of
+                              [A-Za-z0-9._-] starting with a letter or digit. Reuse the same
+                              token for every pass so the pass budget is actually enforced.
+  --pass <1-8>                Completed reviewer pass number, in sequence within the run
 
 Options:
   --cwd <path>                Repository root (default: current directory)
@@ -111,6 +140,7 @@ export function parseArguments(args: string[]): ParsedArguments {
     contextFile: "",
     contractFile: resolve(scriptDirectory, "../references/reviewer-contract.md"),
     schemaFile: resolve(scriptDirectory, "../assets/review-result.schema.json"),
+    runId: "",
     pass: 0,
     timeoutMs: DEFAULT_TIMEOUT_MS,
   };
@@ -136,6 +166,9 @@ export function parseArguments(args: string[]): ParsedArguments {
       case "--context-file":
         parsed.contextFile = value;
         break;
+      case "--run-id":
+        parsed.runId = value;
+        break;
       case "--pass":
         parsed.pass = positiveInteger(value, flag);
         break;
@@ -150,6 +183,15 @@ export function parseArguments(args: string[]): ParsedArguments {
   if (!parsed.help) {
     if (parsed.contextFile.length === 0) {
       throw new RunnerError("usage", "--context-file is required");
+    }
+    if (parsed.runId.length === 0) {
+      throw new RunnerError("usage", "--run-id is required");
+    }
+    if (!RUN_ID_PATTERN.test(parsed.runId)) {
+      throw new RunnerError(
+        "usage",
+        "--run-id must be 8-64 characters of [A-Za-z0-9._-] starting with a letter or digit",
+      );
     }
     if (parsed.pass < 1 || parsed.pass > MAX_PASS) {
       throw new RunnerError("usage", `--pass must be between 1 and ${MAX_PASS}`);
@@ -190,6 +232,84 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+export function runStatePath(runId: string): string {
+  return join(tmpdir(), RUN_STATE_DIRECTORY, `${runId}.json`);
+}
+
+/**
+ * The pass budget is per run identifier and lives outside the repository. A caller that invents a
+ * fresh identifier every pass gets a fresh budget; that is a deliberate limit of a stateless CLI,
+ * and the identifier is echoed in the envelope so the real pass count stays auditable.
+ */
+export async function readRunState(runId: string): Promise<RunState> {
+  const path = runStatePath(runId);
+  let raw: string;
+  try {
+    raw = await readFile(path, "utf8");
+  } catch {
+    return { schema_version: 1, run_id: runId, completed_passes: [] };
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new RunnerError("pass_budget", `run state file is not valid JSON: ${path}`);
+  }
+  if (
+    !isRecord(parsed) ||
+    parsed.schema_version !== 1 ||
+    parsed.run_id !== runId ||
+    !Array.isArray(parsed.completed_passes) ||
+    parsed.completed_passes.some((pass) => !Number.isSafeInteger(pass) || (pass as number) < 1)
+  ) {
+    throw new RunnerError("pass_budget", `run state file is unusable: ${path}`);
+  }
+  return parsed as unknown as RunState;
+}
+
+export function assertPassAllowed(state: RunState, pass: number): void {
+  if (state.completed_passes.length >= MAX_PASS) {
+    throw new RunnerError(
+      "pass_budget",
+      `run ${state.run_id} already completed the maximum of ${MAX_PASS} reviewer passes`,
+    );
+  }
+  const expected = state.completed_passes.length + 1;
+  if (pass !== expected) {
+    throw new RunnerError(
+      "pass_budget",
+      `run ${state.run_id} expects pass ${expected}, received pass ${pass}`,
+    );
+  }
+}
+
+export async function recordCompletedPass(state: RunState, pass: number): Promise<void> {
+  const path = runStatePath(state.run_id);
+  const next: RunState = {
+    ...state,
+    completed_passes: [...state.completed_passes, pass],
+  };
+  await mkdir(dirname(path), { recursive: true, mode: 0o700 });
+  await writeFile(path, `${JSON.stringify(next, null, 2)}\n`, { encoding: "utf8", mode: 0o600 });
+}
+
+export function deriveVerdict(review: ReviewResult): ReviewVerdictSummary {
+  let defects = 0;
+  let blocking = 0;
+  for (const finding of review.findings) {
+    if (finding.class !== "DEFECT") continue;
+    defects += 1;
+    if (BLOCKING_SEVERITIES.has(finding.severity)) blocking += 1;
+  }
+  return {
+    value: review.status === "BLOCKED" ? "BLOCKED" : blocking > 0 ? "FINDINGS" : "CLEAN",
+    blocking_defects: blocking,
+    defects,
+    advisories: review.findings.length - defects,
+  };
+}
+
 function requireString(value: unknown, path: string): asserts value is string {
   if (typeof value !== "string" || value.trim().length === 0) {
     throw new RunnerError("invalid_output", `${path} must be a non-empty string`);
@@ -206,11 +326,11 @@ export function validateReviewResult(value: unknown): ReviewResult {
   if (!isRecord(value)) {
     throw new RunnerError("invalid_output", "review result must be an object");
   }
-  if (value.schema_version !== 1) {
-    throw new RunnerError("invalid_output", "schema_version must be 1");
+  if (value.schema_version !== 2) {
+    throw new RunnerError("invalid_output", "schema_version must be 2");
   }
-  if (value.status !== "CLEAN" && value.status !== "FINDINGS" && value.status !== "BLOCKED") {
-    throw new RunnerError("invalid_output", "status must be CLEAN, FINDINGS, or BLOCKED");
+  if (value.status !== "REVIEWED" && value.status !== "BLOCKED") {
+    throw new RunnerError("invalid_output", "status must be REVIEWED or BLOCKED");
   }
   if (!isRecord(value.scope)) {
     throw new RunnerError("invalid_output", "scope must be an object");
@@ -231,7 +351,6 @@ export function validateReviewResult(value: unknown): ReviewResult {
 
   const ids = new Set<string>();
   const fingerprints = new Set<string>();
-  let blockingFindingCount = 0;
 
   for (const [index, finding] of value.findings.entries()) {
     const path = `findings[${index}]`;
@@ -249,6 +368,9 @@ export function validateReviewResult(value: unknown): ReviewResult {
     requireString(finding.impact, `${path}.impact`);
     requireString(finding.recommendation, `${path}.recommendation`);
 
+    if (finding.class !== "DEFECT" && finding.class !== "ADVISORY") {
+      throw new RunnerError("invalid_output", `${path}.class must be DEFECT or ADVISORY`);
+    }
     if (
       finding.severity !== "CRITICAL" &&
       finding.severity !== "HIGH" &&
@@ -274,20 +396,8 @@ export function validateReviewResult(value: unknown): ReviewResult {
     }
     ids.add(finding.id);
     fingerprints.add(finding.fingerprint);
-    if (finding.severity !== "LOW") {
-      blockingFindingCount += 1;
-    }
   }
 
-  if (value.status === "CLEAN" && blockingFindingCount > 0) {
-    throw new RunnerError("invalid_output", "CLEAN cannot contain blocking findings");
-  }
-  if (value.status === "FINDINGS" && blockingFindingCount === 0) {
-    throw new RunnerError(
-      "invalid_output",
-      "FINDINGS requires a critical, high, or medium finding",
-    );
-  }
   if (value.status === "BLOCKED" && value.limitations.length === 0) {
     throw new RunnerError("invalid_output", "BLOCKED requires at least one limitation");
   }
@@ -500,6 +610,8 @@ async function runReview(options: ParsedArguments): Promise<Record<string, unkno
   } catch {
     throw new RunnerError("usage", `output schema is not valid JSON: ${options.schemaFile}`);
   }
+  const runState = await readRunState(options.runId);
+  assertPassAllowed(runState, options.pass);
   const elapsedBeforePreflight = performance.now() - startedAt;
   if (elapsedBeforePreflight >= options.timeoutMs) {
     throw new RunnerError("timeout", `Codex review exceeded ${options.timeoutMs} ms`);
@@ -613,9 +725,11 @@ async function runReview(options: ParsedArguments): Promise<Record<string, unkno
       throw new RunnerError("invalid_output", "Codex final review result is not valid JSON");
     }
     const review = validateReviewResult(parsedResult);
+    const verdict = deriveVerdict(review);
+    await recordCompletedPass(runState, options.pass);
 
     return {
-      schema_version: 1,
+      schema_version: 2,
       runner_status: "ok",
       invocation: {
         runtime: "codex-cli",
@@ -627,9 +741,17 @@ async function runReview(options: ParsedArguments): Promise<Record<string, unkno
         sandbox: "read-only",
         no_test_policy: "reviewer-contract",
         ephemeral: true,
+        run_id: options.runId,
         pass: options.pass,
+        completed_passes_in_run: runState.completed_passes.length + 1,
+        max_passes_in_run: MAX_PASS,
         cwd: options.cwd,
         elapsed_ms: Math.round(performance.now() - startedAt),
+      },
+      verdict: {
+        ...verdict,
+        derived_by: "wrapper",
+        blocking_rule: "DEFECT at CRITICAL, HIGH, or MEDIUM",
       },
       review,
     };
@@ -672,7 +794,7 @@ async function main(): Promise<void> {
     process.stdout.write(
       `${JSON.stringify(
         {
-          schema_version: 1,
+          schema_version: 2,
           runner_status: "error",
           error: { kind, message },
         },

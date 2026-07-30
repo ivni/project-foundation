@@ -1,53 +1,68 @@
 import { describe, expect, test } from "bun:test";
+import { rm } from "node:fs/promises";
 import { join } from "node:path";
 import { SKILL_IDS, SKILLS } from "../packages/cli/src/skills.ts";
 import {
+  assertPassAllowed,
   buildClaudeArguments,
   buildClaudeEnvironment,
   buildClaudeProfileProbeArguments,
   buildReviewerPrompt,
   classifyClaudeFailure,
+  deriveVerdict,
   extractClaudeDiagnostic,
   parseArguments,
   parseClaudeReviewEnvelope,
+  type ReviewClass,
+  type ReviewSeverity,
+  type ReviewStatus,
+  readRunState,
   readStreamTail,
+  recordCompletedPass,
   reportedModels,
+  runStatePath,
   selectClaudeDiagnostic,
   validateReviewResult,
   verifyReportedModels,
 } from "../packages/run-claude-review-loop/scripts/run-claude-review.ts";
 
+const RUN_ID = "claude-run-0001";
+
+function finding(index: number, findingClass: ReviewClass, severity: ReviewSeverity) {
+  return {
+    id: `F-00${index}`,
+    fingerprint: `example:missing-guard-${index}`,
+    class: findingClass,
+    severity,
+    title: "Missing guard",
+    path: "src/example.ts",
+    line: 12,
+    evidence: "The changed branch dereferences an optional value.",
+    impact: "A realistic request can fail.",
+    recommendation: "Handle the absent value before dereferencing it.",
+  };
+}
+
 function reviewResult(
-  status: "CLEAN" | "FINDINGS" | "BLOCKED",
-  severity?: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW",
+  status: ReviewStatus,
+  findings: Array<{ class: ReviewClass; severity: ReviewSeverity }> = [],
 ) {
   return {
-    schema_version: 1,
+    schema_version: 2,
     status,
     scope: {
       reviewed_paths: ["src/example.ts"],
       excluded_paths: ["notes.txt"],
       notes: [],
     },
-    findings:
-      severity === undefined
-        ? []
-        : [
-            {
-              id: "F-001",
-              fingerprint: "example:missing-guard",
-              severity,
-              title: "Missing guard",
-              path: "src/example.ts",
-              line: 12,
-              evidence: "The changed branch dereferences an optional value.",
-              impact: "A realistic request can fail.",
-              recommendation: "Handle the absent value before dereferencing it.",
-            },
-          ],
+    findings: findings.map((item, index) => finding(index + 1, item.class, item.severity)),
     limitations: status === "BLOCKED" ? ["The task scope is unavailable."] : [],
     summary: "Reviewed the task changes.",
   };
+}
+
+function runState(completedPasses: number[]) {
+  return { schema_version: 1 as const, run_id: RUN_ID, completed_passes: completedPasses };
 }
 
 describe("run-claude-review-loop registry", () => {
@@ -61,7 +76,27 @@ describe("run-claude-review-loop registry", () => {
       join(process.cwd(), "packages/run-claude-review-loop/assets/review-result.schema.json"),
     ).json();
 
-    expect(schema.properties.schema_version).toEqual({ type: "integer", const: 1 });
+    expect(schema.properties.schema_version).toEqual({ type: "integer", const: 2 });
+  });
+
+  test("withholds the blocking threshold from the reviewer's own status enum", async () => {
+    const schema = await Bun.file(
+      join(process.cwd(), "packages/run-claude-review-loop/assets/review-result.schema.json"),
+    ).json();
+
+    expect(schema.properties.status.enum).toEqual(["REVIEWED", "BLOCKED"]);
+    expect(schema.properties.findings.items.properties.class.enum).toEqual(["DEFECT", "ADVISORY"]);
+    expect(schema.properties.findings.items.required).toContain("class");
+  });
+
+  test("keeps the blocking rule out of the reviewer contract", async () => {
+    const contract = await Bun.file(
+      join(process.cwd(), "packages/run-claude-review-loop/references/reviewer-contract.md"),
+    ).text();
+
+    expect(contract).not.toContain("never block");
+    expect(contract).not.toContain("blocks `CLEAN`");
+    expect(contract).toContain("You do not decide the outcome");
   });
 });
 
@@ -113,20 +148,46 @@ describe("Claude review wrapper arguments", () => {
 
   test("requires a context file and a bounded pass number", () => {
     expect(() => parseArguments(["--pass", "1"])).toThrow("--context-file is required");
-    expect(parseArguments(["--context-file", "context.md", "--pass", "8"]).pass).toBe(8);
-    expect(() => parseArguments(["--context-file", "context.md", "--pass", "9"])).toThrow(
-      "--pass must be between 1 and 8",
+    expect(
+      parseArguments(["--context-file", "context.md", "--run-id", RUN_ID, "--pass", "8"]).pass,
+    ).toBe(8);
+    expect(() =>
+      parseArguments(["--context-file", "context.md", "--run-id", RUN_ID, "--pass", "9"]),
+    ).toThrow("--pass must be between 1 and 8");
+  });
+
+  test("requires a reusable run identifier so the pass budget is enforceable", () => {
+    expect(() => parseArguments(["--context-file", "context.md", "--pass", "1"])).toThrow(
+      "--run-id is required",
     );
+    expect(() =>
+      parseArguments(["--context-file", "context.md", "--run-id", "short", "--pass", "1"]),
+    ).toThrow("--run-id must be 8-64 characters");
+    expect(() =>
+      parseArguments(["--context-file", "context.md", "--run-id", "../escape", "--pass", "1"]),
+    ).toThrow("--run-id must be 8-64 characters");
+    expect(runStatePath(RUN_ID).endsWith(join("claude-review-runs", `${RUN_ID}.json`))).toBe(true);
   });
 
   test("rejects profile and schema overrides", () => {
     expect(() =>
-      parseArguments(["--context-file", "context.md", "--pass", "1", "--model", "other"]),
+      parseArguments([
+        "--context-file",
+        "context.md",
+        "--run-id",
+        RUN_ID,
+        "--pass",
+        "1",
+        "--model",
+        "other",
+      ]),
     ).toThrow("unknown option: --model");
     expect(() =>
       parseArguments([
         "--context-file",
         "context.md",
+        "--run-id",
+        RUN_ID,
         "--pass",
         "1",
         "--schema-file",
@@ -139,6 +200,8 @@ describe("Claude review wrapper arguments", () => {
     const options = parseArguments([
       "--context-file",
       join(process.cwd(), "context.md"),
+      "--run-id",
+      RUN_ID,
       "--pass",
       "3",
       "--timeout-ms",
@@ -225,6 +288,76 @@ describe("Claude review wrapper arguments", () => {
   });
 });
 
+describe("Claude review pass budget", () => {
+  test("admits only the next pass in sequence", () => {
+    expect(() => assertPassAllowed(runState([]), 1)).not.toThrow();
+    expect(() => assertPassAllowed(runState([1, 2]), 3)).not.toThrow();
+    expect(() => assertPassAllowed(runState([1, 2]), 2)).toThrow("expects pass 3, received pass 2");
+    expect(() => assertPassAllowed(runState([1]), 5)).toThrow("expects pass 2, received pass 5");
+  });
+
+  test("refuses a ninth pass in the same run", () => {
+    expect(() => assertPassAllowed(runState([1, 2, 3, 4, 5, 6, 7]), 8)).not.toThrow();
+    expect(() => assertPassAllowed(runState([1, 2, 3, 4, 5, 6, 7, 8]), 9)).toThrow(
+      "already completed the maximum of 8 reviewer passes",
+    );
+  });
+
+  test("persists each completed pass so the budget actually advances", async () => {
+    const runId = "claude-budget-roundtrip";
+    const statePath = runStatePath(runId);
+    await rm(statePath, { force: true });
+    try {
+      const fresh = await readRunState(runId);
+      expect(fresh.completed_passes).toEqual([]);
+
+      await recordCompletedPass(fresh, 1);
+      const afterFirst = await readRunState(runId);
+      expect(afterFirst.completed_passes).toEqual([1]);
+      expect(() => assertPassAllowed(afterFirst, 1)).toThrow("expects pass 2, received pass 1");
+      expect(() => assertPassAllowed(afterFirst, 2)).not.toThrow();
+
+      await recordCompletedPass(afterFirst, 2);
+      expect((await readRunState(runId)).completed_passes).toEqual([1, 2]);
+    } finally {
+      await rm(statePath, { force: true });
+    }
+  });
+});
+
+describe("Claude review verdict derivation", () => {
+  test("blocks on a defect at medium or above", () => {
+    for (const severity of ["CRITICAL", "HIGH", "MEDIUM"] as const) {
+      const verdict = deriveVerdict(
+        validateReviewResult(reviewResult("REVIEWED", [{ class: "DEFECT", severity }])),
+      );
+      expect(verdict.value).toBe("FINDINGS");
+      expect(verdict.blocking_defects).toBe(1);
+    }
+  });
+
+  test("clears a low defect and any advisory", () => {
+    const verdict = deriveVerdict(
+      validateReviewResult(
+        reviewResult("REVIEWED", [
+          { class: "DEFECT", severity: "LOW" },
+          { class: "ADVISORY", severity: "HIGH" },
+          { class: "ADVISORY", severity: "MEDIUM" },
+        ]),
+      ),
+    );
+    expect(verdict.value).toBe("CLEAN");
+    expect(verdict.blocking_defects).toBe(0);
+    expect(verdict.defects).toBe(1);
+    expect(verdict.advisories).toBe(2);
+  });
+
+  test("clears an empty review and preserves a reviewer block", () => {
+    expect(deriveVerdict(validateReviewResult(reviewResult("REVIEWED"))).value).toBe("CLEAN");
+    expect(deriveVerdict(validateReviewResult(reviewResult("BLOCKED"))).value).toBe("BLOCKED");
+  });
+});
+
 describe("Claude review result validation", () => {
   test("accepts only a complete successful Fable envelope", () => {
     const envelope = {
@@ -234,7 +367,7 @@ describe("Claude review result validation", () => {
       terminal_reason: "completed",
       permission_denials: [],
       modelUsage: { "claude-fable-5": {} },
-      structured_output: reviewResult("CLEAN"),
+      structured_output: reviewResult("REVIEWED"),
     };
     expect(parseClaudeReviewEnvelope(envelope).runtimeModels).toEqual(["claude-fable-5"]);
     expect(() =>
@@ -263,17 +396,18 @@ describe("Claude review result validation", () => {
     ).toThrow("Useful structured error");
   });
 
-  test("allows CLEAN with low residual findings", () => {
-    expect(validateReviewResult(reviewResult("CLEAN", "LOW")).status).toBe("CLEAN");
+  test("rejects a reviewer-supplied verdict", () => {
+    const result = { ...reviewResult("REVIEWED"), status: "CLEAN" };
+    expect(() => validateReviewResult(result)).toThrow("status must be REVIEWED or BLOCKED");
   });
 
-  test("requires blocking findings and states to agree", () => {
-    expect(() => validateReviewResult(reviewResult("CLEAN", "MEDIUM"))).toThrow(
-      "CLEAN cannot contain blocking findings",
-    );
-    expect(() => validateReviewResult(reviewResult("FINDINGS", "LOW"))).toThrow(
-      "FINDINGS requires a critical, high, or medium finding",
-    );
+  test("requires a finding class", () => {
+    const result = reviewResult("REVIEWED", [{ class: "DEFECT", severity: "HIGH" }]);
+    const first = result.findings[0];
+    if (first === undefined) throw new Error("test fixture is missing a finding");
+    expect(() =>
+      validateReviewResult({ ...result, findings: [{ ...first, class: "IMPORTANT" }] }),
+    ).toThrow("class must be DEFECT or ADVISORY");
   });
 
   test("requires a limitation when the reviewer is blocked", () => {
@@ -282,14 +416,16 @@ describe("Claude review result validation", () => {
     expect(() => validateReviewResult(result)).toThrow("BLOCKED requires at least one limitation");
   });
 
-  test("rejects a clean result that reviewed no path", () => {
-    const result = reviewResult("CLEAN");
+  test("rejects a completed review that reviewed no path", () => {
+    const result = reviewResult("REVIEWED");
     result.scope.reviewed_paths = [];
-    expect(() => validateReviewResult(result)).toThrow("CLEAN requires at least one reviewed path");
+    expect(() => validateReviewResult(result)).toThrow(
+      "REVIEWED requires at least one reviewed path",
+    );
   });
 
   test("rejects duplicate root-cause fingerprints", () => {
-    const result = reviewResult("FINDINGS", "HIGH");
+    const result = reviewResult("REVIEWED", [{ class: "DEFECT", severity: "HIGH" }]);
     const first = result.findings[0];
     if (first === undefined) throw new Error("test fixture is missing a finding");
     result.findings.push({ ...first, id: "F-002" });

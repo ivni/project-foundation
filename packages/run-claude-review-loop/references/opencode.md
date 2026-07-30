@@ -14,7 +14,7 @@ Do not use an OpenCode-native agent or model alias. Launch the actual Claude Cod
 shared Bun wrapper:
 
 ```text
-bun <skill-root>/scripts/run-claude-review.ts --cwd <repository> --context-file <temporary-context> --pass <1-8>
+bun <skill-root>/scripts/run-claude-review.ts --cwd <repository> --context-file <temporary-context> --run-id <run-id> --pass <1-8>
 ```
 
 Keep the context file outside the repository and pass command arguments without shell interpolation.
