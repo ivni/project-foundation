@@ -7,6 +7,46 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-07-31
+
+### Changed
+
+- Gave a validated defect exactly three outcomes in both review-loop skills — fixed, deferred, or
+  escalated — and named them in one place. Text that promised every defect gets fixed while also
+  telling the loop to stop editing after a clean verdict no longer contradicts itself, and "quietly
+  left undone" is explicitly not an outcome.
+- Required the ship-blocking areas to be declared and user-confirmed before pass 1. Severity describes
+  blast radius and likelihood and cannot describe exposure, so a defect outside every declared area is
+  now deferred to the debt register instead of spending the pass budget. A defect inside a declared
+  area can only be fixed or escalated, and the reviewer is never told the declaration.
+- Required every fix to name the invariant it establishes and the mechanism that holds it — a test,
+  type, assertion, or schema constraint. A patch that repairs N places without leaving anything that
+  fails for the N+1st is now called a symptom fix regardless of its width, and a test or assertion that
+  pins the invariant is exempt from the ban on adding new files and abstractions.
+- Excluded derived artifacts from review contents while keeping the fact of their change in scope. Each
+  excluded path must name its generator and a reproducing command that actually ran, so a generated
+  snapshot no longer consumes reviewer attention on every pass while a hand-edited one stays visible.
+- Removed the pass ordinal and the pass budget from the reviewer prompt. Neither is needed to review,
+  and both invite holding a finding back near the end or padding an otherwise empty pass. The pass
+  number remains in the result envelope as audit data.
+- Removed the confirmed-clean inventory from the context packet and the reviewer contract. It was
+  written by the author of the defects and told a nominally independent reviewer where not to look, so
+  a wrong boundary suppressed attention exactly where the author had erred. The finding ledger and the
+  fix-path list carry judgment continuity instead, and both are checkable against git history.
+- Banned review provenance in code comments. Comments explain the code to a reader who never saw the
+  review; the pass and finding live in git history, the phase record, and the test name.
+- Made `--run-id` optional and derived it from the repository path and current commit, so passes over
+  one working tree accumulate against one budget without caller discipline. Run state moved from the
+  temporary directory to `$XDG_STATE_HOME/project-foundation`, expires after a day of inactivity, and
+  records each pass with a working-tree digest. `SKILL.md` now states that the limit is self-applying
+  and auditable rather than tamper-proof.
+
+### Added
+
+- Added a working-tree digest to each recorded pass. The envelope reports whether the tree changed
+  since the previous pass, which makes a pass spent without an edit visible instead of silent, and
+  states that the digest covers status entries and tracked-content changes only.
+
 ## [1.4.0] - 2026-07-30
 
 ### Changed
@@ -146,7 +186,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/ivni/project-foundation/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/ivni/project-foundation/compare/v1.3.2...v1.4.0
 [1.3.2]: https://github.com/ivni/project-foundation/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/ivni/project-foundation/compare/v1.3.0...v1.3.1

@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { rm } from "node:fs/promises";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { SKILL_IDS, SKILLS } from "../packages/cli/src/skills.ts";
 import {
@@ -7,19 +8,25 @@ import {
   buildCodexArguments,
   buildReviewerPrompt,
   classifyCodexFailure,
+  deriveRunId,
   deriveVerdict,
+  isRunStateExpired,
   parseArguments,
   type ReviewClass,
   type ReviewSeverity,
   type ReviewStatus,
+  type RunState,
   readRunState,
   readStreamTail,
   recordCompletedPass,
+  runStateDirectory,
   runStatePath,
   validateReviewResult,
 } from "../packages/run-codex-review-loop/scripts/run-codex-review.ts";
 
 const RUN_ID = "codex-run-0001";
+const NOW = 1_770_000_000_000;
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 function finding(index: number, findingClass: ReviewClass, severity: ReviewSeverity) {
   return {
@@ -54,8 +61,14 @@ function reviewResult(
   };
 }
 
-function runState(completedPasses: number[]) {
-  return { schema_version: 1 as const, run_id: RUN_ID, completed_passes: completedPasses };
+function runState(completedPasses: number[], updatedAt: number = NOW): RunState {
+  return {
+    schema_version: 2,
+    run_id: RUN_ID,
+    created_at: NOW,
+    updated_at: updatedAt,
+    passes: completedPasses.map((pass) => ({ pass, tree_digest: null })),
+  };
 }
 
 describe("run-codex-review-loop registry", () => {
@@ -82,7 +95,7 @@ describe("run-codex-review-loop registry", () => {
     expect(schema.properties.findings.items.required).toContain("class");
   });
 
-  test("keeps the blocking rule out of the reviewer contract", async () => {
+  test("keeps the blocking rule, the pass budget, and a clean inventory out of the contract", async () => {
     const contract = await Bun.file(
       join(process.cwd(), "packages/run-codex-review-loop/references/reviewer-contract.md"),
     ).text();
@@ -90,6 +103,20 @@ describe("run-codex-review-loop registry", () => {
     expect(contract).not.toContain("never block");
     expect(contract).not.toContain("blocks `CLEAN`");
     expect(contract).toContain("You do not decide the outcome");
+    expect(contract).not.toContain("confirmed-clean");
+    expect(contract).not.toContain("costs a pass");
+  });
+
+  test("names exactly three outcomes for a validated defect", async () => {
+    const skill = await Bun.file(
+      join(process.cwd(), "packages/run-codex-review-loop/SKILL.md"),
+    ).text();
+
+    expect(skill).toContain("**`fixed`**");
+    expect(skill).toContain("**`deferred`**");
+    expect(skill).toContain("**`escalated`**");
+    expect(skill).not.toContain("is a bug and gets fixed");
+    expect(skill).not.toContain("confirmed-clean inventory");
   });
 });
 
@@ -131,10 +158,8 @@ describe("Codex review wrapper arguments", () => {
     ).toThrow("--pass must be between 1 and 8");
   });
 
-  test("requires a reusable run identifier so the pass budget is enforceable", () => {
-    expect(() => parseArguments(["--context-file", "context.md", "--pass", "1"])).toThrow(
-      "--run-id is required",
-    );
+  test("accepts a defaulted run identifier and still validates an explicit one", () => {
+    expect(parseArguments(["--context-file", "context.md", "--pass", "1"]).runId).toBe("");
     expect(() =>
       parseArguments(["--context-file", "context.md", "--run-id", "short", "--pass", "1"]),
     ).toThrow("--run-id must be 8-64 characters");
@@ -142,6 +167,31 @@ describe("Codex review wrapper arguments", () => {
       parseArguments(["--context-file", "context.md", "--run-id", "../escape", "--pass", "1"]),
     ).toThrow("--run-id must be 8-64 characters");
     expect(runStatePath(RUN_ID).endsWith(join("codex-review-runs", `${RUN_ID}.json`))).toBe(true);
+  });
+
+  test("derives the default identifier from the tree and commit, never from the diff", () => {
+    const head = "a".repeat(40);
+    const derived = deriveRunId("/repo/one", head);
+
+    expect(derived).toBe(deriveRunId("/repo/one", head));
+    expect(derived).not.toBe(deriveRunId("/repo/two", head));
+    expect(derived).not.toBe(deriveRunId("/repo/one", "b".repeat(40)));
+    expect(() =>
+      parseArguments(["--context-file", "context.md", "--run-id", derived, "--pass", "1"]),
+    ).not.toThrow();
+  });
+
+  test("keeps run state under the state home so a reboot cannot reset the budget", () => {
+    const suffix = join("project-foundation", "codex-review-runs");
+    expect(runStateDirectory({ XDG_STATE_HOME: "/state" }, "/home/example")).toBe(
+      join("/state", suffix),
+    );
+    expect(runStateDirectory({}, "/home/example")).toBe(
+      join("/home/example", ".local", "state", suffix),
+    );
+    expect(runStateDirectory({ XDG_STATE_HOME: "relative" }, "/home/example")).toBe(
+      join("/home/example", ".local", "state", suffix),
+    );
   });
 
   test("rejects profile and schema overrides in the strict wrapper", () => {
@@ -171,12 +221,14 @@ describe("Codex review wrapper arguments", () => {
     ).toThrow("unknown option: --schema-file");
   });
 
-  test("builds a delimited fresh-review prompt", () => {
-    const prompt = buildReviewerPrompt("Stay read-only.", "Task: fix the parser.", 3);
-    expect(prompt).toContain("reviewer pass 3 of at most 8");
+  test("builds a delimited fresh-review prompt without a pass ordinal or budget", () => {
+    const prompt = buildReviewerPrompt("Stay read-only.", "Task: fix the parser.");
     expect(prompt).toContain("<reviewer_contract>");
     expect(prompt).toContain("<task_context>");
     expect(prompt).toContain("Return only one JSON");
+    expect(prompt).not.toMatch(/pass \d/i);
+    expect(prompt).not.toContain("at most");
+    expect(prompt).not.toContain(String(8));
   });
 
   test("classifies authentication and model capability failures", () => {
@@ -210,24 +262,38 @@ describe("Codex review pass budget", () => {
     );
   });
 
-  test("persists each completed pass so the budget actually advances", async () => {
-    const runId = "codex-budget-roundtrip";
-    const statePath = runStatePath(runId);
-    await rm(statePath, { force: true });
-    try {
-      const fresh = await readRunState(runId);
-      expect(fresh.completed_passes).toEqual([]);
+  test("expires abandoned run state instead of charging it to the next run", () => {
+    expect(isRunStateExpired(runState([1, 2]), NOW)).toBe(false);
+    expect(isRunStateExpired(runState([1, 2]), NOW + ONE_DAY_MS)).toBe(false);
+    expect(isRunStateExpired(runState([1, 2]), NOW + ONE_DAY_MS + 1)).toBe(true);
+    expect(isRunStateExpired(runState([1, 2], NOW + ONE_DAY_MS), NOW)).toBe(false);
+  });
 
-      await recordCompletedPass(fresh, 1);
-      const afterFirst = await readRunState(runId);
-      expect(afterFirst.completed_passes).toEqual([1]);
+  test("persists each completed pass and its tree digest so the budget actually advances", async () => {
+    const runId = "codex-budget-roundtrip";
+    const stateHome = await mkdtemp(join(tmpdir(), "codex-review-state-"));
+    const previousStateHome = process.env.XDG_STATE_HOME;
+    process.env.XDG_STATE_HOME = stateHome;
+    try {
+      const fresh = await readRunState(runId, NOW);
+      expect(fresh.passes).toEqual([]);
+
+      await recordCompletedPass(fresh, 1, "digest-one", NOW);
+      const afterFirst = await readRunState(runId, NOW);
+      expect(afterFirst.passes).toEqual([{ pass: 1, tree_digest: "digest-one" }]);
       expect(() => assertPassAllowed(afterFirst, 1)).toThrow("expects pass 2, received pass 1");
       expect(() => assertPassAllowed(afterFirst, 2)).not.toThrow();
 
-      await recordCompletedPass(afterFirst, 2);
-      expect((await readRunState(runId)).completed_passes).toEqual([1, 2]);
+      await recordCompletedPass(afterFirst, 2, "digest-two", NOW + 1);
+      const afterSecond = await readRunState(runId, NOW + 1);
+      expect(afterSecond.passes.map((entry) => entry.pass)).toEqual([1, 2]);
+      expect(afterSecond.passes.at(-1)?.tree_digest).toBe("digest-two");
+      expect(afterSecond.updated_at).toBe(NOW + 1);
+      expect(runStatePath(runId).startsWith(stateHome)).toBe(true);
     } finally {
-      await rm(statePath, { force: true });
+      if (previousStateHome === undefined) delete process.env.XDG_STATE_HOME;
+      else process.env.XDG_STATE_HOME = previousStateHome;
+      await rm(stateHome, { recursive: true, force: true });
     }
   });
 });

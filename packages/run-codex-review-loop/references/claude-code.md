@@ -19,7 +19,7 @@ Do not use a Claude subagent, including one configured with an OpenAI-compatible
 actual Codex CLI through the shared Bun wrapper:
 
 ```text
-bun <skill-root>/scripts/run-codex-review.ts --cwd <repository> --context-file <temporary-context> --run-id <run-id> --pass <1-8>
+bun <skill-root>/scripts/run-codex-review.ts --cwd <repository> --context-file <temporary-context> --pass <1-8>
 ```
 
 Create `<temporary-context>` outside the repository. Use an argument array or Claude Code's Bash tool

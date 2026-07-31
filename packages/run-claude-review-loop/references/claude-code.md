@@ -44,7 +44,7 @@ Claude agent owns all finding validation, edits, tests, and loop decisions.
 Ask before changing mechanisms, then launch:
 
 ```text
-bun <skill-root>/scripts/run-claude-review.ts --cwd <repository> --context-file <temporary-context> --run-id <run-id> --pass <1-8>
+bun <skill-root>/scripts/run-claude-review.ts --cwd <repository> --context-file <temporary-context> --pass <1-8>
 ```
 
 Create the context file outside the repository and pass paths without shell interpolation. The

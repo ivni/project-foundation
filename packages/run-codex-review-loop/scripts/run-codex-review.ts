@@ -1,8 +1,9 @@
 #!/usr/bin/env bun
 
+import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -10,8 +11,13 @@ const DEFAULT_MODEL = "gpt-5.6-sol";
 const DEFAULT_REASONING_EFFORT = "xhigh";
 const DEFAULT_TIMEOUT_MS = 30 * 60 * 1000;
 const MAX_PASS = 8;
+const STATE_ROOT_DIRECTORY = "project-foundation";
 const RUN_STATE_DIRECTORY = "codex-review-runs";
+/** Run state left untouched this long belongs to an abandoned run, not to the next one. */
+const RUN_STATE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+const DERIVED_RUN_ID_PREFIX = "auto-";
 const RUN_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{7,63}$/;
+const GIT_COMMAND_TIMEOUT_MS = 60_000;
 const DIAGNOSTIC_LIMIT = 32 * 1024;
 const TERMINATION_GRACE_MS = 2000;
 const TERMINATION_DEADLINE_MS = 5000;
@@ -63,10 +69,17 @@ export interface ReviewVerdictSummary {
   advisories: number;
 }
 
+export interface RunPass {
+  pass: number;
+  tree_digest: string | null;
+}
+
 export interface RunState {
-  schema_version: 1;
+  schema_version: 2;
   run_id: string;
-  completed_passes: number[];
+  created_at: number;
+  updated_at: number;
+  passes: RunPass[];
 }
 
 export interface ParsedArguments {
@@ -102,17 +115,18 @@ class RunnerError extends Error {
 }
 
 const usage = `Usage:
-  bun run-codex-review.ts --context-file <path> --run-id <token> --pass <1-8> [options]
+  bun run-codex-review.ts --context-file <path> --pass <1-8> [options]
 
 Required:
   --context-file <path>       Neutral task and scope context outside the repository
-  --run-id <token>            Stable identifier for one review run; 8-64 characters of
-                              [A-Za-z0-9._-] starting with a letter or digit. Reuse the same
-                              token for every pass so the pass budget is actually enforced.
   --pass <1-8>                Completed reviewer pass number, in sequence within the run
 
 Options:
   --cwd <path>                Repository root (default: current directory)
+  --run-id <token>            Identifier for one review run; 8-64 characters of [A-Za-z0-9._-]
+                              starting with a letter or digit. Defaults to a token derived from the
+                              repository path and current commit, so passes over one working tree
+                              share one budget. An explicit token starts a separate budget.
   --timeout-ms <milliseconds> Process timeout (default: 1800000)
   --help                      Show this help
 `;
@@ -184,10 +198,7 @@ export function parseArguments(args: string[]): ParsedArguments {
     if (parsed.contextFile.length === 0) {
       throw new RunnerError("usage", "--context-file is required");
     }
-    if (parsed.runId.length === 0) {
-      throw new RunnerError("usage", "--run-id is required");
-    }
-    if (!RUN_ID_PATTERN.test(parsed.runId)) {
+    if (parsed.runId.length > 0 && !RUN_ID_PATTERN.test(parsed.runId)) {
       throw new RunnerError(
         "usage",
         "--run-id must be 8-64 characters of [A-Za-z0-9._-] starting with a letter or digit",
@@ -232,22 +243,67 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+/**
+ * Run state lives under the user state directory rather than the temporary directory, so a reboot or
+ * a tmp sweep does not hand an in-progress run a fresh budget.
+ */
+export function runStateDirectory(
+  environment: NodeJS.ProcessEnv = process.env,
+  home: string = homedir(),
+): string {
+  const configured = environment.XDG_STATE_HOME;
+  const base =
+    configured !== undefined && configured.length > 0 && isAbsolute(configured)
+      ? configured
+      : home.length > 0
+        ? join(home, ".local", "state")
+        : tmpdir();
+  return join(base, STATE_ROOT_DIRECTORY, RUN_STATE_DIRECTORY);
+}
+
 export function runStatePath(runId: string): string {
-  return join(tmpdir(), RUN_STATE_DIRECTORY, `${runId}.json`);
+  return join(runStateDirectory(), `${runId}.json`);
 }
 
 /**
- * The pass budget is per run identifier and lives outside the repository. A caller that invents a
- * fresh identifier every pass gets a fresh budget; that is a deliberate limit of a stateless CLI,
- * and the identifier is echoed in the envelope so the real pass count stays auditable.
+ * The default identifier is derived from the working tree so consecutive passes accumulate against
+ * one budget without the caller reusing anything. It deliberately excludes the diff: the diff changes
+ * with every fix, which is the point of the loop, so keying on it would hand every pass a new budget.
  */
-export async function readRunState(runId: string): Promise<RunState> {
+export function deriveRunId(cwd: string, head: string): string {
+  const digest = createHash("sha256").update(resolve(cwd)).update("\n").update(head).digest("hex");
+  return `${DERIVED_RUN_ID_PREFIX}${digest.slice(0, 32)}`;
+}
+
+export function freshRunState(runId: string, now: number): RunState {
+  return { schema_version: 2, run_id: runId, created_at: now, updated_at: now, passes: [] };
+}
+
+/**
+ * A derived identifier stays stable while the commit does, so an abandoned run would otherwise charge
+ * its spent passes to the next piece of work on the same tree. Age is measured from the last recorded
+ * pass, so a long but active run keeps its budget, and a clock that moved backwards expires nothing.
+ */
+export function isRunStateExpired(state: RunState, now: number): boolean {
+  return now - state.updated_at > RUN_STATE_MAX_AGE_MS;
+}
+
+function isRunPass(value: unknown): value is RunPass {
+  return (
+    isRecord(value) &&
+    Number.isSafeInteger(value.pass) &&
+    (value.pass as number) >= 1 &&
+    (value.tree_digest === null || typeof value.tree_digest === "string")
+  );
+}
+
+export async function readRunState(runId: string, now: number = Date.now()): Promise<RunState> {
   const path = runStatePath(runId);
   let raw: string;
   try {
     raw = await readFile(path, "utf8");
   } catch {
-    return { schema_version: 1, run_id: runId, completed_passes: [] };
+    return freshRunState(runId, now);
   }
 
   let parsed: unknown;
@@ -258,10 +314,12 @@ export async function readRunState(runId: string): Promise<RunState> {
   }
   if (
     !isRecord(parsed) ||
-    parsed.schema_version !== 1 ||
+    parsed.schema_version !== 2 ||
     parsed.run_id !== runId ||
-    !Array.isArray(parsed.completed_passes) ||
-    parsed.completed_passes.some((pass) => !Number.isSafeInteger(pass) || (pass as number) < 1)
+    !Number.isSafeInteger(parsed.created_at) ||
+    !Number.isSafeInteger(parsed.updated_at) ||
+    !Array.isArray(parsed.passes) ||
+    !parsed.passes.every(isRunPass)
   ) {
     throw new RunnerError("pass_budget", `run state file is unusable: ${path}`);
   }
@@ -269,13 +327,13 @@ export async function readRunState(runId: string): Promise<RunState> {
 }
 
 export function assertPassAllowed(state: RunState, pass: number): void {
-  if (state.completed_passes.length >= MAX_PASS) {
+  if (state.passes.length >= MAX_PASS) {
     throw new RunnerError(
       "pass_budget",
       `run ${state.run_id} already completed the maximum of ${MAX_PASS} reviewer passes`,
     );
   }
-  const expected = state.completed_passes.length + 1;
+  const expected = state.passes.length + 1;
   if (pass !== expected) {
     throw new RunnerError(
       "pass_budget",
@@ -284,11 +342,17 @@ export function assertPassAllowed(state: RunState, pass: number): void {
   }
 }
 
-export async function recordCompletedPass(state: RunState, pass: number): Promise<void> {
+export async function recordCompletedPass(
+  state: RunState,
+  pass: number,
+  treeDigest: string | null = null,
+  now: number = Date.now(),
+): Promise<void> {
   const path = runStatePath(state.run_id);
   const next: RunState = {
     ...state,
-    completed_passes: [...state.completed_passes, pass],
+    updated_at: now,
+    passes: [...state.passes, { pass, tree_digest: treeDigest }],
   };
   await mkdir(dirname(path), { recursive: true, mode: 0o700 });
   await writeFile(path, `${JSON.stringify(next, null, 2)}\n`, { encoding: "utf8", mode: 0o600 });
@@ -405,8 +469,14 @@ export function validateReviewResult(value: unknown): ReviewResult {
   return value as unknown as ReviewResult;
 }
 
-export function buildReviewerPrompt(contract: string, context: string, pass: number): string {
-  return `You are Codex reviewer pass ${pass} of at most ${MAX_PASS}.
+/**
+ * The reviewer is told neither its ordinal pass nor the budget. Either one is a reason to hold a
+ * finding back near the end or to pad a pass that would otherwise look empty, and the reviewer needs
+ * neither to do the work: the ledger in the context packet already carries what earlier passes found.
+ * The pass number stays in the envelope, where it is audit data rather than reviewer context.
+ */
+export function buildReviewerPrompt(contract: string, context: string): string {
+  return `You are the independent Codex reviewer for this change set.
 
 <reviewer_contract>
 ${contract.trim()}
@@ -490,25 +560,83 @@ function spawnCodexProcess(
 
 type CodexProcess = ReturnType<typeof spawnCodexProcess>;
 
+function isInsideRepository(repositoryRoot: string, target: string): boolean {
+  const repositoryRelative = relative(repositoryRoot, target);
+  return (
+    repositoryRelative === "" ||
+    (repositoryRelative !== ".." &&
+      !repositoryRelative.startsWith(`..${sep}`) &&
+      !isAbsolute(repositoryRelative))
+  );
+}
+
 function resolveCodexExecutable(repositoryRoot: string): string {
   const located = Bun.which("codex");
   if (located === null) {
     throw new RunnerError("codex_unavailable", "could not find Codex executable on PATH");
   }
   const executable = resolve(located);
-  const repositoryRelative = relative(repositoryRoot, executable);
-  const isRepositoryLocal =
-    repositoryRelative === "" ||
-    (repositoryRelative !== ".." &&
-      !repositoryRelative.startsWith(`..${sep}`) &&
-      !isAbsolute(repositoryRelative));
-  if (isRepositoryLocal) {
+  if (isInsideRepository(repositoryRoot, executable)) {
     throw new RunnerError(
       "codex_unavailable",
       `refusing repository-local Codex executable: ${executable}`,
     );
   }
   return executable;
+}
+
+/**
+ * Read-only git inspection for the run identifier and the working-tree digest. A repository-local git
+ * would be the reviewed change set executing itself, so it is refused the same way Codex is. Every
+ * failure degrades to `null`: the digest is reporting, and losing it must not fail a review.
+ */
+function gitOutput(repositoryRoot: string, args: string[]): string | null {
+  const located = Bun.which("git");
+  if (located === null) return null;
+  const executable = resolve(located);
+  if (isInsideRepository(repositoryRoot, executable)) return null;
+  try {
+    const result = Bun.spawnSync([executable, ...args], {
+      cwd: repositoryRoot,
+      stdout: "pipe",
+      stderr: "ignore",
+      timeout: GIT_COMMAND_TIMEOUT_MS,
+      killSignal: "SIGKILL",
+    });
+    if (result.exitedDueToTimeout || result.exitCode !== 0) return null;
+    return result.stdout.toString();
+  } catch {
+    return null;
+  }
+}
+
+interface TreeSnapshot {
+  head: string | null;
+  digest: string | null;
+  limitation: string | null;
+}
+
+/**
+ * The digest covers status entries and tracked-content changes. Untracked file contents are not
+ * covered, because reaching them would need an index write and this wrapper never mutates the
+ * repository, so the envelope states what the digest actually spans.
+ */
+function readTreeSnapshot(repositoryRoot: string): TreeSnapshot {
+  const head = gitOutput(repositoryRoot, ["rev-parse", "HEAD"])?.trim() ?? null;
+  const status = gitOutput(repositoryRoot, ["status", "--porcelain=v1", "--untracked-files=all"]);
+  const diff = gitOutput(repositoryRoot, head === null ? ["diff"] : ["diff", "HEAD"]);
+  if (status === null || diff === null) {
+    return {
+      head,
+      digest: null,
+      limitation: `could not digest the working tree with git at ${repositoryRoot}`,
+    };
+  }
+  return {
+    head,
+    digest: createHash("sha256").update(status).update("\n").update(diff).digest("hex"),
+    limitation: null,
+  };
 }
 
 function verifyCodexCli(codexExecutable: string, timeoutMs: number): string {
@@ -610,8 +738,18 @@ async function runReview(options: ParsedArguments): Promise<Record<string, unkno
   } catch {
     throw new RunnerError("usage", `output schema is not valid JSON: ${options.schemaFile}`);
   }
-  const runState = await readRunState(options.runId);
+  const tree = readTreeSnapshot(options.cwd);
+  const runIdSource = options.runId.length > 0 ? "explicit" : "derived";
+  const runId =
+    options.runId.length > 0 ? options.runId : deriveRunId(options.cwd, tree.head ?? "no-head");
+  const now = Date.now();
+  const storedState = await readRunState(runId, now);
+  const discardedExpiredState = isRunStateExpired(storedState, now);
+  const runState = discardedExpiredState ? freshRunState(runId, now) : storedState;
   assertPassAllowed(runState, options.pass);
+  const previousDigest = runState.passes.at(-1)?.tree_digest ?? null;
+  const treeChangedSincePreviousPass =
+    previousDigest === null || tree.digest === null ? null : tree.digest !== previousDigest;
   const elapsedBeforePreflight = performance.now() - startedAt;
   if (elapsedBeforePreflight >= options.timeoutMs) {
     throw new RunnerError("timeout", `Codex review exceeded ${options.timeoutMs} ms`);
@@ -678,7 +816,7 @@ async function runReview(options: ParsedArguments): Promise<Record<string, unkno
 
     stdoutConsumer = consumeStreamTail(subprocess.stdout);
     stderrConsumer = consumeStreamTail(subprocess.stderr);
-    subprocess.stdin.write(buildReviewerPrompt(contract, context, options.pass));
+    subprocess.stdin.write(buildReviewerPrompt(contract, context));
     subprocess.stdin.end();
 
     const remainingTimeoutMs = Math.max(1, options.timeoutMs - (performance.now() - startedAt));
@@ -726,7 +864,7 @@ async function runReview(options: ParsedArguments): Promise<Record<string, unkno
     }
     const review = validateReviewResult(parsedResult);
     const verdict = deriveVerdict(review);
-    await recordCompletedPass(runState, options.pass);
+    await recordCompletedPass(runState, options.pass, tree.digest, Date.now());
 
     return {
       schema_version: 2,
@@ -741,10 +879,16 @@ async function runReview(options: ParsedArguments): Promise<Record<string, unkno
         sandbox: "read-only",
         no_test_policy: "reviewer-contract",
         ephemeral: true,
-        run_id: options.runId,
+        run_id: runId,
+        run_id_source: runIdSource,
         pass: options.pass,
-        completed_passes_in_run: runState.completed_passes.length + 1,
+        completed_passes_in_run: runState.passes.length + 1,
         max_passes_in_run: MAX_PASS,
+        discarded_expired_run_state: discardedExpiredState,
+        tree_digest: tree.digest,
+        tree_digest_covers: "git status entries and tracked-content diff",
+        tree_digest_limitation: tree.limitation,
+        tree_changed_since_previous_pass: treeChangedSincePreviousPass,
         cwd: options.cwd,
         elapsed_ms: Math.round(performance.now() - startedAt),
       },

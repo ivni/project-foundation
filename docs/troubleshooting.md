@@ -87,6 +87,18 @@ An `invalid_output` error means Claude Code omitted or violated `structured_outp
 or the semantic state rules. It is not a clean review. Preserve the error and resolve the capability
 problem before retrying.
 
+## A review loop reports an exhausted pass budget
+
+Both review wrappers record completed reviewer passes per run identifier, and both derive that
+identifier from the repository path and the current commit when `--run-id` is absent. Passes over one
+working tree therefore share one eight-pass budget on purpose.
+
+State lives under `$XDG_STATE_HOME/project-foundation/`, falling back to `~/.local/state`, in
+`codex-review-runs/` or `claude-review-runs/`. State untouched for a day is treated as an abandoned run
+and replaced. To start a fresh budget sooner, either commit the reviewed work, which changes the
+derived identifier, or pass an explicit `--run-id`. Both choices appear in the wrapper envelope as
+`run_id` and `run_id_source`, so a reset stays visible in the reported outcome.
+
 ## Update reports local changes
 
 The receipt hash differs from the current files. Review the diff. If those edits matter, choose
