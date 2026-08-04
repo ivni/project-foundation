@@ -7,6 +7,16 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-08-04
+
+### Changed
+
+- Raised the review-loop pass budget from eight to ten completed reviewer passes in both loops. Eight
+  was reached in practice on change sets whose fixes legitimately opened new surface, and a run that
+  ends `BLOCKED` on budget hands the user an unfinished review rather than a verdict. The wrapper
+  limit, the four host adapters per loop, the terminal-state contract, and the pass-10/pass-11
+  boundary tests move together, so the budget still has exactly one value.
+
 ## [1.6.0] - 2026-08-04
 
 ### Changed
@@ -270,7 +280,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.6.1...HEAD
+[1.6.1]: https://github.com/ivni/project-foundation/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/ivni/project-foundation/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/ivni/project-foundation/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/ivni/project-foundation/compare/v1.3.2...v1.4.0

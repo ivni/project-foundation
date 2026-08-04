@@ -16,7 +16,7 @@ Do not use a Pi-native subagent or model alias as the reviewer. Launch the actua
 the shared Bun wrapper:
 
 ```text
-bun <skill-root>/scripts/run-codex-review.ts --cwd <repository> --context-file <temporary-context> --pass <1-8>
+bun <skill-root>/scripts/run-codex-review.ts --cwd <repository> --context-file <temporary-context> --pass <1-10>
 ```
 
 Create the context file outside the repository and pass paths as separate process arguments. Pi's

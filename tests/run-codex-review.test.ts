@@ -151,11 +151,11 @@ describe("Codex review wrapper arguments", () => {
   test("requires a context file and a bounded pass number", () => {
     expect(() => parseArguments(["--pass", "1"])).toThrow("--context-file is required");
     expect(
-      parseArguments(["--context-file", "context.md", "--run-id", RUN_ID, "--pass", "8"]).pass,
-    ).toBe(8);
+      parseArguments(["--context-file", "context.md", "--run-id", RUN_ID, "--pass", "10"]).pass,
+    ).toBe(10);
     expect(() =>
-      parseArguments(["--context-file", "context.md", "--run-id", RUN_ID, "--pass", "9"]),
-    ).toThrow("--pass must be between 1 and 8");
+      parseArguments(["--context-file", "context.md", "--run-id", RUN_ID, "--pass", "11"]),
+    ).toThrow("--pass must be between 1 and 10");
   });
 
   test("accepts a defaulted run identifier and still validates an explicit one", () => {
@@ -255,10 +255,10 @@ describe("Codex review pass budget", () => {
     expect(() => assertPassAllowed(runState([1]), 5)).toThrow("expects pass 2, received pass 5");
   });
 
-  test("refuses a ninth pass in the same run", () => {
-    expect(() => assertPassAllowed(runState([1, 2, 3, 4, 5, 6, 7]), 8)).not.toThrow();
-    expect(() => assertPassAllowed(runState([1, 2, 3, 4, 5, 6, 7, 8]), 9)).toThrow(
-      "already completed the maximum of 8 reviewer passes",
+  test("refuses an eleventh pass in the same run", () => {
+    expect(() => assertPassAllowed(runState([1, 2, 3, 4, 5, 6, 7, 8, 9]), 10)).not.toThrow();
+    expect(() => assertPassAllowed(runState([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), 11)).toThrow(
+      "already completed the maximum of 10 reviewer passes",
     );
   });
 

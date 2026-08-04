@@ -190,10 +190,10 @@ edit adds reviewable surface without removing a defect, which is how a review lo
 
 ## Run the bounded loop
 
-One run allows at most eight completed reviewer passes. The wrapper derives a default run identifier
+One run allows at most ten completed reviewer passes. The wrapper derives a default run identifier
 from the repository path and the current commit, so passes over the same working tree accumulate
 against one budget with nothing for the caller to remember. It records each completed pass under that
-identifier and refuses a ninth pass or an out-of-sequence pass number.
+identifier and refuses an eleventh pass or an out-of-sequence pass number.
 
 The limit is therefore self-applying by default and auditable always, not tamper-proof. An explicit
 `--run-id` starts a separate budget, and run state left untouched for a day expires so an abandoned
@@ -227,9 +227,9 @@ For each pass:
    - `BLOCKED` consumes the completed pass and ends the loop immediately with its limitations.
    - `CLEAN` is a final candidate; preserve its remaining findings in the ledger and continue only to
      the terminal-state checks.
-   - `FINDINGS` on pass 8 ends the loop as `BLOCKED` before any further fix. A pass-9 review would be
+   - `FINDINGS` on pass 10 ends the loop as `BLOCKED` before any further fix. A pass-11 review would be
      required to verify another edit and is not authorized.
-   - `FINDINGS` on passes 1 through 7 continues to finding validation.
+   - `FINDINGS` on passes 1 through 9 continues to finding validation.
 6. Independently validate each blocking defect against the current code and task. Do not edit merely
    because the reviewer asserted it.
 7. Mark a false positive `rejected-with-evidence`. The reviewer contract requires new evidence before
@@ -299,9 +299,9 @@ Return `Review: BLOCKED` immediately when:
 - the task scope cannot be separated from unrelated work;
 - an exact required capability is unavailable and no fallback is approved;
 - reviewer output is invalid or cannot be obtained reliably; or
-- pass 8 still returns `FINDINGS` or `BLOCKED`.
+- pass 10 still returns `FINDINGS` or `BLOCKED`.
 
-Do not start pass 9 without a new user instruction.
+Do not start pass 11 without a new user instruction.
 
 ## Report the outcome
 

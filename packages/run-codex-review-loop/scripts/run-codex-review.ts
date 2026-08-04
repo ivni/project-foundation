@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 const DEFAULT_MODEL = "gpt-5.6-sol";
 const DEFAULT_REASONING_EFFORT = "xhigh";
 const DEFAULT_TIMEOUT_MS = 30 * 60 * 1000;
-const MAX_PASS = 8;
+const MAX_PASS = 10;
 const STATE_ROOT_DIRECTORY = "project-foundation";
 const RUN_STATE_DIRECTORY = "codex-review-runs";
 /** Run state left untouched this long belongs to an abandoned run, not to the next one. */
@@ -115,11 +115,11 @@ class RunnerError extends Error {
 }
 
 const usage = `Usage:
-  bun run-codex-review.ts --context-file <path> --pass <1-8> [options]
+  bun run-codex-review.ts --context-file <path> --pass <1-10> [options]
 
 Required:
   --context-file <path>       Neutral task and scope context outside the repository
-  --pass <1-8>                Completed reviewer pass number, in sequence within the run
+  --pass <1-10>                Completed reviewer pass number, in sequence within the run
 
 Options:
   --cwd <path>                Repository root (default: current directory)

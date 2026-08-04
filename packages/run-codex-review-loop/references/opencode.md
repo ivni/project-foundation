@@ -15,7 +15,7 @@ Do not use an OpenCode native agent configured with an OpenAI model. Launch the 
 through the shared Bun wrapper:
 
 ```text
-bun <skill-root>/scripts/run-codex-review.ts --cwd <repository> --context-file <temporary-context> --pass <1-8>
+bun <skill-root>/scripts/run-codex-review.ts --cwd <repository> --context-file <temporary-context> --pass <1-10>
 ```
 
 Keep the context file outside the repository and pass command arguments without shell interpolation.

@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 const MODEL = "fable";
 const EFFORT = "xhigh";
 const TOOLS = "Read,Grep,Glob";
-const MAX_PASS = 8;
+const MAX_PASS = 10;
 const STATE_ROOT_DIRECTORY = "project-foundation";
 const RUN_STATE_DIRECTORY = "claude-review-runs";
 /** Run state left untouched this long belongs to an abandoned run, not to the next one. */
@@ -118,11 +118,11 @@ class RunnerError extends Error {
 }
 
 const usage = `Usage:
-  bun run-claude-review.ts --context-file <path> --pass <1-8> [options]
+  bun run-claude-review.ts --context-file <path> --pass <1-10> [options]
 
 Required:
   --context-file <path>       Neutral task and scope context outside the repository
-  --pass <1-8>                Completed reviewer pass number, in sequence within the run
+  --pass <1-10>                Completed reviewer pass number, in sequence within the run
 
 Options:
   --cwd <path>                Repository root (default: current directory)
