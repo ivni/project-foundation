@@ -66,9 +66,11 @@ architecture, tech stack, or ADRs.}}
 ## Non-goals
 
 <!-- As load-bearing as the scope. What this product deliberately does NOT do,
-     and briefly why. -->
+     and briefly why. This is the declared boundary; individual rejected requests are logged
+     as OOS-N in docs/registers.md. When a rejection moves the boundary itself, update both in
+     the same change and reference the OOS id, so the two never disagree. -->
 
-- {{non-goal — reason}}
+- {{non-goal — reason}} {{(OOS-N when it came from a logged rejection)}}
 
 ## Open product and validation questions
 

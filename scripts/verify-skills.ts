@@ -1,6 +1,7 @@
 import { lstat, readdir, readFile } from "node:fs/promises";
 import { dirname, join, relative, resolve } from "node:path";
 import { isSkillId, SKILL_IDS } from "../packages/cli/src/skills.ts";
+import { SHARED_REFERENCES } from "./shared-references.ts";
 
 const root = join(import.meta.dir, "..");
 const errors: string[] = [];
@@ -58,6 +59,12 @@ for (const skillId of SKILL_IDS) {
   const content = await readFile(skillPath, "utf8");
   const frontmatter = content.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/)?.[1];
 
+  /**
+   * Claude Code and Pi read `disable-model-invocation` from the frontmatter; Codex, OpenCode, and
+   * Hermes read their own metadata and ignore unknown fields. One payload therefore carries the
+   * portable pair, and `agents/openai.yaml` must agree with it.
+   */
+  let userInvokedInSkill = false;
   if (!frontmatter) {
     errors.push(`${directory}/SKILL.md: missing YAML frontmatter`);
   } else {
@@ -65,14 +72,26 @@ for (const skillId of SKILL_IDS) {
       .split(/\r?\n/)
       .map((line) => line.match(/^([a-z][a-z0-9_-]*):/)?.[1])
       .filter((field): field is string => Boolean(field));
-    if (fields.join(",") !== "name,description") {
-      errors.push(`${directory}/SKILL.md: frontmatter must contain name and description only`);
+    if (fields[0] !== "name" || fields[1] !== "description") {
+      errors.push(`${directory}/SKILL.md: frontmatter must start with name then description`);
+    }
+    const unsupported = fields.slice(2).filter((field) => field !== "disable-model-invocation");
+    if (unsupported.length > 0) {
+      errors.push(`${directory}/SKILL.md: unsupported frontmatter field ${unsupported.join(", ")}`);
     }
     if (!frontmatter.includes(`name: ${skillId}`)) {
       errors.push(`${directory}/SKILL.md: expected name ${skillId}`);
     }
     const description = frontmatter.match(/^description:\s*(.+)$/m)?.[1]?.trim();
     if (!description) errors.push(`${directory}/SKILL.md: missing description`);
+
+    const invocationFlag = frontmatter.match(/^disable-model-invocation:\s*(.+)$/m)?.[1]?.trim();
+    if (invocationFlag !== undefined && invocationFlag !== "true") {
+      errors.push(
+        `${directory}/SKILL.md: disable-model-invocation must be true or be omitted entirely`,
+      );
+    }
+    userInvokedInSkill = invocationFlag === "true";
   }
 
   if (content.split(/\r?\n/).length > 500) {
@@ -87,6 +106,18 @@ for (const skillId of SKILL_IDS) {
     const openAi = await readFile(openAiPath, "utf8");
     if (!openAi.includes(`$${skillId}`)) {
       errors.push(`${directory}/agents/openai.yaml: default prompt must name $${skillId}`);
+    }
+    const implicit = openAi.match(/^\s*allow_implicit_invocation:\s*(.+)$/m)?.[1]?.trim();
+    if (implicit !== "true" && implicit !== "false") {
+      errors.push(
+        `${directory}/agents/openai.yaml: policy.allow_implicit_invocation must be declared as true or false`,
+      );
+    } else if (userInvokedInSkill === (implicit === "true")) {
+      errors.push(
+        `${directory}: invocation policy disagrees across harnesses — SKILL.md ${
+          userInvokedInSkill ? "disables" : "allows"
+        } model invocation while openai.yaml sets allow_implicit_invocation: ${implicit}`,
+      );
     }
   }
 
@@ -112,8 +143,29 @@ for (const skillId of SKILL_IDS) {
   }
 }
 
+for (const reference of SHARED_REFERENCES) {
+  const sourcePath = join(root, ...reference.source.split("/"));
+  if (!(await pathExists(sourcePath))) {
+    errors.push(`${reference.source}: missing canonical shared reference`);
+    continue;
+  }
+  const canonical = await readFile(sourcePath, "utf8");
+  for (const copy of reference.copies) {
+    const copyPath = join(root, ...copy.split("/"));
+    if (!(await pathExists(copyPath))) {
+      errors.push(`${copy}: missing generated copy of ${reference.source}`);
+      continue;
+    }
+    if ((await readFile(copyPath, "utf8")) !== canonical) {
+      errors.push(`${copy}: drifted from ${reference.source} — run bun run sync:shared`);
+    }
+  }
+}
+
 if (errors.length > 0) {
   throw new Error(`Skill verification failed:\n${errors.map((error) => `- ${error}`).join("\n")}`);
 }
 
-process.stdout.write(`Skills verified (${SKILL_IDS.length} payloads).\n`);
+process.stdout.write(
+  `Skills verified (${SKILL_IDS.length} payloads, ${SHARED_REFERENCES.length} shared references).\n`,
+);

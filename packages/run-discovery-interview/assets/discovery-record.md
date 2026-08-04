@@ -39,11 +39,24 @@ Distinguish confirmed statements from assumptions and missing evidence.
 {{Policy, ownership, incentives, budget, timing, commercial or legal constraints, and risk tolerance
 that apply to the subject. Record only relevant constraints.}}
 
+## Language
+
+Terms settled during the interview. Promoted to the project glossary by a later workflow, never
+written there from here.
+
+| Term | Meaning in domain language | Avoid | Settled in |
+|---|---|---|---|
+| {{term}} | {{what it means}} | {{synonyms and losing readings it replaces}} | {{DEC-NNN}} |
+
 ## Routed unknowns
 
-| Priority | ID | Lane | Unknown | Resolution route | Owner / source | Interim default / answer-by | Status |
-|---|---|---|---|---|---|---|---|
-| critical | UNK-001 | product value / functionality-domain / UX / business constraint / engineering | {{unknown}} | stakeholder decision / agent research / user research / engineering synthesis / experiment-spike / deferred-with-default | {{who or what can answer}} | {{default, trigger, or answer-by}} | open |
+`Blocked by` lists the unknowns this one waits on. An unknown is takeable when every unknown it
+lists is closed, and the takeable open unknowns are the frontier. Derive the frontier from this
+column; do not keep a second list of it.
+
+| Priority | ID | Lane | Unknown | Blocked by | Resolution route | Owner / source | Interim default / answer-by | Status |
+|---|---|---|---|---|---|---|---|---|
+| critical | UNK-001 | product value / functionality-domain / UX / business constraint / engineering | {{unknown}} | {{UNK IDs or empty}} | stakeholder decision / agent research / user research / engineering synthesis / experiment-spike / deferred-with-default | {{who or what can answer}} | {{default, trigger, or answer-by}} | open |
 
 Allowed statuses: `open`, `decided`, `needs-validation`, `deferred-with-default`, `superseded`,
 `routed-for-handoff`.
@@ -89,6 +102,15 @@ decision and route the actual mechanism to agent research, engineering synthesis
 | ID | Assumption | Lane | Risk if wrong | Validation method / source | Interim default | Status / trigger |
 |---|---|---|---|---|---|---|
 | ASM-001 | {{proposition treated as true}} | {{lane}} | {{impact}} | {{how it will be checked}} | {{current rule}} | open / validated / rejected |
+
+## Ruled out of scope
+
+Placed outside the subject's goal rather than deferred. A deferred default stays in scope and
+returns on its trigger; an entry here returns only if the goal is redrawn.
+
+| What was asked for | Why it is out of scope | What would put it back in scope | Decided in |
+|---|---|---|---|
+| {{request, capability, or idea}} | {{reason it sits outside the goal}} | {{goal change or new evidence; "only if the goal is redrawn" is complete}} | {{DEC-NNN}} |
 
 ## Contradictions and residual risks
 
@@ -139,8 +161,10 @@ Complete only when the user ends discovery.
 - **Value and outcome:** {{concise product-value summary}}
 - **Functional and UX contract:** {{concise behavior summary}}
 - **Decisions closed:** {{DEC IDs}}
+- **Terms settled:** {{terms and the synonyms they replace, for promotion to the glossary}}
 - **Needs validation:** {{DEC/ASM/UNK IDs and validation paths}}
 - **Deferred with defaults:** {{IDs, defaults, triggers}}
+- **Ruled out of scope:** {{entries, for promotion to the out-of-scope register}}
 - **Engineering implications:** {{items and routes; not stakeholder-approved mechanisms}}
 - **Residual risks accepted:** {{IDs}}
 - **Suggested next workflow:** {{requirements or PRD synthesis / project-foundation technical synthesis / ADR / validation spike}}

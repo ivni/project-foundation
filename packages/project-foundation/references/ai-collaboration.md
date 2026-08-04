@@ -68,9 +68,14 @@ One approval is not a standing approval. When in doubt, the action is external.
 ## Discovery technique
 
 - Absorb first (brief, code, docs), interrogate second.
-- Classify every unknown as product value, functionality and domain, UX, business constraint, or
-  engineering. Route it to stakeholder decision, agent research, user research, engineering
-  synthesis, a bounded spike, or a deferred default before deciding whether to ask.
+- Assign every unknown a decision lane and a resolution route, per
+  [decision-routing.md](decision-routing.md), before deciding whether to ask about it.
+- Record what each unknown waits on, and ask only the takeable ones — those whose prerequisites
+  are closed. The frontier is derived from those dependencies, never stored beside them.
+- Sharpen the language as it lands. When a term the user reaches for conflicts with a recorded
+  term or carries two meanings, say so in that turn and settle it — "your glossary defines
+  cancellation as X, but you seem to mean Y". A term settled in conversation and not written down
+  is lost with the session.
 - Default to a non-technical product-owner track. Ask **one stakeholder-owned question at a time**
   through value, behavior, experience and business, then handoff gates; each question offers
   plain-language options with a recommended default.

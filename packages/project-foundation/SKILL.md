@@ -1,6 +1,6 @@
 ---
 name: project-foundation
-description: Opinionated, stack-agnostic method for laying a project's product and engineering foundation — product value and UX contract, agent-led technical synthesis, architecture, process, and artifact set. Use when starting a new project (product discovery → technical synthesis → artifact core → gates), when overhauling or inheriting an existing codebase (audit → gap plan → retro-ADRs), or for point tasks — start or close a phase requirements slice, write an ADR, check docs-vs-code drift, register tech debt or risks, run a spike.
+description: Stack-agnostic standard for a project's product and engineering foundation. Use when starting a new project, when auditing or inheriting an existing codebase, or for a point task — a phase requirements slice, an ADR, a docs-vs-code drift check, a debt or risk entry, or a spike.
 ---
 
 # Project Foundation
@@ -34,7 +34,7 @@ applicable capability. Elsewhere, `must`, `never`, and `only` mean MUST; a label
    permission to overwrite either side blindly.
 2. **Discovery exists from day one; the artifact core exists before build:**
    `docs/discovery.md` captures product value, functional and UX intent, applicability, routed
-   unknowns, and engineering implications, then the agent contract, PRD,
+   unknowns, and engineering implications, then the agent contract, glossary, PRD,
    tech-stack, stages, ADR log with index, architecture-lite sketch, and registers
    become canonical before phase 0 starts.
 3. **Phase 0 proves the thinnest releasable path appropriate to the project.** It always
@@ -47,14 +47,19 @@ applicable capability. Elsewhere, `must`, `never`, and `only` mean MUST; a label
 5. **Non-negotiables are written down:** the agent contract is the sole canonical home
    for 5–7 product principles with stable `PRINC-NNN` IDs, plus the domain rules code
    must enforce. Other artifacts reference principle IDs instead of mirroring their
-   wording. Violating one is a bug, not a style choice.
+   wording. Violating one is a bug, not a style choice. Both are phrased in the
+   project's own recorded language — `docs/glossary.md` is the sole canonical home for
+   that language, and code, docs, and commit messages use its terms rather than
+   synonyms for them.
 6. **One local verification entry point** (lint + format check + typecheck + fast tests
    + audit). A pre-push hook provides fast feedback; required CI checks are enforcement.
 7. **Decisions are recorded.** Anything hard to reverse, cross-cutting, or surprising
    gets an ADR. MUST deviations require explicit approval and a full ADR; cross-cutting
    SHOULD deviations get a mini-ADR.
 8. **Debt and risk live in a register** with an owner and a review trigger. Known debt
-   without a register entry violates the standard.
+   without a register entry violates the standard. Work consciously ruled outside the
+   goal is recorded there too, with the reason and what would put it back in scope, so a
+   settled rejection is not re-argued from memory.
 9. **Applicable platform questions are answered early through agent-led synthesis** — observability,
    auth model, time handling, idempotency, backups — using the capability-conditional defaults in
    [references/platform.md](references/platform.md). Ask the user only for product-visible policy,
@@ -131,17 +136,20 @@ If ambiguous, ask which mode the user wants before doing anything else.
    structure in the response without creating the file.
 3. **Fix the agent contract path, artifact language, and applicability** in discovery
    (see above). Do not implement infrastructure for capabilities marked N/A.
-4. **Build the routed unknowns register inside discovery.** For every unknown record its decision
-   lane — product value, functionality and domain, UX, business constraint, or engineering — and its
-   resolution route: stakeholder decision, agent research, user research, engineering synthesis,
-   spike, or deferred default. Typical stakeholder unknowns include target users, current
+4. **Build the routed unknowns register inside discovery.** Record a decision lane and a resolution
+   route for every unknown, per
+   [references/decision-routing.md](references/decision-routing.md), plus the unknowns each one
+   waits on. An unknown is takeable when everything it waits on is closed; derive the frontier
+   from those dependencies rather than keeping a second list of it.
+   Typical stakeholder unknowns include target users, current
    alternatives, desired value, success and guardrails, minimum useful outcome, core journey,
    non-goals, product principles, domain rules, policy, budget, and timing. Typical engineering
    unknowns include scale, stack constraints, release target, auth mechanism, data representation,
    and deployment topology.
 5. **Close stakeholder unknowns one question at a time** through value, behavior, experience and
    business, then handoff gates, per
-   [references/ai-collaboration.md](references/ai-collaboration.md). Batch only trivia. Ask for
+   [references/ai-collaboration.md](references/ai-collaboration.md). Ask only takeable unknowns.
+   Batch only trivia. Ask for
    outcomes, observable behavior, policy, priorities, and constraints; do not ask the user to choose
    schemas, indexes, frameworks, API patterns, or migration mechanisms unless they explicitly
    request technical collaboration. Record every answer immediately in discovery, or in the
@@ -154,10 +162,13 @@ If ambiguous, ask which mode the user wants before doing anything else.
    routed to synthesis; do not generate the canonical artifact core while a high-impact stakeholder
    decision is open or a high-impact engineering unknown lacks containment and an owner or method.
 7. **When writes are authorized, generate the artifact core and promote decisions**
-   from discovery into their canonical destinations, in dependency order: product
-   intent into PRD → product principles with stable `PRINC-NNN` IDs and domain rules
-   into the agent contract (the sole editable principle list; PRD and phase slices
-   reference it) → tech-stack (**MUST** record each constraint type, official source
+   from discovery into their canonical destinations, in dependency order: the resolved
+   domain language into `docs/glossary.md`, from
+   [templates/glossary.md](templates/glossary.md), **first** — every artifact after it is
+   written in those terms, and retrofitting the vocabulary later means rewriting all of
+   them → product intent into PRD → product principles with stable `PRINC-NNN` IDs and
+   domain rules into the agent contract (the sole editable principle list; PRD and phase
+   slices reference it) → tech-stack (**MUST** record each constraint type, official source
    URL, verification date, and lifecycle/EOL) → stages (phase 0 follows the applicable
    contour) → architecture sketch → registers → ADR index and foundational ADRs (stack
    choice, applicable auth model, and any decision that was genuinely contested) →
@@ -169,7 +180,8 @@ If ambiguous, ask which mode the user wants before doing anything else.
    workflow profile — concrete commands come from the chosen stack.
 9. **Open phase 0** with a requirements slice per [references/process.md](references/process.md).
 10. **Consistency pass.** Re-read the generated set as a whole; fix contradictions,
-   duplicated editable principle lists, and unresolved `PRINC-NNN` references before
+   duplicated editable principle lists, unresolved `PRINC-NNN` references, and any place
+   an artifact uses a synonym for a glossary term instead of the term, before
    showing the result. Present a summary: artifacts created, decisions recorded,
    unknowns that remain (they go to the blockers file or the register, never silently).
 
@@ -186,19 +198,26 @@ If ambiguous, ask which mode the user wants before doing anything else.
    standards only where their capabilities apply. Classify each applicable item:
    present / partial / missing / contradicts. Record N/A items with rationale,
    but do not report them as gaps.
-3. **Retro-ADRs.** Significant implicit decisions become ADRs with status
+3. **Extract the language.** Read the code, docs, and history for the vocabulary already in
+   use and record it as the glossary — do not invent a new language for an existing project.
+   Where one term carries two meanings, or two terms carry one, record it as a flagged
+   ambiguity and ask; do not pick a winner silently, because the losing reading is somebody's
+   working mental model and possibly the code's.
+4. **Retro-ADRs.** Significant implicit decisions become ADRs with status
    "accepted (retroactive)" and the observed rationale. When read-only, propose the
    entries in the report; when writes are authorized, record them. Do not relitigate
    them — preserve a baseline for future changes.
-4. **Gap plan.** A prioritized adoption plan, ordered by safety-of-change: first make
+5. **Gap plan.** A prioritized adoption plan, ordered by safety-of-change: first make
    change safe (local verification, required CI, agent contract, status line,
    applicable backup/restore path), then the docs
-   spine (PRD-as-is, stages, registers), then process (phase slices), then platform
+   spine (glossary, PRD-as-is, stages, registers), then process (phase slices), then platform
    gaps. Phase the plan like any other work.
-5. **Boundaries.** The standard governs artifacts, process, and gates — it does **not**
+6. **Boundaries.** The standard governs artifacts, process, and gates — it does **not**
    mandate rewriting working code to match anyone's style. Code changes enter the plan
-   only where the code contradicts a non-negotiable or blocks a gate.
-6. Present the gap report and plan; start executing only after the user approves scope.
+   only where the code contradicts a non-negotiable or blocks a gate. Recording a glossary
+   is not permission to rename identifiers across a working codebase: the renames enter the
+   plan where the wrong name actively misleads, and the register carries the rest as debt.
+7. Present the gap report and plan; start executing only after the user approves scope.
 
 ## Mode: Reference (point operations)
 
@@ -207,6 +226,8 @@ If ambiguous, ask which mode the user wants before doing anything else.
 | "Start phase N" | Requirements slice per [references/process.md](references/process.md); use [templates/phase-slice/](templates/phase-slice/) |
 | "Close phase N" | Phase DoD checklist; graduate open blockers to the register; sync agent-contract status |
 | "Record a decision" | ADR from [templates/adr.md](templates/adr.md); update the index |
+| "Define / fix a term" | Resolve it against `docs/glossary.md` per [references/artifacts.md](references/artifacts.md); record the rejected synonyms and any flagged ambiguity |
+| "Rule this out of scope" | Out-of-scope entry per [templates/registers.md](templates/registers.md); update PRD non-goals in the same change when the boundary moved |
 | "Check drift" | Compare the agent contract/docs against code and recent history; report every mismatch; fix only when writes are authorized |
 | "Register debt/risk" | Entry in the register per [templates/registers.md](templates/registers.md) |
 | "Run a spike" | Spike convention in [references/process.md](references/process.md); outcome becomes an ADR |
@@ -215,6 +236,7 @@ If ambiguous, ask which mode the user wants before doing anything else.
 ## Files
 
 References (the standard — load what the task needs):
+- [references/decision-routing.md](references/decision-routing.md) — decision lanes and resolution routes for every unknown
 - [references/artifacts.md](references/artifacts.md) — the artifact core: every artifact's purpose, normative rules, maintenance rules
 - [references/process.md](references/process.md) — phases, requirements slices, subphase discipline, DoD, spikes
 - [references/gates.md](references/gates.md) — local verification, hooks, CI, release & git discipline
@@ -223,7 +245,7 @@ References (the standard — load what the task needs):
 
 Templates (instantiate, translating headings into the artifact language):
 - [templates/discovery.md](templates/discovery.md), [templates/agent-contract.md](templates/agent-contract.md),
-  [templates/prd.md](templates/prd.md),
+  [templates/glossary.md](templates/glossary.md), [templates/prd.md](templates/prd.md),
   [templates/tech-stack.md](templates/tech-stack.md), [templates/stages.md](templates/stages.md),
   [templates/architecture.md](templates/architecture.md), [templates/adr.md](templates/adr.md),
   [templates/adr-index.md](templates/adr-index.md),

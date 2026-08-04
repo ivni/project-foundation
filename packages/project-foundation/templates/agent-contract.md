@@ -5,7 +5,9 @@
 
 Engineering guide for **{{project}}** — {{one-line description}}. This file is the
 authoritative contract for how we intend to build. Code records implementation and
-runtime checks record actual behavior. Product details live in [docs/PRD.md](docs/PRD.md),
+runtime checks record actual behavior. The project's language lives in
+[docs/glossary.md](docs/glossary.md) — use its terms, not synonyms for them, in code,
+docs, and commit messages. Product details live in [docs/PRD.md](docs/PRD.md),
 stack in [docs/tech-stack.md](docs/tech-stack.md), build order in
 [docs/stages.md](docs/stages.md), architecture sketch in
 [docs/architecture.md](docs/architecture.md), decisions in [docs/adr/](docs/adr/README.md).
@@ -88,7 +90,9 @@ e.g. bash scripts/qa.sh}}
 
 ## Domain rules that code MUST enforce
 
-<!-- Business invariants that make the product correct, each testable.
+<!-- Business invariants that make the product correct, each testable. Phrase them in the
+     glossary's terms — an invariant that names a concept the glossary does not have is
+     either a missing term or a vague rule.
      Get these wrong and the product is wrong. -->
 
 - {{invariant}}

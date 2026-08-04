@@ -49,6 +49,7 @@
     "format:check": "biome format .",
     "lint": "biome check .",
     "start": "bun ./packages/cli/src/index.ts",
+    "sync:shared": "bun ./scripts/sync-shared.ts",
     "typecheck": "tsc --noEmit",
     "verify:docs": "bun ./scripts/verify-docs.ts",
     "verify:skills": "bun ./scripts/verify-skills.ts",

@@ -7,6 +7,54 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Marked the two review loops and the discovery interview user-invoked with
+  `disable-model-invocation: true`, and cut their descriptions to a human-facing line. Each was
+  spending roughly ninety words of permanently loaded context asking the model not to fire — a
+  request, where Claude Code and Pi offer a switch that also keeps the description out of context
+  entirely. The three skills now cost nothing until invoked.
+- Pruned the `find-blind-spots` and `project-foundation` descriptions to their distinct triggers.
+  Both restated behavior the body already defines, and a description is loaded on every turn.
+- Declared `policy.allow_implicit_invocation` explicitly for every payload, and made
+  `verify:skills` fail when `SKILL.md` and `agents/openai.yaml` disagree about invocation. Three
+  payloads had already declared themselves user-invoked to Codex while remaining model-invocable on
+  Claude Code and Pi; nothing could have caught that before.
+- Gated discretionary ADRs behind all three of hard-to-reverse, surprising-without-context, and
+  the-result-of-a-real-trade-off. The previous list of triggers was a disjunction, so any
+  cross-cutting or hard-to-reverse choice qualified alone and the log filled with decisions nobody
+  would have questioned. Deviations, spike outcomes, and retro-ADRs remain unconditional.
+- Moved the decision-lane and resolution-route taxonomy to one canonical source under `shared/`,
+  generated into each payload that needs it and checked for drift by `verify:skills`. The same
+  normative list previously existed in several independently edited copies. Payloads still ship their
+  own copy, because a user can install one skill without the others.
+
+### Added
+
+- A glossary to the artifact core — `docs/glossary.md` with a template, normative rules, and a place
+  in the promotion order **before** every other artifact, because each one after it is written in
+  those terms. Every entry records the synonyms it replaces; without them the term drifts back next
+  session. The agent arrives with no memory of the previous session, so an unrecorded language is
+  re-derived every time, named inconsistently in code, and paid for in context restating what the
+  project already has one word for.
+- The in-the-moment term challenge in `run-discovery-interview`: a term that conflicts with a settled
+  one or carries two meanings is resolved in that turn, with the losing reading named. It counts as a
+  clarification of the decision on the table, not a second question. The interview still writes only
+  its own record; the glossary is promoted later.
+- Naming findings that cite the glossary, in both reviewer contracts. A name contradicting a recorded
+  term is checkable against something the project agreed, so it is reportable as an `ADVISORY`
+  instead of being suppressed as taste — and stays suppressed where no term is recorded.
+- An out-of-scope register (`OOS-N`) as the third table in `docs/registers.md`, with the reason and
+  what would put the item back in scope. It is explicitly distinguished from a deferred default,
+  which stays in scope and returns on its trigger, and from PRD non-goals, which declare the boundary
+  — a rejection that moves the boundary updates both in the same change.
+- Dependency edges on unknowns and phase blockers. An unknown is takeable when everything it waits on
+  is closed, and the frontier is **derived** from those edges rather than stored beside them.
+  Discovery, the interview, and phase slices now ask only takeable questions: answering one that
+  rests on an open prerequisite produces a guess, and unwinding it later costs every decision built
+  on top of it.
+- `bun run sync:shared`, which regenerates payload copies of the canonical files under `shared/`.
+
 ## [1.5.0] - 2026-07-31
 
 ### Changed

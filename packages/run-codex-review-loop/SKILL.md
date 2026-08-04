@@ -1,6 +1,7 @@
 ---
 name: run-codex-review-loop
-description: Runs an independent Codex review-fix-rereview loop over the uncommitted changes that belong to the current task. Uses Codex with gpt-5.6-sol and xhigh reasoning, keeps the reviewer read-only and test-free, lets the primary agent validate findings, fix defects at their root cause, run repository checks, and request fresh full-diff reviews until CLEAN or BLOCKED. Use only when the user explicitly invokes `$run-codex-review-loop` or names this skill; never trigger it automatically from a general request to implement, review, test, or finish work.
+description: Bounded review-fix-rereview loop over this task's uncommitted changes, using an independent Codex reviewer.
+disable-model-invocation: true
 ---
 
 # Run Codex Review Loop

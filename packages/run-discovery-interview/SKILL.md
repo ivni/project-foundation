@@ -1,6 +1,7 @@
 ---
 name: run-discovery-interview
-description: Runs a structured product or feature discovery interview focused on product value, functional behavior, domain rules, UX, and business constraints before implementation. Defaults to a non-technical product-owner track, routes research and implementation mechanics to the agent, asks one stakeholder-owned decision at a time with plain-language options and a conditional recommendation, records answers in one scratch file, and makes no code or canonical-document changes. Use only when the user explicitly asks to start discovery, be interviewed, clarify requirements, or agree on what a product or feature should do; use a technical track only when the user explicitly asks to collaborate on architecture or implementation decisions.
+description: Discovery interview that closes one stakeholder-owned decision at a time before implementation.
+disable-model-invocation: true
 ---
 
 # Run Discovery Interview
@@ -79,43 +80,44 @@ Store a redacted description and tell the user what was omitted.
 
 ## Route every unknown before queuing it
 
-Assign both a decision lane and a resolution route before deciding whether to ask a question.
-
-Decision lanes:
-
-- **Product value** — problem evidence, audience, current alternative, desired outcome, success,
-  guardrails, and reasons to adopt.
-- **Functionality and domain** — capabilities, business rules, lifecycle, permissions, scope, and
-  non-goals.
-- **User experience** — primary journey, first and repeat use, comprehension, trust, failure,
-  recovery, accessibility, and environment.
-- **Business constraint** — policy, ownership, budget, timing, legal or commercial constraints, and
-  risk tolerance.
-- **Engineering** — architecture, data representation, interfaces, infrastructure, migration, and
-  local implementation choices.
-
-Resolution routes:
-
-- **Stakeholder decision** — queue only when it depends on intent, policy, priority, budget, or risk
-  appetite within the participant's authority.
-- **Agent research** — inspect code, docs, runtime evidence, logs, or primary sources; do not ask the
-  participant to retrieve available facts.
-- **User research** — record the evidence need and an interim default; do not ask a stakeholder to
-  guess how users behave or what they understand.
-- **Engineering synthesis** — record the product constraints and let the agent recommend the
-  mechanism later, with an ADR when appropriate.
-- **Experiment or spike** — record a bounded validation need for later; do not perform it in the
-  interview.
-- **Deferred with default** — choose a safe, reversible default and an observable revisit trigger.
+Load [references/decision-routing.md](references/decision-routing.md) before the first decision
+question. Assign both a decision lane and a resolution route to every unknown before deciding
+whether to ask about it. Record a spike as a validation need for later; never run one during the
+interview.
 
 Only stakeholder decisions enter the product-track question queue. In an explicit technical track,
 implementation decisions may enter the queue only when the participant owns them and no research,
 safe default, or later spike can resolve them better.
 
+## Sharpen the language as it lands
+
+The project's words are part of what discovery agrees on. When the participant reaches for a term:
+
+- If it conflicts with a term already settled in this interview or recorded in the project's
+  glossary, say so in that turn and ask which reading holds. "Earlier we settled that a
+  cancellation ends the whole order; this sounds like cancelling one line — are those the same
+  thing?"
+- If it carries two meanings, propose one canonical term for each and name the losing reading, so
+  it does not drift back next session.
+- If it is the project's own established term, use it rather than a plainer synonym. Concision
+  bought this way is the point of having the term.
+
+Record the resolved term, its meaning, and the synonyms it replaces in the discovery record's
+language section. This is a clarification of the decision already on the table, not a new
+question, so it does not break the one-question rule — but do not chase terminology that no
+decision depends on.
+
+Terminology never entitles a write outside the record. `docs/glossary.md` is promoted later, by
+requirements synthesis or `project-foundation`, and never during the interview.
+
 ## Build the stakeholder decision queue through gates
 
 Order product-track decisions through these gates. Reorder within the current or an earlier gate
 after every answer, but do not skip forward merely because a downstream technical choice is costly.
+Within a gate, ask only **takeable** decisions — those whose prerequisite unknowns are closed.
+Derive that set from the `Blocked by` entries in the record rather than keeping a separate queue of
+it; a decision resting on an open prerequisite gets answered from a guess, and unwinding it later
+costs every decision made on top of it.
 
 1. **Value gate** — primary user, problem and evidence, current alternative, desired outcome and
    value, success signals, guardrails, and non-negotiable product principles.
@@ -180,6 +182,13 @@ After the user responds, update the record before asking anything else.
 - Keep the decision open only when the participant truly must own it. Otherwise reroute it and move
   on.
 
+### Exclusion of scope
+
+When the answer places something outside the subject's goal rather than deferring it, record it as
+a scope exclusion with the reason and what would put it back in scope — not as a deferred default.
+A deferred default stays in scope and returns on its trigger; an exclusion returns only if the goal
+is redrawn. Conflating the two either resurrects settled rejections or quietly buries live work.
+
 ### Conflict with an earlier decision
 
 - Name both incompatible statements and their consequences.
@@ -211,7 +220,9 @@ answer-by point. For `deferred-with-default`, record the default and an observab
 - Preserve a concise verbatim excerpt of the user's answer, redacted when necessary.
 - Add or update stable IDs: `UNK-NNN`, `DEC-NNN`, and `ASM-NNN`.
 - Mark the decision lane and resolution route for every unknown.
-- Mark which unknowns the decision resolves, creates, reroutes, or reprioritizes.
+- Mark which unknowns the decision resolves, creates, reroutes, or reprioritizes, and update the
+  `Blocked by` entries the answer has freed.
+- Record any term the answer settled, with the synonyms it replaces.
 - Record derived engineering implications separately from stakeholder decisions.
 - Append a chronological session-log entry; do not erase superseded decisions.
 - Update the resume point with the single current stakeholder decision and why it is next.
@@ -244,7 +255,8 @@ When the user finishes:
 
 1. Set the record lifecycle to `ready-for-handoff` and update the resume point.
 2. Return a concise summary of product value, functionality, UX and business decisions, assumptions,
-   routed unknowns, engineering implications, deferred items, residual risks, and the record path.
+   routed unknowns, engineering implications, deferred items, settled terms with the synonyms they
+   replace, anything ruled out of scope, residual risks, and the record path.
 3. State clearly that no implementation or canonical-document changes were made.
 4. Suggest the next workflow, normally requirements or PRD synthesis followed by agent-led technical
    synthesis in `project-foundation`, an ADR, or a bounded validation spike. Do not start it without

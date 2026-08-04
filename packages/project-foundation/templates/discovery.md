@@ -35,6 +35,15 @@ Distinguish confirmed statements from assumptions and missing evidence.
 - **Scope:** {{included behavior}}
 - **Non-goals:** {{explicit exclusions and why}}
 
+## Language
+
+<!-- Terms as they are resolved during discovery, promoted to docs/glossary.md with the artifact
+     core. Record the rejected synonyms: they are what stops the term drifting back. -->
+
+| Term | Meaning in domain language | Avoid | Source |
+|---|---|---|---|
+| {{term}} | {{what it means}} | {{rejected synonyms}} | {{DEC-NNN / user decision}} |
+
 ## Business constraints
 
 {{Policy, ownership, incentives, budget, timing, commercial or legal constraints, and risk tolerance
@@ -60,9 +69,14 @@ that apply to the project. Record only relevant constraints.}}
 
 ## Routed unknowns
 
-| ID | Lane | Unknown | Impact | Resolution route | Owner / source | Interim default / answer-by | Status | Canonical destination |
-|---|---|---|---|---|---|---|---|---|
-| UNK-001 | product value / functionality-domain / UX / business constraint / engineering | {{unknown}} | high / medium / low | stakeholder decision / agent research / user research / engineering synthesis / spike / deferred default | {{who or what can answer}} | {{default, trigger, or answer-by}} | open | {{PRD / ADR / stages / architecture / register / agent contract}} |
+<!-- `Blocked by` lists the unknowns whose answers this one waits on. An unknown is takeable
+     when every unknown it lists is closed; the takeable open unknowns are the frontier. Derive
+     the frontier from this column — never keep a separate list of it, which would go stale on
+     the first answer. Leave the column empty for an unknown that depends on nothing. -->
+
+| ID | Lane | Unknown | Impact | Blocked by | Resolution route | Owner / source | Interim default / answer-by | Status | Canonical destination |
+|---|---|---|---|---|---|---|---|---|---|
+| UNK-001 | product value / functionality-domain / UX / business constraint / engineering | {{unknown}} | high / medium / low | {{UNK IDs or empty}} | stakeholder decision / agent research / user research / engineering synthesis / spike / deferred default | {{who or what can answer}} | {{default, trigger, or answer-by}} | open | {{PRD / ADR / stages / architecture / register / agent contract}} |
 
 ## Stakeholder decisions
 
@@ -88,12 +102,26 @@ that apply to the project. Record only relevant constraints.}}
 |---|---|---|---|---|---|---|
 | ASM-001 | {{assumption}} | {{lane}} | {{impact}} | {{how to verify}} | {{current rule}} | open |
 
+## Ruled out of scope
+
+<!-- Work consciously placed outside the goal during discovery, promoted to the out-of-scope
+     register with the artifact core. Not the same as a deferred default: a deferred default is
+     in scope and returns on its trigger. When an exclusion moves the product's scope boundary,
+     it also belongs in the PRD non-goals. -->
+
+| What was asked for | Why it is out of scope | What would put it back in scope | Destination |
+|---|---|---|---|
+| {{request, capability, or idea}} | {{reason it sits outside the goal}} | {{goal change or new evidence; "only if the goal is redrawn" is complete}} | OOS-N in registers / PRD non-goals |
+
 ## Completion
 
 - [ ] Product value, minimum useful outcome, primary journey, scope, and non-goals are explicit
 - [ ] Applicable domain, UX, and business constraints are explicit
 - [ ] Every high-impact stakeholder decision is resolved
 - [ ] Every remaining unknown has the correct route, owner or source, interim default, and trigger
+- [ ] Every `Blocked by` entry names a real unknown, and no cycle exists among them
+- [ ] Resolved terms are recorded with their rejected synonyms and promoted to the glossary
+- [ ] Scope exclusions are promoted to the out-of-scope register, and PRD non-goals agree with them
 - [ ] Every high-impact engineering unknown is resolved or contained with an owner and method
 - [ ] The applicability matrix is complete
 - [ ] The agent contract path is selected and recorded

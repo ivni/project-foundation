@@ -33,6 +33,8 @@ become visible.
 - **Ownership:** Which component, team, vendor, or user owns each state transition and source of
   truth?
 - **Vocabulary:** Do the same terms mean different things to product, users, code, and integrations?
+  A term carrying two meanings is an upstream unknown, not a naming nit — report the ambiguity and
+  route the resolution to the project's glossary.
 - **Lifecycle:** Creation, draft, approval, activation, change, expiry, suspension, deletion,
   restoration, and audit.
 - **Invariants:** What must remain true across retries, concurrency, partial failure, and migration?

@@ -55,6 +55,13 @@ duplicated, or could be structured better, it is an `ADVISORY` — even when you
 important, and even when it sits next to a real defect. Incorrect test code that asserts the wrong
 behavior is a `DEFECT`; a correct test that does not cover enough is an `ADVISORY`.
 
+A name that contradicts a term recorded in the project's glossary is not a style preference. Report
+it as an `ADVISORY`, quoting the recorded term and the name that departs from it — the project agreed
+the word, so the departure is checkable rather than a matter of taste. Report it as a `DEFECT` only
+when the wrong name means the code actually behaves wrongly, such as an identifier whose meaning the
+surrounding logic then relies on. Where the project records no such term, a naming observation is a
+style preference again and stays out.
+
 Do not report subjective style preferences, speculative future concerns, or issues unrelated to the
 task diff. Consolidate findings that share one root cause into a single finding, and describe that
 root cause in `evidence` rather than listing each symptom separately.

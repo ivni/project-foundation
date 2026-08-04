@@ -35,11 +35,13 @@ accidentally during it.**
 
 1. Collect the brief (or read the existing code/docs in audit mode) *first* — never interrogate
    before absorbing what already exists.
-2. Classify every unknown by decision lane: product value, functionality and domain, UX, business
-   constraint, or engineering.
-3. Route each unknown to stakeholder decision, agent research, user research, engineering synthesis,
-   a bounded spike, or a deferred default. Do not send facts or implementation mechanisms to the user
-   merely because they are consequential.
+2. Assign every unknown a decision lane and a resolution route, per
+   [decision-routing.md](decision-routing.md), before deciding whether to ask about it.
+3. Record what each unknown waits on. An unknown is **takeable** when everything it waits on is
+   closed, and the takeable open unknowns are the frontier. Derive that set from the recorded
+   dependencies instead of maintaining a separate list of it, and ask inside it only: a question
+   whose answer depends on one still open invites an answer built on a guess, which has to be
+   unwound later along with everything decided on top of it.
 4. Close stakeholder decisions through value, behavior, experience and business, then handoff gates.
    Ask **one question at a time** using observable, plain-language options and a recommended default.
    Batch only trivial questions.
