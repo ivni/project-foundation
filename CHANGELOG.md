@@ -7,6 +7,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-08-04
+
 ### Changed
 
 - Both review loops now derive the ship-blocking declaration instead of asking the user to confirm it.
@@ -43,18 +45,28 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- A seventh skill, `run-subphase`, which fills the gap between a finished requirements slice and an
+- A new skill, `run-subphase`, which fills the gap between a finished requirements slice and an
   existing diff. It takes exactly **one** subphase to done — entry gate, verification seams agreed
   before any code, vertical slices, evidence, an independent review loop, one commit — and then stops,
   naming the next invocation instead of starting it. It never loops: clearing context would destroy
   the state of the skill running the loop, and not clearing it would violate the one-window bound the
   subphase now carries. It creates no slice artifacts and edits no requirements; `project-foundation`
   keeps the phase boundaries and the artifacts.
+- A new standalone skill, `teach`, outside the engineering flow: the current directory becomes a
+  stateful learning workspace with a mission, curated high-trust sources, a glossary, learning
+  records, and lessons. It shares no artifacts with the other skills and does not touch a software
+  project's docs. User-invoked, and preselected in the installer like the rest.
 - `shared/subphase-contract.md`, the single home for what a subphase is, how large it may be, and when
   it is done. `project-foundation` and `run-subphase` ship the same generated copy, so the agent that
   plans subphases and the agent that executes them cannot hold different definitions of done. Evidence
   in the traceability table is now explicitly a command and its result — "tested manually" and
   "verified" are named as non-evidence.
+- A context-window bound on subphases. A subphase must be startable from `scope.md`,
+  `checklist.md`, `blockers.md`, and the repository alone, with no conversational history, and
+  finishable inside one window. The two existing sizing rules measured calendar time and commit
+  count, so neither caught a slice that only a long, degraded session could finish — the case where
+  the standard demands the most rigor and the agent has the least. Because a subphase is now one
+  window, the twelve-subphase phase limit reads in the same unit, and the two limits cross-check.
 - A glossary to the artifact core — `docs/glossary.md` with a template, normative rules, and a place
   in the promotion order **before** every other artifact, because each one after it is written in
   those terms. Every entry records the synonyms it replaces; without them the term drifts back next
@@ -78,16 +90,6 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   rests on an open prerequisite produces a guess, and unwinding it later costs every decision built
   on top of it.
 - `bun run sync:shared`, which regenerates payload copies of the canonical files under `shared/`.
-- A sixth skill, `teach`, standing outside the engineering flow: the current directory becomes a
-  stateful learning workspace with a mission, curated high-trust sources, a glossary, learning
-  records, and lessons. It shares no artifacts with the other skills and does not touch a software
-  project's docs. User-invoked, and preselected in the installer like the rest.
-- A context-window bound on subphases. A subphase must be startable from `scope.md`,
-  `checklist.md`, `blockers.md`, and the repository alone, with no conversational history, and
-  finishable inside one window. The two existing sizing rules measured calendar time and commit
-  count, so neither caught a slice that only a long, degraded session could finish — the case where
-  the standard demands the most rigor and the agent has the least. Because a subphase is now one
-  window, the twelve-subphase phase limit reads in the same unit, and the two limits cross-check.
 
 ## [1.5.0] - 2026-07-31
 
@@ -268,7 +270,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/ivni/project-foundation/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/ivni/project-foundation/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/ivni/project-foundation/compare/v1.3.2...v1.4.0
 [1.3.2]: https://github.com/ivni/project-foundation/compare/v1.3.1...v1.3.2
