@@ -17,6 +17,12 @@ durable project foundation:
 - **Project Foundation** turns the resulting product and UX contract into agent-led technical
   synthesis, architecture, delivery process, and a canonical artifact set.
 
+One further skill stands apart from that arc and is installed independently:
+
+- **Teach** treats the current directory as a stateful learning workspace — mission, curated
+  sources, glossary, learning records, and lessons — so a topic can be taught across many sessions.
+  It shares no artifacts with the engineering skills and never touches a software project's docs.
+
 The package includes an interactive Bun installer for Codex, Claude Code, Pi, OpenCode, and
 Hermes Agent.
 
@@ -28,9 +34,9 @@ Install [Bun](https://bun.com/docs/installation), then run:
 bunx @ivni/project-foundation
 ```
 
-Choose any combination of the five skills, the agent environments, a user or project scope, and a
-copy or managed-link installation. All five skills are preselected. The wizard shows a complete
-preview before writing anything.
+Choose any combination of the six skills, the agent environments, a user or project scope, and a
+copy or managed-link installation. All six skills are preselected; deselect the ones you do not
+want. The wizard shows a complete preview before writing anything.
 
 The skill registry is the source of truth: each registry key is also the package directory, native
 target name, managed-store name, and receipt `skillId`. Adding another skill does not require a new
@@ -93,7 +99,7 @@ bun run check
 ```
 
 The public package is the repository root. The private workspaces under `packages/` separate the
-CLI source from the five raw skill payloads. See [Development](docs/development.md) for the full
+CLI source from the six raw skill payloads. See [Development](docs/development.md) for the full
 layout and verification workflow.
 
 ## License

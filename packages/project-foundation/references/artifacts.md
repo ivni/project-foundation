@@ -141,8 +141,10 @@ The phase plan. Normative rules:
   Capability-dependent concerns such as auth, migrations, backups, and observability
   join phase 0 only when applicable. No product features.
 - Each phase has a **goal** (one sentence) and a **definition of done**.
-- Phases are sized in weeks, not months; if a phase needs subphase numbering past ~12,
-  it was two phases.
+- Phases are sized in weeks, not months. A subphase is one fresh context window (see
+  [process.md](process.md)), so a phase is at most about a dozen windows: if it needs subphase
+  numbering past ~12, it was two phases. The two limits cross-check each other — a phase that
+  fits the calendar but not the window count was mis-sliced, and vice versa.
 - The plan is updated when reality changes — a stages file describing an abandoned plan
   is a bug.
 

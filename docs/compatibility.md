@@ -20,9 +20,9 @@ Versions are evidence for this review, not runtime pins.
 
 ## Invocation control
 
-Three payloads must not fire on their own: both review loops and the discovery interview act only on
-the user's explicit instruction. Two mechanisms express that, and a payload carries both because no
-single one covers all five targets:
+Four payloads must not fire on their own: both review loops, the discovery interview, and `teach`
+act only on the user's explicit instruction. Two mechanisms express that, and a payload carries both
+because no single one covers all five targets:
 
 - `disable-model-invocation: true` in `SKILL.md`, honored by Claude Code and Pi.
 - `policy.allow_implicit_invocation: false` in `agents/openai.yaml`, honored by Codex.

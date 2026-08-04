@@ -55,7 +55,20 @@ accidentally during it.**
 
 ## Subphases
 
-A subphase is one coherent, committable increment — typically one to a few commits.
+A subphase is one coherent, committable increment — typically one to a few commits — **sized to
+one fresh context window**. An agent that starts from `scope.md`, `checklist.md`, `blockers.md`,
+and the repository, with no conversational history, must be able to carry it to done.
+
+That sizing rule has two consequences, and both are diagnostic rather than inconvenient:
+
+- Needing to compact or clear context mid-subphase means it was two subphases. Split it by
+  appending a suffixed sibling (`N.3` keeps what was finished, `N.3a` carries the rest) rather
+  than renumbering what follows, so the traceability table and earlier commit messages stay
+  valid.
+- Needing a fact that was only ever said in chat means the slice is not recorded yet. Record it
+  in the artifact that owns it — scope, blockers, glossary, ADR — and never keep a session alive
+  as that fact's storage.
+
 A subphase is done only when **all** of the following hold:
 
 - Local verification green; required CI green before merge or release (see

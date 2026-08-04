@@ -24,6 +24,10 @@ export const SKILLS = {
     label: "Claude Review Loop",
     summary: "Independent Claude review, bounded fixes, and clean rechecks",
   },
+  teach: {
+    label: "Teach",
+    summary: "Stateful learning workspace for teaching a topic over many sessions",
+  },
 } as const satisfies Record<string, SkillDefinition>;
 
 export type SkillId = keyof typeof SKILLS;

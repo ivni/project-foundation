@@ -54,6 +54,16 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   rests on an open prerequisite produces a guess, and unwinding it later costs every decision built
   on top of it.
 - `bun run sync:shared`, which regenerates payload copies of the canonical files under `shared/`.
+- A sixth skill, `teach`, standing outside the engineering flow: the current directory becomes a
+  stateful learning workspace with a mission, curated high-trust sources, a glossary, learning
+  records, and lessons. It shares no artifacts with the other skills and does not touch a software
+  project's docs. User-invoked, and preselected in the installer like the rest.
+- A context-window bound on subphases. A subphase must be startable from `scope.md`,
+  `checklist.md`, `blockers.md`, and the repository alone, with no conversational history, and
+  finishable inside one window. The two existing sizing rules measured calendar time and commit
+  count, so neither caught a slice that only a long, degraded session could finish — the case where
+  the standard demands the most rigor and the agent has the least. Because a subphase is now one
+  window, the twelve-subphase phase limit reads in the same unit, and the two limits cross-check.
 
 ## [1.5.0] - 2026-07-31
 

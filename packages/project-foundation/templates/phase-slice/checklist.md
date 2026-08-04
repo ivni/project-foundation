@@ -1,6 +1,8 @@
 <!-- docs/phase-N/checklist.md — the phase broken into subphases. Subphase N.0 is
-     always the requirements slice itself. Tick items in the same commit that
-     completes them; sync the agent-contract status line at meaningful completions. -->
+     always the requirements slice itself. Each subphase is sized to one fresh context
+     window: startable from scope.md, this file, blockers.md, and the repository alone,
+     with nothing load-bearing left in the conversation. Tick items in the same commit
+     that completes them; sync the agent-contract status line at meaningful completions. -->
 
 # Phase {{N}} — checklist
 

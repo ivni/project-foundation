@@ -1,0 +1,7 @@
+interface:
+  display_name: "Teach"
+  short_description: "Teach a topic over many sessions"
+  default_prompt: "Use $teach to teach me this topic over several sessions, keeping the learning state in this directory."
+
+policy:
+  allow_implicit_invocation: false
