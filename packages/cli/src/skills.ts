@@ -16,6 +16,10 @@ export const SKILLS = {
     label: "Discovery Interview",
     summary: "Product value, functionality, and UX discovery",
   },
+  "run-subphase": {
+    label: "Run Subphase",
+    summary: "Bounded execution of one subphase: build, verify, review, commit",
+  },
   "run-codex-review-loop": {
     label: "Codex Review Loop",
     summary: "Independent review, bounded fixes, and clean rechecks",

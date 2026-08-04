@@ -1,0 +1,7 @@
+interface:
+  display_name: "Run Subphase"
+  short_description: "Take one subphase to done, then stop"
+  default_prompt: "Use $run-subphase to take the next unfinished subphase of this phase to done, then stop."
+
+policy:
+  allow_implicit_invocation: false

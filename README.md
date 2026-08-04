@@ -9,6 +9,9 @@ durable project foundation:
 - **Discovery Interview** defaults to a non-technical product-owner track for product value,
   functionality, domain rules, UX, and business constraints. It asks one stakeholder-owned decision
   at a time while writing only one scratch discovery record.
+- **Run Subphase** takes exactly one subphase of a phase requirements slice to done — entry gate,
+  agreed verification seams, vertical slices, verification evidence, an independent review, one
+  commit — and then stops, because a subphase is sized to a single context window.
 - **Codex Review Loop** explicitly launches an independent read-only Codex reviewer over the current
   task's uncommitted changes, then lets the primary agent validate findings, make bounded fixes, run
   checks, and re-review until clean or honestly blocked.
@@ -34,8 +37,8 @@ Install [Bun](https://bun.com/docs/installation), then run:
 bunx @ivni/project-foundation
 ```
 
-Choose any combination of the six skills, the agent environments, a user or project scope, and a
-copy or managed-link installation. All six skills are preselected; deselect the ones you do not
+Choose any combination of the seven skills, the agent environments, a user or project scope, and a
+copy or managed-link installation. All seven skills are preselected; deselect the ones you do not
 want. The wizard shows a complete preview before writing anything.
 
 The skill registry is the source of truth: each registry key is also the package directory, native
@@ -99,7 +102,7 @@ bun run check
 ```
 
 The public package is the repository root. The private workspaces under `packages/` separate the
-CLI source from the six raw skill payloads. See [Development](docs/development.md) for the full
+CLI source from the seven raw skill payloads. See [Development](docs/development.md) for the full
 layout and verification workflow.
 
 ## License

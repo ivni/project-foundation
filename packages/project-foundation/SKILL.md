@@ -124,6 +124,11 @@ user explicitly authorizes writes. Proposed patches are not authorization to app
 
 If ambiguous, ask which mode the user wants before doing anything else.
 
+This skill owns the artifacts and the phase boundaries: it opens a phase with a requirements slice and
+closes it against the phase definition of done. It does not build subphases. `run-subphase` takes one
+subphase to done and creates no slice artifacts. Both work from the same subphase contract, so neither
+holds a private definition of "done".
+
 ## Mode: Bootstrap (greenfield)
 
 1. **Intake.** Read the brief. If there is none, ask the user for a free-form brain dump
@@ -224,6 +229,7 @@ If ambiguous, ask which mode the user wants before doing anything else.
 | Request | Do |
 |---|---|
 | "Start phase N" | Requirements slice per [references/process.md](references/process.md); use [templates/phase-slice/](templates/phase-slice/) |
+| "Build subphase N.x" | Not this skill — `run-subphase` executes one subphase against [references/subphase-contract.md](references/subphase-contract.md) |
 | "Close phase N" | Phase DoD checklist; graduate open blockers to the register; sync agent-contract status |
 | "Record a decision" | ADR from [templates/adr.md](templates/adr.md); update the index |
 | "Define / fix a term" | Resolve it against `docs/glossary.md` per [references/artifacts.md](references/artifacts.md); record the rejected synonyms and any flagged ambiguity |
@@ -238,7 +244,8 @@ If ambiguous, ask which mode the user wants before doing anything else.
 References (the standard — load what the task needs):
 - [references/decision-routing.md](references/decision-routing.md) — decision lanes and resolution routes for every unknown
 - [references/artifacts.md](references/artifacts.md) — the artifact core: every artifact's purpose, normative rules, maintenance rules
-- [references/process.md](references/process.md) — phases, requirements slices, subphase discipline, DoD, spikes
+- [references/process.md](references/process.md) — phases, requirements slices, closing unknowns, phase DoD, spikes
+- [references/subphase-contract.md](references/subphase-contract.md) — what a subphase is, its one-window size limit, and its definition of done; `run-subphase` ships the same copy
 - [references/gates.md](references/gates.md) — local verification, hooks, CI, release & git discipline
 - [references/platform.md](references/platform.md) — early platform decisions: observability, security, data integrity, operations
 - [references/ai-collaboration.md](references/ai-collaboration.md) — rules for the agent: memory, verification, autonomy boundaries, discovery technique

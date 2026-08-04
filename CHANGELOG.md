@@ -9,6 +9,18 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Both review loops now derive the ship-blocking declaration instead of asking the user to confirm it.
+  The areas follow from what the change touches, so the confirmation spent a turn restating the
+  analysis that had just produced them, and in practice the answer was always the whole proposal. The
+  three properties that made the declaration trustworthy are unchanged and now carry it alone: it is
+  settled before pass 1 while no finding exists, an area that is unclear blocks rather than defers, and
+  it is reported with the outcome beside every deferral it authorized. A declaration the user states
+  themselves still replaces the derived one.
+- Both review loops now accept an invocation from `run-subphase` as explicit consent. Their boundary
+  previously admitted only a direct user invocation and rejected consent inferred from a request for
+  implementation, which is exactly what a subphase executor would have looked like. The chain stays
+  explicit: `run-subphase` is itself user-invoked only, and the review is a declared step of its
+  contract.
 - Marked the two review loops and the discovery interview user-invoked with
   `disable-model-invocation: true`, and cut their descriptions to a human-facing line. Each was
   spending roughly ninety words of permanently loaded context asking the model not to fire — a
@@ -31,6 +43,18 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- A seventh skill, `run-subphase`, which fills the gap between a finished requirements slice and an
+  existing diff. It takes exactly **one** subphase to done — entry gate, verification seams agreed
+  before any code, vertical slices, evidence, an independent review loop, one commit — and then stops,
+  naming the next invocation instead of starting it. It never loops: clearing context would destroy
+  the state of the skill running the loop, and not clearing it would violate the one-window bound the
+  subphase now carries. It creates no slice artifacts and edits no requirements; `project-foundation`
+  keeps the phase boundaries and the artifacts.
+- `shared/subphase-contract.md`, the single home for what a subphase is, how large it may be, and when
+  it is done. `project-foundation` and `run-subphase` ship the same generated copy, so the agent that
+  plans subphases and the agent that executes them cannot hold different definitions of done. Evidence
+  in the traceability table is now explicitly a command and its result — "tested manually" and
+  "verified" are named as non-evidence.
 - A glossary to the artifact core — `docs/glossary.md` with a template, normative rules, and a place
   in the promotion order **before** every other artifact, because each one after it is written in
   those terms. Every entry records the synonyms it replaces; without them the term drifts back next

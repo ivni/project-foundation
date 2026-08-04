@@ -18,4 +18,11 @@ export const SHARED_REFERENCES: SharedReference[] = [
       "packages/project-foundation/references/decision-routing.md",
     ],
   },
+  {
+    source: "shared/subphase-contract.md",
+    copies: [
+      "packages/project-foundation/references/subphase-contract.md",
+      "packages/run-subphase/references/subphase-contract.md",
+    ],
+  },
 ];

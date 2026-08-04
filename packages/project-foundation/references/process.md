@@ -55,33 +55,12 @@ accidentally during it.**
 
 ## Subphases
 
-A subphase is one coherent, committable increment — typically one to a few commits — **sized to
-one fresh context window**. An agent that starts from `scope.md`, `checklist.md`, `blockers.md`,
-and the repository, with no conversational history, must be able to carry it to done.
+What a subphase is, its one-context-window size limit, and its definition of done live in
+[subphase-contract.md](subphase-contract.md). The `run-subphase` skill ships the same copy, so the
+agent that plans subphases and the agent that executes them cannot drift apart on what "done" means.
 
-That sizing rule has two consequences, and both are diagnostic rather than inconvenient:
-
-- Needing to compact or clear context mid-subphase means it was two subphases. Split it by
-  appending a suffixed sibling (`N.3` keeps what was finished, `N.3a` carries the rest) rather
-  than renumbering what follows, so the traceability table and earlier commit messages stay
-  valid.
-- Needing a fact that was only ever said in chat means the slice is not recorded yet. Record it
-  in the artifact that owns it — scope, blockers, glossary, ADR — and never keep a session alive
-  as that fact's storage.
-
-A subphase is done only when **all** of the following hold:
-
-- Local verification green; required CI green before merge or release (see
-  [gates.md](gates.md)).
-- New behavior covered by tests, and the change verified by actually running it —
-  not only by tests and typecheck passing.
-- Every linked requirement has acceptance evidence recorded in the traceability table.
-- Docs updated in the same change (same-change rule).
-- `checklist.md` ticked; the agent-contract status line updated if the completion is
-  externally meaningful.
-
-Commit granularity follows subphases; a commit message names the phase/subphase when
-one applies.
+The local verification entry point and the required CI checks that contract refers to are the ones
+established per [gates.md](gates.md).
 
 ## Phase definition of done
 
