@@ -7,6 +7,27 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-08-05
+
+### Changed
+
+- Both reviewer contracts now say how to judge a path that carries no executable code — a requirements
+  slice, a scope document, a decision record, a register, a glossary, prose. Every finding class they
+  had described code behavior, so on a code-free change set the only finding a reviewer could produce
+  was a demand that the document describe how the future implementation will work; each demand was
+  answered by adding text, each addition enlarged the reviewed surface, and the loop spent its whole
+  pass budget without converging. A `DEFECT` on such a path is now exactly three things — an unrouted
+  decision an implementer would have to guess at, a contradiction, or an acceptance criterion its named
+  verification could not observe — capped at `MEDIUM`, because no code exists yet to measure blast
+  radius in. The **guess or derive** test separates a missing decision, which is a finding, from a
+  missing mechanism, which is the implementation's job. Every such finding must name the one bounded
+  record that closes it; a finding that cannot be closed that way is asking for narrative and stays out.
+  Text an earlier pass added in response to a finding is not new surface to mine.
+- Both loops now name the fix for a validated defect on a code-free path: the bounded record the finding
+  named, which is also the mechanism the root-cause rules require, since no test pins a decision.
+  Creating the file that record belongs in is excepted from the no-new-file rule, and a product question
+  is recorded with an interim default or asked rather than settled by the loop.
+
 ## [1.6.1] - 2026-08-04
 
 ### Changed
@@ -280,7 +301,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.6.1...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/ivni/project-foundation/compare/v1.6.1...v1.7.0
 [1.6.1]: https://github.com/ivni/project-foundation/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/ivni/project-foundation/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/ivni/project-foundation/compare/v1.4.0...v1.5.0

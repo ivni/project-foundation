@@ -66,6 +66,49 @@ Do not report subjective style preferences, speculative future concerns, or issu
 task diff. Consolidate findings that share one root cause into a single finding, and describe that
 root cause in `evidence` rather than listing each symptom separately.
 
+## Paths that carry no code
+
+The classes above describe how code behaves, so a path carrying no executable code cannot be judged by
+them: a requirements slice, a scope or acceptance-criteria document, a decision record, a register, a
+glossary, prose documentation. What such a path gets wrong is the decisions it fixes and the ones it
+leaves open, so a `DEFECT` there is one of exactly three things:
+
+1. **An unrouted decision.** Something an implementer starting from this document and the repository
+   alone would have to *guess*, where a wrong guess costs rework or violates a recorded principle,
+   domain rule, or constraint — and the document neither decides it nor records it as an open question
+   with an owner and an interim default.
+2. **A contradiction.** Two statements that cannot both hold, or one that contradicts a recorded
+   product principle, a glossary term, an accepted decision record, or the repository as it exists.
+3. **An unobservable criterion.** A stated acceptance criterion that the verification method named
+   beside it could not observe.
+
+Severity on these paths is at most `MEDIUM`. Blast radius here is whatever gets built on the document,
+and no code exists yet to measure that in; a higher severity would be a claim about an implementation
+nobody has written.
+
+The dividing test for the first kind is **guess or derive**. An implementer guesses at a decision: what
+the product does, which rule governs an edge case, what is in scope, what happens on a path nobody
+chose yet. An implementer derives a mechanism: which structure carries the behavior, where a check
+sits, how a value is stored, what the retry schedule is. A missing mechanism is not a finding —
+choosing it is the implementation's job, and a reversible one is settled better by whoever is looking at
+the code than by prose written before anyone could know. "Under-specified", "does not describe how",
+"should also cover", and "needs more detail about" name a finding only where what is missing is a
+decision by this test, and never where it is a mechanism.
+
+Every finding on such a path must name the record that closes it: a decided acceptance criterion, an
+open question recorded with an owner and an interim default, a decision record, or an explicit
+out-of-scope entry. Name it as the bounded direction the finding proposes. A finding you cannot close
+with one bounded record is asking for narrative rather than reporting a defect, and it stays out.
+
+Text an earlier pass added in response to a finding is not new surface to mine. Judge it for
+contradiction and for a decision it leaves open; do not report that it, in its turn, does not describe
+how something will work. An observation about wording, structure, or duplication on these paths is an
+`ADVISORY`.
+
+A change set that mixes code with documentation is a code change set. Judge its code by the classes
+above and its documentation by this section — including documentation that no longer describes the code
+it accompanies, which is a contradiction of the second kind.
+
 ## Severity
 
 Severity describes blast radius and likelihood only. It carries no instruction about what should
@@ -107,7 +150,7 @@ Every finding must:
 
 - identify the tightest relevant path and line, or use `line: null` for a file-level issue;
 - state its `class` as defined above;
-- cite observable code or diff evidence, not a general concern;
+- cite observable code, document content, or diff evidence, not a general concern;
 - explain the realistic impact and triggering conditions;
 - name the root cause, not only the visible symptom;
 - propose a bounded direction, not a full implementation;

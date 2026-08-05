@@ -275,6 +275,14 @@ authority boundary and ask when the fix would change public behavior, architectu
 migrations, security policy, dependencies, production state, or the task scope. Preserve unrelated
 work.
 
+A validated defect on a path that carries no code is fixed by the record the finding named and by
+nothing wider: a decided acceptance criterion, an open question recorded with an owner and an interim
+default, a decision record, or an explicit out-of-scope entry. That record is the mechanism this section
+requires, since no test pins a decision, and creating the file it belongs in is not the new surface the
+paragraph above forbids. A defect answered by expanding prose is not fixed, it is enlarged. When the
+decision is the user's to make, record it as an open question with an interim default or ask them; do not
+settle a product question yourself to close a finding.
+
 Write comments for a reader who never saw the review. Explain why the code is the way it is — "the row
 is re-read inside the lock because the balance can change between the check and the write" — and never
 which pass, round, or finding produced it. That reader cannot see the review, so the reference is noise
