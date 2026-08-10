@@ -7,6 +7,24 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-08-10
+
+### Changed
+
+- Tightened the root-cause fix rules in both review loops around the three ways a fix batch was
+  observed to create the next pass's findings. The invariant must now be stated as the rule the domain
+  imposes, with its violation forms enumerated and each covered by the mechanism or recorded as open —
+  the negation of the reported symptom is not an invariant, and a check written against one sighting
+  leaves the rule's other violations for the next pass to find. The dependent enumeration now includes
+  the records that assert the behavior — decision records, requirements, acceptance criteria,
+  docstrings, comments — because a fix that corrects the code while a document the same run rewrote
+  still asserts the old behavior trades a defect for a contradiction. And a fix batch must be closed,
+  not just finished: walk the recorded dependents list against the edited tree, hold everything the
+  batch itself introduced to the same contracts the findings were validated against, and reread the
+  complete batch diff before the checks run, because the next pass exists to verify the fixes, not to
+  be the first reader of their side effects. In an observed run every fix-regression across two
+  consecutive passes — 4 of 6 findings, then 3 of 5 — traced to one of these three gaps.
+
 ## [1.7.0] - 2026-08-05
 
 ### Changed
@@ -301,7 +319,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.7.0...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.8.0...HEAD
+[1.8.0]: https://github.com/ivni/project-foundation/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/ivni/project-foundation/compare/v1.6.1...v1.7.0
 [1.6.1]: https://github.com/ivni/project-foundation/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/ivni/project-foundation/compare/v1.5.0...v1.6.0

@@ -243,9 +243,9 @@ For each pass:
    verdict is `CLEAN`, because that edit would need a further pass to verify. A low defect left unfixed
    is `deferred` like any other: record it and report it. Low severity changes the urgency, not the
    bookkeeping.
-10. After a fix batch, run proportionate already-available repository checks in the primary agent. Fix
-    safe in-scope failures. Any edit made after a review, including a test-driven edit, requires a new
-    full review pass.
+10. After a fix batch, close it as **Fix at the root cause** requires, then run proportionate
+    already-available repository checks in the primary agent. Fix safe in-scope failures. Any edit
+    made after a review, including a test-driven edit, requires a new full review pass.
 
 ## Fix at the root cause
 
@@ -254,10 +254,18 @@ editing:
 
 - state the root cause the finding consolidates, distinct from the reported symptom;
 - enumerate what depends on the behavior you are about to change — callers, implementers, serialized
-  or persisted forms, and tests that encode it — and record that list in the ledger;
+  or persisted forms, tests that encode it, and the records that assert it: decision records,
+  requirements, acceptance criteria, docstrings, comments. A fix that corrects the code while a
+  document this same run rewrote still asserts the old behavior trades a defect for a contradiction,
+  and the contradiction is the next pass's finding. Record that list in the ledger;
 - state the invariant the fix establishes, and what holds that invariant mechanically: a test, a type,
-  an assertion, or a schema constraint. Record both. "Verified by inspection" is not a mechanism, and
-  neither is this description of the fix;
+  an assertion, or a schema constraint. Record both. State the invariant as the rule the domain
+  imposes, then enumerate the distinct ways that rule can be violated; the mechanism covers every
+  form, or the ledger records which forms stay open and why. The negation of the reported symptom is
+  not an invariant: "the first of several results is taken" is one sighting of "the response must
+  identify exactly one subject, consistently", and a check written against the sighting leaves every
+  other violation of the same rule for the next pass to find. "Verified by inspection" is not a
+  mechanism, and neither is this description of the fix;
 - choose the change that removes the cause for every dependent, not the narrowest edit that silences
   the reported symptom.
 
@@ -282,6 +290,15 @@ requires, since no test pins a decision, and creating the file it belongs in is 
 paragraph above forbids. A defect answered by expanding prose is not fixed, it is enlarged. When the
 decision is the user's to make, record it as an open question with an interim default or ask them; do not
 settle a product question yourself to close a finding.
+
+A fix batch is closed, not just finished. Before the post-batch checks run, walk the recorded
+dependents list and confirm each entry against the edited tree, one by one — an enumeration nobody
+walks after the edit is bookkeeping, not verification. Then inventory what the batch itself
+introduced — each new event, message, interface element, exemption, and document statement — and hold
+it to the same contracts the findings were validated against, because the batch is code no reviewer
+has seen and its own additions are where fix regressions live. Finally reread the complete batch diff
+in one sitting, asking the reviewer's questions rather than recalling the author's intent. The next
+pass exists to verify the fixes, not to be the first reader of their side effects.
 
 Write comments for a reader who never saw the review. Explain why the code is the way it is — "the row
 is re-read inside the lock because the balance can change between the check and the write" — and never
