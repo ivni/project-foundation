@@ -7,6 +7,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-08-19
+
 ### Added
 
 - New `run-qwen-review-loop` payload: the same bounded review-fix-rereview workflow with an
@@ -344,7 +346,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.8.0...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.9.0...HEAD
+[1.9.0]: https://github.com/ivni/project-foundation/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/ivni/project-foundation/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/ivni/project-foundation/compare/v1.6.1...v1.7.0
 [1.6.1]: https://github.com/ivni/project-foundation/compare/v1.6.0...v1.6.1

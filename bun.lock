@@ -15,35 +15,39 @@
     },
     "packages/cli": {
       "name": "@ivni/project-foundation-cli",
-      "version": "1.6.0",
+      "version": "1.9.0",
     },
     "packages/find-blind-spots": {
       "name": "@ivni/find-blind-spots-skill",
-      "version": "1.6.0",
+      "version": "1.9.0",
     },
     "packages/project-foundation": {
       "name": "@ivni/project-foundation-skill",
-      "version": "1.6.0",
+      "version": "1.9.0",
     },
     "packages/run-claude-review-loop": {
       "name": "@ivni/run-claude-review-loop-skill",
-      "version": "1.6.0",
+      "version": "1.9.0",
     },
     "packages/run-codex-review-loop": {
       "name": "@ivni/run-codex-review-loop-skill",
-      "version": "1.6.0",
+      "version": "1.9.0",
     },
     "packages/run-discovery-interview": {
       "name": "@ivni/run-discovery-interview-skill",
-      "version": "1.6.0",
+      "version": "1.9.0",
+    },
+    "packages/run-qwen-review-loop": {
+      "name": "@ivni/run-qwen-review-loop-skill",
+      "version": "1.9.0",
     },
     "packages/run-subphase": {
       "name": "@ivni/run-subphase-skill",
-      "version": "1.6.0",
+      "version": "1.9.0",
     },
     "packages/teach": {
       "name": "@ivni/teach-skill",
-      "version": "1.6.0",
+      "version": "1.9.0",
     },
   },
   "packages": {
@@ -78,6 +82,8 @@
     "@ivni/run-codex-review-loop-skill": ["@ivni/run-codex-review-loop-skill@workspace:packages/run-codex-review-loop"],
 
     "@ivni/run-discovery-interview-skill": ["@ivni/run-discovery-interview-skill@workspace:packages/run-discovery-interview"],
+
+    "@ivni/run-qwen-review-loop-skill": ["@ivni/run-qwen-review-loop-skill@workspace:packages/run-qwen-review-loop"],
 
     "@ivni/run-subphase-skill": ["@ivni/run-subphase-skill@workspace:packages/run-subphase"],
 
