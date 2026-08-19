@@ -45,8 +45,8 @@ release.
 
 `bunx` runs the package without creating a permanent global CLI installation. The package contains
 the installer and exact payloads for `project-foundation`, `find-blind-spots`,
-`run-discovery-interview`, `run-subphase`, `run-codex-review-loop`, `run-claude-review-loop`, and
-`teach`. The selected skill directories remain after `bunx` exits.
+`run-discovery-interview`, `run-subphase`, `run-codex-review-loop`, `run-claude-review-loop`,
+`run-qwen-review-loop`, and `teach`. The selected skill directories remain after `bunx` exits.
 
 `run-codex-review-loop` has additional runtime requirements when invoked from Claude Code, Pi,
 OpenCode, or Hermes: `bun` and an authenticated `codex` CLI with access to `gpt-5.6-sol` and `xhigh`
@@ -63,6 +63,13 @@ exposes only `Read`, `Grep`, and `Glob`. The probe is an additional small model 
 invocation. The installer does not install or authenticate Claude Code. A Claude Code host may use a
 native fresh custom subagent only when it can prove the same model, effort, read-only, test-free, and
 context-isolation controls.
+
+`run-qwen-review-loop` requires Bun plus an authenticated Qwen Code CLI (`qwen`) with access to
+`qwen3.8-max` on every host; there is no native-subagent path. The wrapper pins the model as a CLI
+argument, pins `xhigh` reasoning and an empty MCP server list through a wrapper-owned system settings
+file, and sets the `plan` approval mode. Plan mode is tool-surface enforcement by the Qwen Code
+runtime, not an OS sandbox. Authentication stays with the Qwen Code CLI's own login or configured
+provider; the installer does not install or authenticate Qwen Code.
 
 Each skill is installed as an independent immediate child of the agent's skill root, so agent
 discovery does not depend on nested-skill behavior. Its package directory, target directory,

@@ -6,7 +6,7 @@ Use the latest published installer explicitly:
 bunx @ivni/project-foundation@latest update
 ```
 
-The update flow asks for a scope, discovers managed receipts for all seven packaged skills, and
+The update flow asks for a scope, discovers managed receipts for all eight packaged skills, and
 preselects installations older than the package being run. Every choice includes the skill name. It
 never replaces a newer installed version with an older package.
 

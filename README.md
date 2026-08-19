@@ -17,6 +17,9 @@ durable project foundation:
   checks, and re-review until clean or honestly blocked.
 - **Claude Review Loop** runs the same bounded workflow through an actual Claude Fable/xhigh reviewer
   with only read-only file inspection tools; the primary agent remains responsible for all tests.
+- **Qwen Review Loop** runs the same bounded workflow through an actual Qwen Code CLI reviewer pinned
+  to `qwen3.8-max` with `xhigh` reasoning in the read-only plan approval mode; the primary agent
+  remains responsible for all tests.
 - **Project Foundation** turns the resulting product and UX contract into agent-led technical
   synthesis, architecture, delivery process, and a canonical artifact set.
 
@@ -37,8 +40,8 @@ Install [Bun](https://bun.com/docs/installation), then run:
 bunx @ivni/project-foundation
 ```
 
-Choose any combination of the seven skills, the agent environments, a user or project scope, and a
-copy or managed-link installation. All seven skills are preselected; deselect the ones you do not
+Choose any combination of the eight skills, the agent environments, a user or project scope, and a
+copy or managed-link installation. All eight skills are preselected; deselect the ones you do not
 want. The wizard shows a complete preview before writing anything.
 
 The skill registry is the source of truth: each registry key is also the package directory, native
@@ -102,7 +105,7 @@ bun run check
 ```
 
 The public package is the repository root. The private workspaces under `packages/` separate the
-CLI source from the seven raw skill payloads. See [Development](docs/development.md) for the full
+CLI source from the eight raw skill payloads. See [Development](docs/development.md) for the full
 layout and verification workflow.
 
 ## License

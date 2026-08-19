@@ -20,9 +20,9 @@ Versions are evidence for this review, not runtime pins.
 
 ## Invocation control
 
-Five payloads must not fire on their own: both review loops, the discovery interview, `run-subphase`,
-and `teach` act only on the user's explicit instruction. Two mechanisms express that, and a payload
-carries both because no single one covers all five targets:
+Six payloads must not fire on their own: the three review loops, the discovery interview,
+`run-subphase`, and `teach` act only on the user's explicit instruction. Two mechanisms express that,
+and a payload carries both because no single one covers all six targets:
 
 - `disable-model-invocation: true` in `SKILL.md`, honored by Claude Code and Pi.
 - `policy.allow_implicit_invocation: false` in `agents/openai.yaml`, honored by Codex.
@@ -103,13 +103,46 @@ remain outside the model tool allowlist even in safe mode, so a whole-process gu
 requires verified harmless hooks or OS-level isolation. The wrapper runs a plain-text profile probe,
 then requires non-empty Fable model usage from the JSON review result.
 
-This adapter behavior was reviewed on 2026-08-04 against the primary sources above plus
-[OpenAI Codex non-interactive mode](https://developers.openai.com/codex/noninteractive/),
+The Codex and Claude adapter behavior was reviewed on 2026-08-04 against the primary sources above
+plus [OpenAI Codex non-interactive mode](https://developers.openai.com/codex/noninteractive/),
 [Claude Code CLI reference](https://code.claude.com/docs/en/cli-reference), and
 [Claude Code subagents](https://code.claude.com/docs/en/sub-agents), and the
 [Pi skills reference](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/skills.md).
 Lack of a documented hard explicit-only switch is reported as a limitation, not treated as proof
 that a host cannot add one later.
+
+## Qwen Review Loop adapter boundary
+
+The `run-qwen-review-loop` payload keeps the same workflow with no native-subagent path: every host
+launches the actual Qwen Code CLI through the packaged Bun wrapper.
+
+| Primary host | Reviewer runtime | Explicit-only enforcement |
+| --- | --- | --- |
+| Codex | Qwen Code CLI through the packaged Bun wrapper | `agents/openai.yaml` disables implicit invocation |
+| Claude Code | Qwen Code CLI through the packaged Bun wrapper | `disable-model-invocation: true` in the payload |
+| Pi | Qwen Code CLI through the packaged Bun wrapper | `disable-model-invocation: true` in the payload |
+| OpenCode | Qwen Code CLI through the packaged Bun wrapper | Skill permission `ask` plus an instruction-level boundary |
+| Hermes Agent | Qwen Code CLI through the packaged Bun wrapper | Instruction-level boundary; no equivalent per-skill hard flag was verified |
+
+The wrapper pins `--model qwen3.8-max` as a CLI argument and pins `xhigh` reasoning through a
+wrapper-owned system settings file passed via `QWEN_CODE_SYSTEM_SETTINGS_PATH`, which Qwen Code
+documents as overriding all other settings files. The same file re-pins the `plan` approval mode and
+empties the MCP server list, so a workspace `.qwen/settings.json` cannot hand the reviewer a mutation
+tool. The child environment keeps the user's configured authentication while stripping model,
+settings-path, and sandbox overrides. Plan approval mode is enforced by the Qwen Code runtime on its
+tool surface — it is not an OS sandbox — and the prohibition on tests and validation commands is
+reviewer-contract-only. Model usage reported in the CLI's JSON stats is corroborating evidence:
+present data naming another model fails the pass, while absent data is surfaced as an empty
+`reported_models` list and must not be claimed as attestation. Qwen Code has no structured-output flag, so the output schema
+travels inside the prompt and the wrapper validates the parsed response locally, accepting at most
+one wrapping Markdown fence.
+
+This adapter behavior was reviewed on 2026-08-19 against the
+[Qwen Code headless mode](https://qwenlm.github.io/qwen-code-docs/en/users/features/headless/) and
+[Qwen Code configuration](https://qwenlm.github.io/qwen-code-docs/en/users/configuration/settings/)
+documentation. The `--output-format json` envelope shape and the stats model inventory were taken
+from that documentation, not verified against a local `qwen` installation, and the wrapper rejects
+any envelope that does not match them instead of guessing.
 
 ## Maintenance policy
 

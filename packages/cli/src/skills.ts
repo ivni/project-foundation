@@ -28,6 +28,10 @@ export const SKILLS = {
     label: "Claude Review Loop",
     summary: "Independent Claude review, bounded fixes, and clean rechecks",
   },
+  "run-qwen-review-loop": {
+    label: "Qwen Review Loop",
+    summary: "Independent Qwen review, bounded fixes, and clean rechecks",
+  },
   teach: {
     label: "Teach",
     summary: "Stateful learning workspace for teaching a topic over many sessions",

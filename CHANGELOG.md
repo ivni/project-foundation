@@ -7,6 +7,17 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- New `run-qwen-review-loop` payload: the same bounded review-fix-rereview workflow with an
+  independent Qwen reviewer. Every host launches the actual Qwen Code CLI through a packaged Bun
+  wrapper that pins `qwen3.8-max`, pins `xhigh` reasoning and an empty MCP server list through a
+  wrapper-owned system settings file, and sets the `plan` approval mode as the read-only boundary.
+  Qwen Code has no structured-output flag, so the output schema travels inside the prompt and the
+  wrapper validates the parsed response locally, treating reported model stats as corroborating
+  evidence rather than attestation. `run-subphase` now names it among the loops whose reviewer
+  runtime is independent of every supported host.
+
 ## [1.8.0] - 2026-08-10
 
 ### Changed

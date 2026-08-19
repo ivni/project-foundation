@@ -88,18 +88,20 @@ Fill the traceability table as required by the subphase contract. Evidence is a 
 
 Hand the change set to an installed review loop, naming it by its exact skill identifier:
 
-- Both loops installed: prefer the one whose reviewer runtime is not the primary host's own vendor —
-  on a Claude Code host use `run-codex-review-loop`, on a Codex host use `run-claude-review-loop`. On
-  Pi, OpenCode, or Hermes either is independent of the host; use `run-codex-review-loop`.
+- Several loops installed: prefer one whose reviewer runtime is not the primary host's own vendor —
+  on a Claude Code host use `run-codex-review-loop` or `run-qwen-review-loop`, on a Codex host use
+  `run-claude-review-loop` or `run-qwen-review-loop`. On Pi, OpenCode, or Hermes every loop is
+  independent of the host; use `run-codex-review-loop`. `run-qwen-review-loop` is independent of
+  every supported host.
 - One installed: that one.
-- Neither installed: say so and stop before committing.
+- None installed: say so and stop before committing.
 
 Invoke it however this host invokes a skill. This skill deliberately does not prescribe that syntax:
 it differs per host, and a guessed invocation form fails silently.
 
 No other review satisfies this step — not the host's own review command, not a review skill from
-another suite, and not your own re-reading of the diff. Both loops are user-invoked only, so they are
-the two capabilities here you cannot reach for by accident, which is why this step names them instead
+another suite, and not your own re-reading of the diff. All three loops are user-invoked only, so they
+are the capabilities here you cannot reach for by accident, which is why this step names them instead
 of describing what they do. **A review you could have started without being told to is not the
 independent review this step requires.**
 
