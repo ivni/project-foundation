@@ -4,14 +4,10 @@ Use this adapter only when Claude Code is the primary implementing agent.
 
 ## Explicit invocation
 
-Claude Code supports a hard user-only skill boundary through `disable-model-invocation: true` in a
-Claude-specific skill definition. This package keeps one portable `SKILL.md`, whose shared validator
-allows only `name` and `description`, so that field is not embedded here.
-
-For a hard Claude Code guarantee, configure a local Claude skill override or wrapper command that
-sets `disable-model-invocation: true` and delegates to this installed payload. Without that local
-override, the explicit-only boundary is instruction-level rather than host-enforced. State that
-limitation instead of claiming a hard guarantee.
+This portable payload embeds `disable-model-invocation: true` in its frontmatter, and Claude Code
+honors that field: the skill's description stays out of model context and only the user can invoke
+it, so the explicit-only boundary is host-enforced. A local `/skills` override that sets
+`run-codex-review-loop` to `user-only` is a redundant second control, not a requirement.
 
 ## Launch the reviewer
 

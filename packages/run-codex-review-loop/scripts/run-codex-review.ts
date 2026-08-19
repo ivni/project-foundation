@@ -791,13 +791,17 @@ async function runReview(options: ParsedArguments): Promise<Record<string, unkno
   };
 
   const cancelWith = (signal: "SIGINT" | "SIGTERM") => {
+    if (cancelledSignal !== undefined) {
+      if (child !== undefined) terminateProcessTree(child, true);
+      return;
+    }
     cancelledSignal = signal;
     beginTermination();
   };
   const onSigint = () => cancelWith("SIGINT");
   const onSigterm = () => cancelWith("SIGTERM");
-  process.once("SIGINT", onSigint);
-  process.once("SIGTERM", onSigterm);
+  process.on("SIGINT", onSigint);
+  process.on("SIGTERM", onSigterm);
 
   try {
     const codexArguments = buildCodexArguments(options, outputPath);

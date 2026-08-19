@@ -18,6 +18,20 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   evidence rather than attestation. `run-subphase` now names it among the loops whose reviewer
   runtime is independent of every supported host.
 
+### Fixed
+
+- Four defects the qwen-loop review surfaced verbatim in the two older review loops. The Claude Code
+  and Pi adapters of both loops claimed the portable payload omits `disable-model-invocation` and
+  prescribed manual hardening, while both payloads embed the field and both hosts honor it — the
+  sections now state the host-enforced boundary. The report sections demanded "the user confirmed"
+  the ship-blocking areas that the declaration sections forbid asking about; they now report the
+  derived areas as settled before pass 1 or supplied by the user. The prompt-leak tests still
+  guarded the pre-1.6.0 pass budget of 8 and had gone vacuous; they now assert the current budget of
+  10 stays out of the reviewer prompt. And the Codex wrapper registered its signal handlers with
+  `process.once`, so a second Ctrl-C killed the wrapper itself and orphaned the detached reviewer
+  process group; it now keeps the handlers installed and force-kills the process tree on a repeated
+  signal, matching the newer wrappers.
+
 ## [1.8.0] - 2026-08-10
 
 ### Changed

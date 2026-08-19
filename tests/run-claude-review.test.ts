@@ -264,7 +264,7 @@ describe("Claude review wrapper arguments", () => {
     expect(prompt).toContain("Return only one JSON");
     expect(prompt).not.toMatch(/pass \d/i);
     expect(prompt).not.toContain("at most");
-    expect(prompt).not.toContain(String(8));
+    expect(prompt).not.toContain(String(10));
   });
 
   test("classifies authentication and model capability failures", () => {

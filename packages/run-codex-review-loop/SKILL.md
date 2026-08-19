@@ -320,7 +320,8 @@ Keep review and test evidence distinct. Report:
   passes, the run identifier those passes were recorded under, whether that identifier was derived or
   supplied explicitly, whether expired run state was discarded, and any pass whose working-tree digest
   matched the pass before it;
-- the confirmed ship-blocking areas with their reasons, and that the user confirmed them before pass 1;
+- the derived ship-blocking areas with their reasons, and that they were settled before pass 1, or
+  that the user supplied or narrowed them;
 - the verified reviewer runtime and CLI version, the pinned model and reasoning arguments, and any
   approved fallback; do not claim independent server-side profile attestation;
 - whether the no-test boundary was host-enforced or reviewer-contract-only;

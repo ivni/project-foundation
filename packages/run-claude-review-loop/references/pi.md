@@ -4,11 +4,10 @@ Use this adapter only when Pi is the primary implementing agent.
 
 ## Explicit invocation
 
-Invoke the installed skill with `/skill:run-claude-review-loop`. Pi supports
-`disable-model-invocation: true`, but this portable payload omits that frontmatter field because the
-shared repository validator permits only `name` and `description`. The installed payload therefore
-has an instruction-level boundary. For hard Pi enforcement, create and validate a Pi-specific copy
-that adds the field; the installer does not generate that override automatically.
+Invoke the installed skill with `/skill:run-claude-review-loop`. This portable payload embeds
+`disable-model-invocation: true` in its frontmatter, and Pi honors that field by hiding the skill
+from the system prompt until the user names it, so the explicit-only boundary is host-enforced on
+Pi.
 
 ## Launch the reviewer
 
