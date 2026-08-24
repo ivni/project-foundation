@@ -144,6 +144,12 @@ something that pass could not see:
 Name that new evidence explicitly in `evidence`. If you have no new evidence, leave it out. Repeating
 a finding does not make it truer.
 
+A finding that is another instance of a class the ledger records as fixed — the same root cause in a
+place the recorded fix did not reach — is always reportable, and the new location is itself the new
+evidence. Say what it is: cite the ledgered fingerprint beside the new location. The primary agent
+treats a recurrence differently from a fresh defect, and a recurrence disguised as a fresh finding
+hides exactly the fix-quality signal the loop steers by.
+
 ## Finding requirements
 
 Every finding must:

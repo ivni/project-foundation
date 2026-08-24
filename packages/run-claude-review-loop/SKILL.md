@@ -231,7 +231,21 @@ For each pass:
      required to verify another edit and is not authorized.
    - `FINDINGS` on passes 1 through 9 continues to finding validation.
 6. Independently validate each blocking defect against the current code and task. Do not edit merely
-   because the reviewer asserted it.
+   because the reviewer asserted it. On code, validation is a red run: write the test or check that
+   reproduces the failure and run it against the current, unfixed tree — it must fail, and that failing
+   run is recorded in the ledger beside the green run after the fix. The red run proves two things at
+   once: the defect is real in execution rather than in reading, and the mechanism actually detects it,
+   so no fix is ever reverted, neutralized, or restored to test its own test. A defect that cannot be
+   reproduced locally is not silently trusted and not silently dropped: record why reproduction is out
+   of reach and dispose of it as `escalated` or `deferred` — never as `fixed` by an edit whose effect
+   nothing demonstrated. A defect on a path that carries no code keeps the validation the reviewer
+   contract defines for such paths.
+   When a validated finding is another instance of a class an earlier pass in this run fixed — the
+   fingerprint matches, or its root cause is one a recorded sweep claimed to close — it is a sweep
+   failure, not a new defect. Re-derive the class signature wider, re-run the sweep, disposition every
+   hit, and repair the class in one batch. A sweep failure also impeaches its pass: re-run the recorded
+   sweeps of every other class that pass fixed, because a method that missed here missed the same way
+   there. Record each sweep failure against the pass whose sweep missed it.
 7. Mark a false positive `rejected-with-evidence`. The reviewer contract requires new evidence before
    a rejected, deferred, or previously-cleared finding returns; if one returns without it, stop as a
    reviewer dispute rather than oscillating.
@@ -269,6 +283,28 @@ editing:
 - choose the change that removes the cause for every dependent, not the narrowest edit that silences
   the reported symptom.
 
+Then sweep the class before the first edit. Express the root cause as a search the repository can
+answer — the pattern's grep, the callers of the function, every writer of the field, every branch that
+publishes the flag — and run it over the whole tree, not over the diff. Record in the ledger the exact
+command, its complete hit list, and a disposition for every hit. A hit is a candidate, not a defect:
+repair it only where the failure path — input, state, consequence — can be shown at that location, and
+otherwise record it as not an instance, with the reason. Both dispositions carry the same burden;
+repairing a hit "just in case" damages correct code exactly the way skipping one leaves the class
+open. A hit without a disposition means the fix is not finished. "I looked around" is not a sweep; a
+recorded command is one, because the next pass can re-run it and refute it, which is the property
+prose enumeration lacks. When the class genuinely cannot be expressed as a search, record that, and
+the pinning mechanism carries the whole weight.
+
+Account for the inputs of every branch the fix touches. Each condition on the edited path is a fork,
+and each side of a fork is a scenario: record which inputs or states travel it, what happened to them
+before the edit, and what happens after. A scenario whose "after" cannot be stated is an edit that is
+not understood — stop rather than commit it. Removing or narrowing a branch demands one of exactly two
+proofs: evidence that no reachable state enters it, drawn from the system's actual states rather than
+from a likelihood judgment or a label like "ceremony"; or the named path that now serves those inputs,
+shown to do the same job. Then run the affected scenarios against the edited tree — a test, a dry run,
+or a recorded trace — before the batch closes. A fix is not finished when it answers the finding; it
+is finished when it answers the system.
+
 A fix that visits N places and repairs each one, while leaving nothing that fails when the N+1st place
 appears, is a symptom fix however wide it is. Twenty-four tests for twenty-four specification keys are
 symptoms; one test that turns red when an unclassified key is encountered is the cause. The
@@ -291,7 +327,9 @@ paragraph above forbids. A defect answered by expanding prose is not fixed, it i
 decision is the user's to make, record it as an open question with an interim default or ask them; do not
 settle a product question yourself to close a finding.
 
-A fix batch is closed, not just finished. Before the post-batch checks run, walk the recorded
+A fix batch is closed, not just finished. Closing starts with proof the edits landed: re-read every
+edited region from disk and see each hunk in the diff, because an edit is applied when the file shows
+it, not when the editing tool exited cleanly. Then, before the post-batch checks run, walk the recorded
 dependents list and confirm each entry against the edited tree, one by one — an enumeration nobody
 walks after the edit is bookkeeping, not verification. Then inventory what the batch itself
 introduced — each new event, message, interface element, exemption, and document statement — and hold
@@ -344,9 +382,12 @@ Keep review and test evidence distinct. Report:
 - that the external wrapper enforced read-only, test-free inspection on Claude's built-in-tool
   surface, the managed-hook or OS-isolation status, or the exact native-host enforcement used;
 - fixed, rejected, escalated, repeated, and remaining defects with concise evidence, and for each fix
-  the root cause, the dependents that were checked, and the invariant with the mechanism that holds it.
-  A fix that left no mechanism behind needs an explicit reason here, because by default it is a symptom
-  patch;
+  the root cause, the dependents that were checked, the invariant with the mechanism that holds it, the
+  mechanism's red and green runs, and the sweep command with its hit count and the confirmation that
+  every hit carries a disposition. A fix that left no mechanism behind, or whose mechanism never ran
+  red, needs an explicit reason here, because by default it is a symptom patch;
+- every sweep failure — a later pass finding an instance a recorded sweep missed — named against the
+  pass whose sweep missed it, with both sweep commands;
 - every deferred defect with its fingerprint, severity, the declared blocking area it falls outside,
   and where it was recorded, so what the run knowingly shipped unfixed is legible at a glance;
 - the fix-regression ratio: how many findings had an `introduced_by_pass` other than `none`, out of
