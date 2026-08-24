@@ -7,6 +7,32 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-08-24
+
+### Changed
+
+- Fix validation in all three review loops now runs on evidence a later pass can refute instead of
+  self-attested prose, closing the gaps an observed 107-pass run traced to. A validated defect on
+  code requires a red run: the test or check that reproduces the failure must fail on the current,
+  unfixed tree and pass after the fix, with both runs recorded in the ledger — no fix is ever
+  reverted, neutralized, or restored to test its own test, and a defect that cannot be reproduced
+  locally is escalated or deferred with the missing reproduction named, never closed by an edit
+  whose effect nothing demonstrated. Every root cause is swept before the first edit: expressed as
+  a search over the whole tree and recorded with its exact command, complete hit list, and a
+  disposition per hit, where a hit is a candidate rather than a defect — repaired only where the
+  failure path can be shown at that location, recorded as not an instance with the reason
+  otherwise. A later pass finding an instance a recorded sweep missed is a sweep failure, not a new
+  defect: the signature widens, that pass's other sweeps re-run, and the failure is reported
+  against the pass that missed it; both halves of every loop cooperate, since the reviewer
+  contracts now mark such recurrences by citing the ledgered fingerprint. Every branch a fix
+  touches must account for its inputs — what traveled each side before the edit and what happens
+  to it after — and removing or narrowing a branch demands either proof that no reachable state
+  enters it, drawn from the system's actual states, or the named path that now serves those
+  inputs; likelihood judgments and labels like "ceremony" qualify as neither. Closing a fix batch
+  starts with proof the edits landed: every edited region re-read from disk and every hunk seen in
+  the diff, because an edit is applied when the file shows it, not when the editing tool exited
+  cleanly.
+
 ## [1.9.0] - 2026-08-19
 
 ### Added
@@ -346,7 +372,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.9.0...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.10.0...HEAD
+[1.10.0]: https://github.com/ivni/project-foundation/compare/v1.9.0...v1.10.0
 [1.9.0]: https://github.com/ivni/project-foundation/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/ivni/project-foundation/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/ivni/project-foundation/compare/v1.6.1...v1.7.0
