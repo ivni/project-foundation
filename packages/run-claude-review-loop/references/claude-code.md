@@ -4,10 +4,11 @@ Use this adapter only when Claude Code is the primary implementing agent.
 
 ## Explicit invocation
 
-This portable payload embeds `disable-model-invocation: true` in its frontmatter, and Claude Code
-honors that field: the skill's description stays out of model context and only the user can invoke
-it, so the explicit-only boundary is host-enforced. A local `/skills` override that sets
-`run-claude-review-loop` to `user-only` is a redundant second control, not a requirement.
+This portable payload does not set `disable-model-invocation`, so Claude Code may start the skill
+itself when the user names it in a prompt — including a recurring or loop prompt. The explicit-only
+boundary is instruction-level: the description and the invocation section of `SKILL.md` forbid
+starting it uninvited. A local `/skills` override that sets `run-claude-review-loop` to `user-only`
+restores a host-enforced boundary where one is wanted.
 
 ## Prefer a strict native reviewer
 

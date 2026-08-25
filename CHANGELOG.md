@@ -7,6 +7,18 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking:** the six explicit-only payloads — the three review loops, `run-discovery-interview`,
+  `run-subphase`, and `teach` — no longer set `disable-model-invocation: true`, and their
+  `agents/openai.yaml` policies now allow implicit invocation. Hosts that honored the hard flag
+  (Claude Code, Pi) also refused to start these skills from a prompt that named them — a loop or
+  recurring prompt in particular — and demanded a slash command, breaking the intended "named in a
+  prompt counts as explicit" contract. The boundary is now instruction-level: each description is
+  cut to a minimum ending with "Use only when invoked by name," and the invocation sections in the
+  skill bodies stay authoritative. Adapter references and compatibility documentation describe the
+  new boundary; the host-behavior evidence for the hard flag is retained.
+
 ## [1.10.0] - 2026-08-24
 
 ### Changed

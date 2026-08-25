@@ -4,4 +4,4 @@ interface:
   default_prompt: "Use $run-subphase to take the next unfinished subphase of this phase to done, then stop."
 
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

@@ -1,7 +1,6 @@
 ---
 name: run-subphase
-description: Take exactly one phase subphase to done — built, verified, independently reviewed, committed — then stop.
-disable-model-invocation: true
+description: Take exactly one phase subphase to done, then stop. Use only when invoked by name.
 ---
 
 # Run Subphase

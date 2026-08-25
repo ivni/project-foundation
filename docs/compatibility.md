@@ -21,14 +21,18 @@ Versions are evidence for this review, not runtime pins.
 ## Invocation control
 
 Six payloads must not fire on their own: the three review loops, the discovery interview,
-`run-subphase`, and `teach` act only on the user's explicit instruction. Two mechanisms express that,
-and a payload carries both because no single one covers all six targets:
+`run-subphase`, and `teach` act only on the user's explicit instruction. That boundary is now
+instruction-level, not harness-enforced: hosts that honored the hard flags also refused to start
+these skills from a prompt that named them — a loop or recurring prompt in particular — and demanded
+a slash command, which broke the intended "named in a prompt counts as explicit" contract. So:
 
-- `disable-model-invocation: true` in `SKILL.md`, honored by Claude Code and Pi.
-- `policy.allow_implicit_invocation: false` in `agents/openai.yaml`, honored by Codex.
+- `SKILL.md` omits `disable-model-invocation`; the description is cut to a minimum and ends with
+  "Use only when invoked by name," and the skill body's invocation section forbids uninvited starts.
+- `agents/openai.yaml` sets `policy.allow_implicit_invocation: true` for the same reason.
 
-`verify:skills` fails when the two disagree, so a payload cannot be user-invoked in one harness and
-model-invoked in the other.
+`verify:skills` still fails when the two mechanisms disagree, so a payload cannot be user-invoked in
+one harness and model-invoked in the other. The host-behavior evidence below is kept for the day a
+payload wants the hard flag back.
 
 | Agent | Honors `disable-model-invocation` | Tolerates it | Evidence |
 | --- | --- | --- | --- |
@@ -67,9 +71,9 @@ The `run-codex-review-loop` payload uses one workflow but not one delegation mec
 
 | Primary host | Reviewer runtime | Explicit-only enforcement |
 | --- | --- | --- |
-| Codex | Fresh native Codex subagent pinned to Sol/xhigh; a read-only custom agent or sandbox override is required | `agents/openai.yaml` disables implicit invocation |
-| Claude Code | `codex exec` through the packaged Bun wrapper | `disable-model-invocation: true` in the payload |
-| Pi | `codex exec` through the packaged Bun wrapper | `disable-model-invocation: true` in the payload |
+| Codex | Fresh native Codex subagent pinned to Sol/xhigh; a read-only custom agent or sandbox override is required | Instruction-level boundary in the payload |
+| Claude Code | `codex exec` through the packaged Bun wrapper | Instruction-level boundary in the payload |
+| Pi | `codex exec` through the packaged Bun wrapper | Instruction-level boundary in the payload |
 | OpenCode | `codex exec` through the packaged Bun wrapper | Skill permission `ask` plus an instruction-level boundary |
 | Hermes Agent | `codex exec` through the packaged Bun wrapper | Instruction-level boundary; no equivalent per-skill hard flag was verified |
 
@@ -89,9 +93,9 @@ The `run-claude-review-loop` payload keeps the same workflow and selects the act
 
 | Primary host | Reviewer runtime | Explicit-only enforcement |
 | --- | --- | --- |
-| Codex | Claude Code CLI through the packaged Bun wrapper | `agents/openai.yaml` disables implicit invocation |
-| Claude Code | Fresh native custom subagent when every strict control is provable; otherwise the wrapper after approval | `disable-model-invocation: true` in the payload |
-| Pi | Claude Code CLI through the packaged Bun wrapper | `disable-model-invocation: true` in the payload |
+| Codex | Claude Code CLI through the packaged Bun wrapper | Instruction-level boundary in the payload |
+| Claude Code | Fresh native custom subagent when every strict control is provable; otherwise the wrapper after approval | Instruction-level boundary in the payload |
+| Pi | Claude Code CLI through the packaged Bun wrapper | Instruction-level boundary in the payload |
 | OpenCode | Claude Code CLI through the packaged Bun wrapper | Skill permission `ask` plus an instruction-level boundary |
 | Hermes Agent | Claude Code CLI through the packaged Bun wrapper | Instruction-level boundary; no equivalent per-skill hard flag was verified |
 
@@ -118,9 +122,9 @@ launches the actual Qwen Code CLI through the packaged Bun wrapper.
 
 | Primary host | Reviewer runtime | Explicit-only enforcement |
 | --- | --- | --- |
-| Codex | Qwen Code CLI through the packaged Bun wrapper | `agents/openai.yaml` disables implicit invocation |
-| Claude Code | Qwen Code CLI through the packaged Bun wrapper | `disable-model-invocation: true` in the payload |
-| Pi | Qwen Code CLI through the packaged Bun wrapper | `disable-model-invocation: true` in the payload |
+| Codex | Qwen Code CLI through the packaged Bun wrapper | Instruction-level boundary in the payload |
+| Claude Code | Qwen Code CLI through the packaged Bun wrapper | Instruction-level boundary in the payload |
+| Pi | Qwen Code CLI through the packaged Bun wrapper | Instruction-level boundary in the payload |
 | OpenCode | Qwen Code CLI through the packaged Bun wrapper | Skill permission `ask` plus an instruction-level boundary |
 | Hermes Agent | Qwen Code CLI through the packaged Bun wrapper | Instruction-level boundary; no equivalent per-skill hard flag was verified |
 

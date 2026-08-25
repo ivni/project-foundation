@@ -1,7 +1,6 @@
 ---
 name: run-discovery-interview
-description: Discovery interview that closes one stakeholder-owned decision at a time before implementation.
-disable-model-invocation: true
+description: Discovery interview that closes stakeholder decisions before implementation. Use only when invoked by name.
 ---
 
 # Run Discovery Interview

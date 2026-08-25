@@ -76,9 +76,12 @@ Filesystem logic is UI-independent so tests can use isolated temporary homes and
    directories it needs.
 3. Add the same stable ID and its display metadata to `SKILLS` in `skills.ts`; `SkillId` and
    `SKILL_IDS` are derived automatically.
-4. Declare `policy.allow_implicit_invocation` in `agents/openai.yaml`. A skill that must not fire on
-   its own also needs `disable-model-invocation: true` in `SKILL.md`; verification rejects the two
-   disagreeing. If the skill reuses text under `shared/`, register its copy in
+4. Declare `policy.allow_implicit_invocation` in `agents/openai.yaml`. A skill that must not fire
+   uninvited keeps that boundary at the instruction level: a minimal description ending with "Use
+   only when invoked by name" plus an invocation section in the skill body. The hard
+   `disable-model-invocation: true` flag remains supported but no current payload sets it, because
+   hosts that honor it also refuse prompt-named invocation (see `docs/compatibility.md`);
+   verification rejects the flag and the openai policy disagreeing. If the skill reuses text under `shared/`, register its copy in
    `scripts/shared-references.ts` and run `bun run sync:shared`.
 5. Run skill and package verification. The package globs and verification scripts discover the
    registered payload automatically.

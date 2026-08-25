@@ -4,10 +4,10 @@ Use this adapter only when Pi is the primary implementing agent.
 
 ## Explicit invocation
 
-Invoke the installed skill with `/skill:run-qwen-review-loop`. This portable payload embeds
-`disable-model-invocation: true` in its frontmatter, and Pi honors that field by hiding the skill
-from the system prompt until the user names it, so the explicit-only boundary is host-enforced on
-Pi.
+Invoke the installed skill with `/skill:run-qwen-review-loop`, or name it in a prompt. This
+portable payload does not set `disable-model-invocation`, so the skill stays visible to the model
+and the explicit-only boundary is instruction-level: the description and the invocation section of
+`SKILL.md` forbid starting it uninvited.
 
 ## Launch the reviewer
 

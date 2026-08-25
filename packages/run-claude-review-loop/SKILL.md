@@ -1,7 +1,6 @@
 ---
 name: run-claude-review-loop
-description: Bounded review-fix-rereview loop over this task's uncommitted changes, using an independent Claude reviewer.
-disable-model-invocation: true
+description: Review-fix-rereview loop over uncommitted changes with an independent Claude reviewer. Use only when invoked by name.
 ---
 
 # Run Claude Review Loop

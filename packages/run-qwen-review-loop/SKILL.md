@@ -1,7 +1,6 @@
 ---
 name: run-qwen-review-loop
-description: Bounded review-fix-rereview loop over this task's uncommitted changes, using an independent Qwen reviewer.
-disable-model-invocation: true
+description: Review-fix-rereview loop over uncommitted changes with an independent Qwen reviewer. Use only when invoked by name.
 ---
 
 # Run Qwen Review Loop

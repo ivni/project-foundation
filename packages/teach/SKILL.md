@@ -1,7 +1,6 @@
 ---
 name: teach
-description: Teach the user a topic over many sessions, using the current directory as a stateful learning workspace.
-disable-model-invocation: true
+description: Teach the user a topic over many sessions in the current directory. Use only when invoked by name.
 ---
 
 # Teach

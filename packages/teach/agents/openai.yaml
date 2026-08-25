@@ -4,4 +4,4 @@ interface:
   default_prompt: "Use $teach to teach me this topic over several sessions, keeping the learning state in this directory."
 
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

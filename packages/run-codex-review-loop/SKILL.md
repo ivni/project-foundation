@@ -1,7 +1,6 @@
 ---
 name: run-codex-review-loop
-description: Bounded review-fix-rereview loop over this task's uncommitted changes, using an independent Codex reviewer.
-disable-model-invocation: true
+description: Review-fix-rereview loop over uncommitted changes with an independent Codex reviewer. Use only when invoked by name.
 ---
 
 # Run Codex Review Loop
