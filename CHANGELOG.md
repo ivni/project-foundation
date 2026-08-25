@@ -7,6 +7,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-08-25
+
 ### Changed
 
 - **Breaking:** the six explicit-only payloads — the three review loops, `run-discovery-interview`,
@@ -384,7 +386,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v1.10.0...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/ivni/project-foundation/compare/v1.10.0...v2.0.0
 [1.10.0]: https://github.com/ivni/project-foundation/compare/v1.9.0...v1.10.0
 [1.9.0]: https://github.com/ivni/project-foundation/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/ivni/project-foundation/compare/v1.7.0...v1.8.0
