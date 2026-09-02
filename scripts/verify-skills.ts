@@ -1,7 +1,19 @@
 import { lstat, readdir, readFile } from "node:fs/promises";
 import { dirname, join, relative, resolve } from "node:path";
 import { isSkillId, SKILL_IDS } from "../packages/cli/src/skills.ts";
-import { SHARED_REFERENCES } from "./shared-references.ts";
+import {
+  compareResidueGroup,
+  extractFrontmatter,
+  readBlockRegion,
+  renderBlockBody,
+  validateMarkers,
+} from "./shared-blocks.ts";
+import {
+  HOST_REGIONS,
+  RESIDUE_IDENTICAL_GROUPS,
+  SHARED_BLOCKS,
+  SHARED_REFERENCES,
+} from "./shared-references.ts";
 
 const root = join(import.meta.dir, "..");
 const errors: string[] = [];
@@ -162,10 +174,94 @@ for (const reference of SHARED_REFERENCES) {
   }
 }
 
+for (const block of SHARED_BLOCKS) {
+  const sourcePath = join(root, ...block.source.split("/"));
+  if (!(await pathExists(sourcePath))) {
+    errors.push(`${block.source}: missing canonical shared block`);
+    continue;
+  }
+  const expected = renderBlockBody(await readFile(sourcePath, "utf8"));
+  for (const copy of block.copies) {
+    const copyPath = join(root, ...copy.split("/"));
+    if (!(await pathExists(copyPath))) {
+      errors.push(`${copy}: missing copy carrying block ${block.marker}`);
+      continue;
+    }
+    const region = readBlockRegion(await readFile(copyPath, "utf8"), block.marker);
+    if (typeof region === "string") {
+      errors.push(`${copy}: ${region}`);
+      continue;
+    }
+    if (region.body !== expected) {
+      errors.push(
+        `${copy}: block ${block.marker} drifted from ${block.source} — run bun run sync:shared`,
+      );
+    }
+  }
+}
+
+let frontmattersParsed = 0;
+for (const id of SKILL_IDS) {
+  const skillPath = join(root, "packages", id, "SKILL.md");
+  if (!(await pathExists(skillPath))) continue;
+  const text = await readFile(skillPath, "utf8");
+  const frontmatter = extractFrontmatter(text);
+  if (frontmatter === null) {
+    errors.push(`packages/${id}/SKILL.md: missing YAML frontmatter delimited by ---`);
+    continue;
+  }
+  // Parsed rather than pattern-matched, for every payload: an HTML comment inside the document looks like
+  // a field line to a regex and like a stray scalar to YAML, and a host that parses it refuses the payload.
+  try {
+    const parsed = Bun.YAML.parse(frontmatter);
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+      errors.push(`packages/${id}/SKILL.md: frontmatter is not a YAML mapping`);
+    } else {
+      const mapping = parsed as Record<string, unknown>;
+      for (const field of ["name", "description"]) {
+        if (typeof mapping[field] !== "string") {
+          errors.push(
+            `packages/${id}/SKILL.md: frontmatter field ${field} is missing or not a string`,
+          );
+        }
+      }
+      frontmattersParsed += 1;
+    }
+  } catch (error) {
+    errors.push(
+      `packages/${id}/SKILL.md: frontmatter is not valid YAML — ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+}
+
+for (const group of RESIDUE_IDENTICAL_GROUPS) {
+  const members: { file: string; content: string }[] = [];
+  let structureBroken = false;
+  for (const file of group) {
+    const filePath = join(root, ...file.split("/"));
+    if (!(await pathExists(filePath))) {
+      errors.push(`${file}: missing payload whose residue must match its group`);
+      structureBroken = true;
+      continue;
+    }
+    const content = await readFile(filePath, "utf8");
+    const registered = SHARED_BLOCKS.filter((block) => block.copies.includes(file)).map(
+      (block) => block.marker,
+    );
+    const problems = validateMarkers(content, registered, HOST_REGIONS[file] ?? []);
+    for (const problem of problems) errors.push(`${file}: ${problem}`);
+    if (problems.length > 0) structureBroken = true;
+    members.push({ file, content });
+  }
+  // Only this group's own structure decides whether its residues can be compared.
+  if (structureBroken) continue;
+  errors.push(...compareResidueGroup(members));
+}
+
 if (errors.length > 0) {
   throw new Error(`Skill verification failed:\n${errors.map((error) => `- ${error}`).join("\n")}`);
 }
 
 process.stdout.write(
-  `Skills verified (${SKILL_IDS.length} payloads, ${SHARED_REFERENCES.length} shared references).\n`,
+  `Skills verified (${SKILL_IDS.length} payloads, ${SHARED_REFERENCES.length} shared references, ${SHARED_BLOCKS.length} shared blocks, ${RESIDUE_IDENTICAL_GROUPS.reduce((total, group) => total + group.length, 0)} residue-identical payloads in ${RESIDUE_IDENTICAL_GROUPS.length} groups, ${frontmattersParsed} frontmatters parsed).\n`,
 );

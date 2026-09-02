@@ -73,6 +73,17 @@ The requirement rows in scope are the whole scope. Something worth doing that is
 a `BLK-P{N}-*`, a debt entry, or an out-of-scope entry — never a silent extra commit. Refactoring
 adjacent code is not part of this loop; it belongs to review.
 
+A pattern you write more than once is a class, and it enters the tree as one. The moment a second
+occurrence appears, express the class as a search the repository can answer. Then run that search over
+the whole tree **after the last occurrence is written**, and record the command with a disposition for
+every hit it returns then: this is an occurrence, or it is not one and why. Running it earlier records a
+hit list that cannot contain the occurrences the requirement exists to expose, so the sweep belongs to
+the finished slice and is re-run if the slice grows again.
+
+The review loop already requires this of its own fixes, and by then the class is expensive: the reviewer
+reports one instance, the fix closes one instance, and the next pass finds the third. Writing the class
+in with its sweep recorded is the same work done once, at the only moment it is cheap.
+
 ## 5. Verify
 
 Run the project's single local verification entry point. The agent contract records it; do not assemble
@@ -82,6 +93,11 @@ Then verify the change by actually running it. Passing tests and a clean typeche
 the tests and the types.
 
 Fill the traceability table as required by the subphase contract. Evidence is a command and its result.
+
+Record the state of the working tree the green run was obtained on, not only the command and its result.
+A pass recorded without it cannot be told apart from a pass that predates the last edit, and the review
+step below is entitled to know which of the two it is being handed. On a host whose review wrapper reads
+this attestation, an absent or stale one is what stops pass 1 from starting.
 
 ## 6. Independent review
 
