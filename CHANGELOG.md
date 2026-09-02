@@ -7,6 +7,36 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-09-02
+
+### Added
+
+- `shared/` is now the canonical home for the five host-independent doctrine sections of the review
+  loops and for the reviewer contract. They are generated into each payload as marked blocks, and
+  `verify:skills` fails when a copy drifts, when text outside a shared block or a declared host region
+  differs between the three loops or between the three reviewer contracts, or when any registered
+  payload's YAML frontmatter does not parse. Marker structure is validated first: a shared block a file is
+  not registered to carry, an opener without its closer, or a closer out of order fails the check, because
+  an unregistered region collapses to the same placeholder in every copy and would hide divergent bodies; nesting is checked with one stack so crossed regions fail too. The frontmatter ends at a line that is exactly `---`, so a line merely beginning with three dashes no longer truncates what the parser sees.
+  Host regions are registered per file, so a new host boundary is a registry edit rather than a marker anyone can add, and they hold only what differs by host — the context-file lifecycle, the reviewer's read-only rule, capability negotiation, and native-path bookkeeping are now common text, where one loop had already lost the `finally` cleanup rule behind a host boundary. Each residue group is compared on its own, so an unrelated failure no longer hides a drift report. A drift report names the source line in each file. `sync:shared` reads and validates every whole-file copy and every marked destination, assembles them in memory as one plan, validates the assembled output as well as the input, and writes only when the plan has no errors, so a malformed file refuses the run whole instead of the tree being partly rewritten on the way to the error. One table-driven test covers every copy. A rule added to two of the three loops used to pass CI in silence, and two
+  divergences already in the tree were found and closed by the new check.
+
+### Changed
+
+- `Fix at the root cause` states that a write through a stream editor, heredoc, or script is unproven
+  until the region is read back; requires an existing check at a touched seam to be run red before a fix
+  is pinned to it; requires the red and green runs to record that their environment was held
+  exclusively; requires naming the state the system is left in if execution stops between the steps an
+  edit introduces; and records a sweep as the pattern it searched for together with the search that ran.
+- A finding that a check does not detect the behavior it names is never an advisory when the ledger
+  records that check as the mechanism holding a fix in this run: it is a defect of the mechanism and
+  takes one of the three dispositions.
+- The context packet carries the sweep pattern each earlier fix recorded, with its hit count, so the
+  honesty of a class signature is judged by someone who did not choose it.
+- `run-subphase` requires a recorded tree-wide search, run after the last occurrence is written, for any
+  pattern the implementation writes more than once, and requires the green run to be recorded against the
+  tree it was obtained on; the subphase contract carries the first as a condition of done.
+
 ## [2.0.0] - 2026-08-25
 
 ### Changed
@@ -386,7 +416,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/ivni/project-foundation/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/ivni/project-foundation/compare/v1.10.0...v2.0.0
 [1.10.0]: https://github.com/ivni/project-foundation/compare/v1.9.0...v1.10.0
 [1.9.0]: https://github.com/ivni/project-foundation/compare/v1.8.0...v1.9.0
