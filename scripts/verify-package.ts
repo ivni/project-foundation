@@ -1,6 +1,7 @@
 import { lstat, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { SKILL_IDS } from "../packages/cli/src/skills.ts";
+import { packedFilePaths } from "./npm-pack.ts";
 
 const root = join(import.meta.dir, "..");
 const payloadEntries = [
@@ -75,23 +76,7 @@ if (processResult.exitCode !== 0) {
   throw new Error(processResult.stderr.toString() || "npm pack failed");
 }
 
-const output = processResult.stdout.toString();
-const packResults: unknown = JSON.parse(output);
-if (!Array.isArray(packResults) || packResults.length !== 1) {
-  throw new Error("npm pack returned an unexpected result.");
-}
-const packResult = packResults[0] as { files?: Array<{ path?: unknown }> };
-if (!Array.isArray(packResult.files)) {
-  throw new Error("npm pack did not return a file manifest.");
-}
-const packedFiles = new Set(
-  packResult.files.map((entry) => {
-    if (typeof entry.path !== "string") {
-      throw new Error("npm pack returned an invalid file manifest entry.");
-    }
-    return entry.path;
-  }),
-);
+const packedFiles = packedFilePaths(processResult.stdout.toString());
 for (const path of requiredPackedFiles) {
   if (!packedFiles.has(path)) throw new Error(`Published package is missing ${path}`);
 }

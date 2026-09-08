@@ -8,7 +8,8 @@
 - **Status:** draft
 - **Started:** {{YYYY-MM-DD}}
 - **Artifact language:** {{language}}
-- **Agent contract file:** {{CLAUDE.md / AGENTS.md / user-specified path}}
+- **Agent contract file:** {{canonical: AGENTS.md, or the ADR-recorded path that replaces it}}
+- **Harness pointer files:** {{CLAUDE.md (`@AGENTS.md`) / none / other}}
 - **Participant profile:** {{product owner / domain expert / technical collaborator / mixed}}
 - **Decision authority:** {{which product, UX, business, domain, or technical choices they own}}
 

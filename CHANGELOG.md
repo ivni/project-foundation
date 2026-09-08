@@ -7,6 +7,41 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- The agent contract now has a size gate. `templates/check-agent-contract.sh` fails when the
+  canonical contract is missing, exceeds 300 lines or 15 KB, when a configured harness file
+  (`CLAUDE.md` and equivalents) is missing or is anything other than the single line importing that
+  contract, or when a configured budget is not a positive integer. The pointer is compared as a
+  whole document rather than searched for the import, because a rule can be added below one, beside
+  one, or inside a comment, and the contract path is compared as text rather than as a search
+  pattern. A project with no harness file declares that by configuring an empty pointer list, and a
+  budget that arrives as a typo stops the run instead of being skipped by the shell comparison that
+  cannot read it. It is a dependency-free shell script, runs from the single local
+  verification entry point and therefore in CI through the same path, and is covered by
+  fixture-driven tests that run the shipped script. `references/gates.md` states why the budget
+  exists (the contract is re-read in full every session, and nothing in day-to-day work resists
+  its growth) and that the remedy is moving detail into `docs/`, while raising the limit is a
+  deviation that needs an ADR.
+
+### Fixed
+
+- `verify:package` reads the `npm pack --json` manifest from both shapes: the array of npm 11 and
+  the object keyed by package name that npm 12 returns. Under npm 12 the check failed outright
+  ("npm pack returned an unexpected result"), so packaging was unverified for anyone on a current
+  npm. The parser is a separate module with a table of rejected shapes under test, and an
+  unrecognized shape still fails loudly rather than reporting an empty file list as a clean package.
+
+### Changed
+
+- The agent contract is one canonical `AGENTS.md`; harness-specific instruction files hold its
+  import and nothing else, instead of `CLAUDE.md` for Claude Code and `AGENTS.md` for Codex as
+  parallel choices. An existing contract elsewhere is migration input, keeping another canonical
+  path is a deviation that needs an ADR, and there is no richer harness adapter: a harness file
+  carrying rules is a second contract that drifts from the first.
+  `references/artifacts.md` records the file layout, the size budget, and that the contract is a
+  contract and not a development log — the status line is rewritten, never appended to.
+
 ## [2.1.0] - 2026-09-02
 
 ### Added

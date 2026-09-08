@@ -1,5 +1,9 @@
-<!-- Template for the selected agent contract (e.g. CLAUDE.md or AGENTS.md). Translate
-     headings into the artifact language. Delete guidance comments after instantiating. -->
+<!-- Template for the canonical agent contract: AGENTS.md, unless an ADR records another path.
+     Harness-specific files such as CLAUDE.md hold only the import of this file (`@AGENTS.md`
+     at the default path) — never a copy of this text, and never a rule of their own. Keep the
+     whole file within 300 lines / 15 KB; detail that does not fit moves into docs/ and is
+     linked from here. Translate headings into the artifact language. Delete guidance
+     comments after instantiating. -->
 
 # {{agent_contract_file}}
 
@@ -61,8 +65,8 @@ anything version-sensitive, confirm against official docs; do not invent or reca
 
 ```bash
 {{build / lint / typecheck / test commands}}
-{{single local verification command: lint + format + typecheck + fast tests + audit,
-e.g. bash scripts/qa.sh}}
+{{single local verification command: lint + format + typecheck + fast tests + audit +
+agent-contract check, e.g. bash scripts/qa.sh}}
 {{slow / integration test command}}
 ```
 

@@ -78,13 +78,30 @@ register entries). Translate template headings when instantiating.
 
 ## Choose the agent contract
 
-Select the project-level instruction file during discovery and record its path in
-`docs/discovery.md`. Reuse an existing project convention. Otherwise default to
-`CLAUDE.md` for Claude Code, `AGENTS.md` for Codex, or a user-specified equivalent.
-In this skill, **agent contract** means that selected file; instantiate
-[templates/agent-contract.md](templates/agent-contract.md) at the chosen path. Do not
-create competing instruction files unless the user explicitly requests synchronized
-adapters and names one canonical contract.
+The canonical contract is `AGENTS.md` at the repository root, holding one instantiation of
+[templates/agent-contract.md](templates/agent-contract.md): every current harness reads that path, so
+one file serves Claude Code, Codex, and the rest without a second authority. In this skill, **agent
+contract** means that file, and `docs/discovery.md` records its path. A repository that already keeps
+its contract somewhere else is migration input, not a convention to preserve — move the content into
+`AGENTS.md` as part of the adoption plan. Keeping a different canonical path is a deviation: record
+it in an ADR and point the gate at it.
+
+Harness-specific instruction files are **pointers**. `CLAUDE.md` contains the import of the canonical
+contract and nothing else:
+
+```markdown
+@AGENTS.md
+```
+
+A harness file carrying rules of its own is a second contract: the two drift, and the session that
+reads the stale one builds the wrong thing. There is no richer adapter — what one harness needs to
+know goes into the canonical contract, where every harness sees it.
+
+The contract is loaded whole into every session, so it carries a size budget — **300 lines and
+15 KB** for the canonical file — enforced by the agent-contract gate in
+[references/gates.md](references/gates.md). Over budget, the fix is moving detail into `docs/`
+and linking it. Raising the limit is a deviation: it needs an ADR saying what the extra context
+costs every session.
 
 ## Establish applicability
 
@@ -181,8 +198,8 @@ holds a private definition of "done".
    Record each destination in discovery, mark it complete, and thereafter treat it as
    historical context rather than a parallel authority.
 8. **Set up the applicable gates** per [references/gates.md](references/gates.md): local
-   verification script, pre-push feedback hook, required CI checks, and a recorded git
-   workflow profile — concrete commands come from the chosen stack.
+   verification script (including the agent-contract check), pre-push feedback hook, required
+   CI checks, and a recorded git workflow profile — concrete commands come from the chosen stack.
 9. **Open phase 0** with a requirements slice per [references/process.md](references/process.md).
 10. **Consistency pass.** Re-read the generated set as a whole; fix contradictions,
    duplicated editable principle lists, unresolved `PRINC-NNN` references, and any place
@@ -213,8 +230,8 @@ holds a private definition of "done".
    entries in the report; when writes are authorized, record them. Do not relitigate
    them — preserve a baseline for future changes.
 5. **Gap plan.** A prioritized adoption plan, ordered by safety-of-change: first make
-   change safe (local verification, required CI, agent contract, status line,
-   applicable backup/restore path), then the docs
+   change safe (local verification, required CI, one canonical agent contract with harness
+   files reduced to pointers, status line, applicable backup/restore path), then the docs
    spine (glossary, PRD-as-is, stages, registers), then process (phase slices), then platform
    gaps. Phase the plan like any other work.
 6. **Boundaries.** The standard governs artifacts, process, and gates — it does **not**
@@ -258,3 +275,7 @@ Templates (instantiate, translating headings into the artifact language):
   [templates/adr-index.md](templates/adr-index.md),
   [templates/registers.md](templates/registers.md), [templates/runbook.md](templates/runbook.md),
   [templates/spike.md](templates/spike.md), [templates/phase-slice/](templates/phase-slice/)
+
+Scripts (copy into the project, adjust the variables at the top):
+- [templates/check-agent-contract.sh](templates/check-agent-contract.sh) — the agent-contract
+  gate: canonical contract present and within 300 lines / 15 KB, harness files still pointers

@@ -77,11 +77,27 @@ first thing the agent reads each session, so it must be dense, current, and free
 unmarked aspiration — implemented state and explicitly marked plans stay distinct.
 Code and runtime evidence still determine what is implemented and what actually runs.
 
+**One canonical file**, `AGENTS.md` unless an ADR records another path, holding the whole contract.
+Harness-specific instruction files (`CLAUDE.md` and equivalents) contain the import of that file —
+`@AGENTS.md` at the default path — and nothing else. A harness file that grows rules of its own is a
+second contract that will drift from the first, so an existing one is migrated into the canonical
+file rather than kept beside it.
+
+**Size budget: 300 lines / 15 KB.** The contract is loaded whole into every session, so its
+length is a cost paid again on every run and nothing in day-to-day work resists its growth.
+When it does not fit, move detail into `docs/` and link it: the contract indexes the project's
+rules, it does not restate them. Raising the budget is a deviation and needs an ADR. The
+[agent-contract gate](gates.md) enforces both the budget and the pointer rule.
+
+It is a contract, not a development log: appending an entry per session is the failure mode
+this budget exists to catch. History lives in git, ADRs, and the changelog; the contract keeps
+one `> Status:` paragraph, rewritten rather than extended.
+
 Required sections (template: [templates/agent-contract.md](../templates/agent-contract.md)):
 
 - **Status line** — a `> Status:` block near the top: what is implemented, what is in
-  progress, what is next. Updated at every phase/subphase completion, in the same
-  commit. This is the agent's resume point.
+  progress, what is next. Rewritten — not appended to — at every phase/subphase completion,
+  in the same commit. This is the agent's resume point.
 - **Product principles (canonical, non-negotiable)** — the sole editable list of 5–7
   principles, promoted from discovery and assigned stable, never-reused `PRINC-NNN`
   IDs. Each records its statement, operational meaning, detectable violation, and
