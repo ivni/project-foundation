@@ -7,6 +7,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-09-08
+
 ### Added
 
 - The agent contract now has a size gate. `templates/check-agent-contract.sh` fails when the
@@ -451,7 +453,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/ivni/project-foundation/compare/v2.1.0...v3.0.0
 [2.1.0]: https://github.com/ivni/project-foundation/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/ivni/project-foundation/compare/v1.10.0...v2.0.0
 [1.10.0]: https://github.com/ivni/project-foundation/compare/v1.9.0...v1.10.0
