@@ -7,9 +7,10 @@ the agent executing this skill follows them itself.
 
 ## Docs are the agent's memory
 
-- Chat context dies with the session; **anything worth remembering across sessions
-  lives in the docs** — decisions in ADRs, state in the status line, traps in gotchas,
-  open questions in blockers/registers. "I'll remember" is always false.
+- Preserve durable intent and unresolved work across sessions: decisions in their canonical record,
+  current state in the status line, open questions in blockers/registers. Code, tests, git history,
+  and CI already preserve implementation and execution evidence; reference them rather than copying
+  their contents into docs. Keep reports and updates proportionate to the task.
 - When writes are authorized, record answers and decisions into artifacts **at the
   moment they land**, not in a batch "afterwards". In read-only work, retain them in
   the report without writing project files.

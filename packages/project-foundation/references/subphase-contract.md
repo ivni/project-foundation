@@ -28,12 +28,11 @@ A subphase is done only when **all** of the following hold:
   merge or release.
 - New behavior covered by tests, and the change verified by actually running it — not only by tests
   and typecheck passing.
-- Every pattern the change introduces more than once carried in with a recorded tree-wide search, run
-  after the last occurrence was written, and a disposition for each hit it returned then. A search run
-  before the occurrences exist cannot list them, and a class introduced one occurrence at a time is a
-  class nobody swept.
+- Relevant related paths checked when a change or defect can affect them. Repeated syntax alone does
+  not require a tree-wide sweep, per-hit ledger, or a universal detector of future occurrences.
 - Every linked requirement has acceptance evidence recorded in the traceability table. Evidence is a
-  command and its result; "tested manually", "works as expected", and "verified" are not evidence.
+  command and its result, or a reference to an existing CI result or recorded observation identifying
+  the tested state; "tested manually", "works as expected", and "verified" alone are not evidence.
 - Docs updated in the same change (same-change rule).
 - `checklist.md` ticked; the agent-contract status line updated if the completion is externally
   meaningful.

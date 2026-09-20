@@ -21,6 +21,11 @@ Link installations update their per-skill shared managed payload. Native links r
 installations update each selected physical payload. Updating several skills uses the same outer
 rollback boundary as installation.
 
+Updating skills does not rewrite existing project contracts, runbooks, or documents created from
+templates. When adopting revised process guidance, inspect the project's own `AGENTS.md` and any
+existing canonical contract for older requirements. Resolve conflicts within the authorized task;
+do not silently ignore project rules or bulk-rewrite unrelated repositories.
+
 Schema 1 content is not an update candidate because it has no required `skillId`. Run the install
 flow instead; the existing target appears as unmanaged content and must be explicitly replaced,
 backed up and replaced, or kept.

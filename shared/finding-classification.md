@@ -38,5 +38,6 @@ edit adds reviewable surface without removing a defect, which is how a review lo
 One class of finding is never an advisory, whatever the reviewer called it: a finding that a check does
 not detect the behavior it names, where the ledger records that same check as the mechanism holding a
 fix in this run. Such a finding is a defect of the mechanism, and it takes one of the three outcomes
-above. The loop validates fixes by running a check red and then green, so a mechanism that cannot fail
-is not a weak test to leave with the user — it is the missing half of a fix already reported as made.
+above. A check used to establish a fix must detect the failure it claims to cover; otherwise the
+reported fix lacks its stated evidence. Apply the proportionate verification rules in **Fix at the
+root cause** rather than requiring fresh mutation runs for every unchanged check.

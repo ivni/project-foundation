@@ -17,6 +17,9 @@
 |---|---|---|---|
 | REQ-P{{N}}-001 | {{N}}.1 | {{test / probe / manual flow}} | {{command + result / artifact / observation; fill during build}} |
 
+<!-- Reference an existing test result, CI run, or observation with its tested state. Keep each row
+     short; do not append the history of review passes or copy full logs into this table. -->
+
 ## Phase definition of done
 
 - [ ] All subphases above complete (local verification and required CI green, tests,

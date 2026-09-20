@@ -17,9 +17,20 @@ Before pass 1:
 6. Record the baseline status of relevant tests or checks. Reuse current trustworthy evidence or run
    appropriate already-available checks in the primary agent. The reviewer never runs them.
 
-Refresh the scope snapshot before every pass. The current complete task diff is always reviewed, not
-only the files changed by the last fix. Narrowing the reviewed surface would hide the regressions this
-loop exists to catch.
+Refresh the scope snapshot before every pass. The first pass assesses the complete task change.
+Later passes focus on the fixes, their consequences, and interactions with the rest of the change.
+Keep the complete current task diff and necessary unchanged code available: focus is not an exclusion
+of previously reviewed code, and the reviewer chooses where to investigate. Renew the full assessment
+when the fixes change core assumptions, architecture, contracts, or have broad or uncertain impact.
+
+An edit to code, tests, configuration, acceptance criteria, contracts, or operational instructions
+requires another independent pass. A purely administrative update may follow a clean result without
+one: a completion checkbox, a link to existing evidence, or a factual summary of the review. The primary
+agent must inspect that delta and confirm it changes no behavior, instruction, decision, acceptance
+criterion, or verification claim beyond accurately recording an existing result. Recording a finding's
+disposition already permitted by **Classify what blocks** is administrative; changing scope, policy,
+acceptance criteria, or which risks the user accepts is not. If uncertain, request a pass. Report
+administrative changes separately from the content the reviewer actually inspected; never claim the final bytes were reviewed.
 
 Excluding derived content is not that kind of narrowing. Generated output is judged by regenerating it,
 and a reviewer re-reading eleven thousand generated lines on every pass spends attention the authored

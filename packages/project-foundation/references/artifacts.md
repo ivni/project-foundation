@@ -252,9 +252,19 @@ performed — a deploy that has happened twice without a runbook is overdue.
 
 ## Documentation must stay current (the same-change rule)
 
+Keep a document when it serves a concrete reader's decision or action: product rules, reasons for
+significant choices, external contracts, operational procedures, and current work state. Derivability
+from code alone is not a reason to remove an API contract or recovery runbook. Avoid manually mirroring
+internal functions, branch lists, test inventories, and review history; link to code or existing
+verification results instead. A fixed review finding does not automatically require an invariant or
+ADR. Registers still record deferred defects and accepted risks.
+
 Any change that alters behavior, structure, or conventions updates the affected
 docs **in the same change** — status line, glossary, PRD, stages, architecture, registers,
 agent-contract sections. When discovering an existing mismatch, first determine intent:
 fix stale docs when implementation is correct; fix or register the code when it violates
 the documented decision; report ambiguity or out-of-scope work instead of silently
 choosing a winner. Never leave planned behavior described as implemented, or vice versa.
+If no retained document becomes misleading, no documentation edit is needed. Keep updates proportional
+to the decision or behavior changed; do not add sections merely to fill a template. Review-pass history
+belongs in the task's review record, not the agent contract, requirements, or invariant descriptions.

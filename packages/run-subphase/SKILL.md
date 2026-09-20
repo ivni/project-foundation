@@ -73,16 +73,11 @@ The requirement rows in scope are the whole scope. Something worth doing that is
 a `BLK-P{N}-*`, a debt entry, or an out-of-scope entry — never a silent extra commit. Refactoring
 adjacent code is not part of this loop; it belongs to review.
 
-A pattern you write more than once is a class, and it enters the tree as one. The moment a second
-occurrence appears, express the class as a search the repository can answer. Then run that search over
-the whole tree **after the last occurrence is written**, and record the command with a disposition for
-every hit it returns then: this is an occurrence, or it is not one and why. Running it earlier records a
-hit list that cannot contain the occurrences the requirement exists to expose, so the sweep belongs to
-the finished slice and is re-run if the slice grows again.
-
-The review loop already requires this of its own fixes, and by then the class is expensive: the reviewer
-reports one instance, the fix closes one instance, and the next pass finds the third. Writing the class
-in with its sweep recorded is the same work done once, at the only moment it is cheap.
+Check related paths when shared behavior or a demonstrated defect gives a concrete reason to do so.
+Repeated syntax alone does not require a repository-wide search or a disposition for every hit.
+Prefer bounded shared constraints when they prevent a real recurring error; a universal detector of
+future occurrences is not part of every subphase. Keep evidence in existing tests, check results, and
+the traceability table rather than creating a second implementation description.
 
 ## 5. Verify
 
@@ -92,7 +87,8 @@ your own command list, and do not stop at the subset that happens to be fast.
 Then verify the change by actually running it. Passing tests and a clean typecheck are evidence about
 the tests and the types.
 
-Fill the traceability table as required by the subphase contract. Evidence is a command and its result.
+Fill the traceability table as required by the subphase contract: a command and result, or a reference
+to an existing CI result or recorded observation identifying the tested state. Do not duplicate logs.
 
 Record the state of the working tree the green run was obtained on, not only the command and its result.
 A pass recorded without it cannot be told apart from a pass that predates the last edit, and the review

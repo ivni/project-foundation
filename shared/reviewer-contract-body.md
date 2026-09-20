@@ -55,6 +55,11 @@ root cause in `evidence` rather than listing each symptom separately.
 
 ## Paths that carry no code
 
+Judge content by its use, not its filename. Executable examples, operator commands, deployment or
+recovery procedures, and external contracts can directly cause operational harm even in Markdown.
+Assess their concrete effects with the normal defect and severity rules; the decision-only limits
+below do not cap those findings.
+
 The classes above describe how code behaves, so a path carrying no executable code cannot be judged by
 them: a requirements slice, a scope or acceptance-criteria document, a decision record, a register, a
 glossary, prose documentation. What such a path gets wrong is the decisions it fixes and the ones it
@@ -116,9 +121,9 @@ When uncertain between two severities, choose the lower one and state the uncert
 The task context may supply a finding ledger from earlier passes in this run, and the paths each
 earlier fix touched.
 
-Read the code anyway, including code no earlier pass reported anything about. A fix applied since then
-may have broken it through a dependency without editing it, and catching exactly that is the reason
-this pass exists.
+On a later pass, focus on the fixes, their consequences, and interactions across the complete task
+change. Inspect unchanged code whenever relevant: a fix can break it through a dependency without
+editing it. An implementer's list of fix paths is a starting point, never a boundary of your access.
 
 But do not re-report a finding the ledger already records — as fixed, deferred, or rejected with
 evidence — on the same evidence that pass already had in front of it. Report it only when you can cite
@@ -161,5 +166,7 @@ Do not include secrets or large source excerpts.
   access, scope, or another reviewer capability is missing. Explain every limitation. Do not use
   `BLOCKED` merely because the implementation contains a defect.
 
-Re-review the entire current task scope on every pass. Confirming earlier fixes is necessary but does
-not replace checking for newly introduced defects.
+The first pass assesses the complete task scope. Later passes assess fixes and their effects with the
+whole scope available. Renew the full assessment if core assumptions, architecture, or contracts
+changed, or the impact is broad or uncertain. Report newly discovered real defects wherever relevant;
+do not manufacture new observations or re-describe unchanged code to demonstrate review activity.

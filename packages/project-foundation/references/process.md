@@ -22,8 +22,8 @@ Before writing any code for phase N, create `docs/phase-N/` with four files
 - **consistency-check.md** — the result of checking the new requirements against the
   canonical product principles, existing PRD, ADRs, architecture, and code. Every
   contradiction is keyed by requirement ID and lists applicable principle IDs plus its
-  resolution (doc corrected, ADR written, or requirement changed). An empty
-  consistency-check on a non-trivial phase is a red flag, not a good sign.
+  resolution (doc corrected, ADR written, or requirement changed). If no contradiction is found,
+  record that briefly with the sources checked; do not invent findings to populate the file.
 
 The slice is complete when every high-impact stakeholder unknown is closed and every high-impact
 engineering unknown is resolved or contained — via agent research, engineering synthesis, the

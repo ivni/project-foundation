@@ -83,9 +83,20 @@ Before pass 1:
 6. Record the baseline status of relevant tests or checks. Reuse current trustworthy evidence or run
    appropriate already-available checks in the primary agent. The reviewer never runs them.
 
-Refresh the scope snapshot before every pass. The current complete task diff is always reviewed, not
-only the files changed by the last fix. Narrowing the reviewed surface would hide the regressions this
-loop exists to catch.
+Refresh the scope snapshot before every pass. The first pass assesses the complete task change.
+Later passes focus on the fixes, their consequences, and interactions with the rest of the change.
+Keep the complete current task diff and necessary unchanged code available: focus is not an exclusion
+of previously reviewed code, and the reviewer chooses where to investigate. Renew the full assessment
+when the fixes change core assumptions, architecture, contracts, or have broad or uncertain impact.
+
+An edit to code, tests, configuration, acceptance criteria, contracts, or operational instructions
+requires another independent pass. A purely administrative update may follow a clean result without
+one: a completion checkbox, a link to existing evidence, or a factual summary of the review. The primary
+agent must inspect that delta and confirm it changes no behavior, instruction, decision, acceptance
+criterion, or verification claim beyond accurately recording an existing result. Recording a finding's
+disposition already permitted by **Classify what blocks** is administrative; changing scope, policy,
+acceptance criteria, or which risks the user accepts is not. If uncertain, request a pass. Report
+administrative changes separately from the content the reviewer actually inspected; never claim the final bytes were reviewed.
 
 Excluding derived content is not that kind of narrowing. Generated output is judged by regenerating it,
 and a reviewer re-reading eleven thousand generated lines on every pass spends attention the authored
@@ -143,15 +154,14 @@ conclusions. Include:
 - excluded dirty paths and why they are unrelated, kept separate from excluded derived artifacts and
   the generator and reproducing command named for each;
 - relevant unchanged entry points or integration boundaries;
-- the factual finding ledger from earlier passes, if any, with each finding's class, severity, and
-  disposition;
+- a concise finding ledger from this task's earlier passes and runs, if any, with each finding's
+  class, severity, evidence, and disposition;
 - the paths each earlier fix in this run touched, with the pass number that touched them;
-- the sweep pattern each earlier fix recorded, with its hit count, so the honesty of the class
-  signature is judged by someone who did not choose it;
+- relevant related-instance searches, when performed, and their unresolved results;
 - the primary agent's test status and known environmental limitations, labeled as context only.
 
-The ledger and the fix-path list are what keep a full-surface re-review from re-deciding settled
-questions, and both are facts a reader can check against git history. Do not add an inventory of code
+The ledger and fix-path list focus later passes on fixes and their consequences without hiding
+related code. Keep the complete change accessible and preserve the evidence for settled findings. Do not add an inventory of code
 you believe is already clean. Such a list is written by the author of the defects and tells a nominally
 independent reviewer where not to look, so a wrong boundary in it suppresses attention exactly where
 the author already erred. Supply the facts and let the reviewer choose what to re-read.
@@ -214,8 +224,9 @@ edit adds reviewable surface without removing a defect, which is how a review lo
 One class of finding is never an advisory, whatever the reviewer called it: a finding that a check does
 not detect the behavior it names, where the ledger records that same check as the mechanism holding a
 fix in this run. Such a finding is a defect of the mechanism, and it takes one of the three outcomes
-above. The loop validates fixes by running a check red and then green, so a mechanism that cannot fail
-is not a weak test to leave with the user — it is the missing half of a fix already reported as made.
+above. A check used to establish a fix must detect the failure it claims to cover; otherwise the
+reported fix lacks its stated evidence. Apply the proportionate verification rules in **Fix at the
+root cause** rather than requiring fresh mutation runs for every unchanged check.
 
 <!-- /shared:finding-classification -->
 
@@ -253,11 +264,11 @@ For each pass:
 <!-- /host:launch-step -->
 3. Wait for the structured result and the derived verdict. Reject malformed output as a capability
    failure; do not convert it into an empty or clean review.
-4. Update the ledger. For each finding record its fingerprint, class, severity, evidence, pass, and
+4. Update the existing ledger with each finding's fingerprint, class, severity, evidence, pass, and
    disposition — `open`, `accepted`, `fixed`, `deferred`, `rejected-with-evidence`, `escalated`, or
-   `repeated` — plus `introduced_by_pass`: the earlier pass in this run whose fix created or last
-   modified the code the finding cites, or `none` when that code predates every fix in this run. For a
-   `fixed` finding also record the dependents, the invariant, and the mechanism named below.
+   `repeated`. Record a causal link to an earlier fix when demonstrated, not merely because that fix
+   touched the same file or line; mark uncertain attribution as unknown. For a fixed finding, link the
+   changed paths and verification evidence. No separate metrics document is required.
 5. Dispatch on the derived verdict before making an edit:
    - `BLOCKED` consumes the completed pass and ends the loop immediately with its limitations.
    - `CLEAN` is a final candidate; preserve its remaining findings in the ledger and continue only to
@@ -265,24 +276,14 @@ For each pass:
    - `FINDINGS` on pass 10 ends the loop as `BLOCKED` before any further fix. A pass-11 review would be
      required to verify another edit and is not authorized.
    - `FINDINGS` on passes 1 through 9 continues to finding validation.
-6. Independently validate each blocking defect against the current code and task. Do not edit merely
-   because the reviewer asserted it. On code, validation is a red run: write the test or check that
-   reproduces the failure and run it against the current, unfixed tree — it must fail, and that failing
-   run is recorded in the ledger beside the green run after the fix, together with the evidence that the
-   environment was held exclusively while both ran — a red run sharing a database, cache, or fixture with
-   another process is evidence about neither the defect nor the check. The red run proves two things at
-   once: the defect is real in execution rather than in reading, and the mechanism actually detects it,
-   so no fix is ever reverted, neutralized, or restored to test its own test. A defect that cannot be
-   reproduced locally is not silently trusted and not silently dropped: record why reproduction is out
-   of reach and dispose of it as `escalated` or `deferred` — never as `fixed` by an edit whose effect
-   nothing demonstrated. A defect on a path that carries no code keeps the validation the reviewer
-   contract defines for such paths.
-   When a validated finding is another instance of a class an earlier pass in this run fixed — the
-   fingerprint matches, or its root cause is one a recorded sweep claimed to close — it is a sweep
-   failure, not a new defect. Re-derive the class signature wider, re-run the sweep, disposition every
-   hit, and repair the class in one batch. A sweep failure also impeaches its pass: re-run the recorded
-   sweeps of every other class that pass fixed, because a method that missed here missed the same way
-   there. Record each sweep failure against the pass whose sweep missed it.
+6. Independently validate each blocking defect against the current code and task. Identify a realistic
+   trigger, consequence, and supporting evidence before editing. Prefer a focused reproduction when
+   practical; follow **Fix at the root cause** for evidence and verification limits. Do not accept or
+   reject a finding solely because the reviewer asserted it, it arrived late, or local reproduction
+   is unavailable. For a recurrence, inspect why the earlier fix missed it and check genuinely related
+   paths. Revisit other fixes only when there is evidence they share the failed assumption; do not
+   automatically repeat every search from the earlier pass. Apply **Stop honestly** if the approach
+   keeps failing.
 7. Mark a false positive `rejected-with-evidence`. The reviewer contract requires new evidence before
    a rejected, deferred, or previously-cleared finding returns; if one returns without it, stop as a
    reviewer dispute rather than oscillating.
@@ -294,107 +295,62 @@ For each pass:
    verdict is `CLEAN`, because that edit would need a further pass to verify. A low defect left unfixed
    is `deferred` like any other: record it and report it. Low severity changes the urgency, not the
    bookkeeping.
-10. After a fix batch, close it as **Fix at the root cause** requires, then run proportionate
-    already-available repository checks in the primary agent. Fix safe in-scope failures. Any edit
-    made after a review, including a test-driven edit, requires a new full review pass.
+10. After a fix batch, inspect and verify it as **Fix at the root cause** requires. Fix safe in-scope
+    failures, then request an independent pass focused according to **Establish the review scope**.
+    Only the narrowly defined administrative updates there may follow a clean result without a pass.
 
 <!-- shared:root-cause-fix -->
 
 ## Fix at the root cause
 
-Fix each validated defect at its cause, not at the symptom the reviewer happened to see. Before
-editing:
+Fix each validated defect at its cause within the agreed task. Identify the violated behavior and
+the callers, data, and contracts affected by the fix. Check those paths rather than only the reported
+line. A recurrence is evidence that the earlier fix or its assumptions need reconsideration.
 
-- state the root cause the finding consolidates, distinct from the reported symptom;
-- enumerate what depends on the behavior you are about to change — callers, implementers, serialized
-  or persisted forms, tests that encode it, and the records that assert it: decision records,
-  requirements, acceptance criteria, docstrings, comments. A fix that corrects the code while a
-  document this same run rewrote still asserts the old behavior trades a defect for a contradiction,
-  and the contradiction is the next pass's finding. Record that list in the ledger;
-- state the invariant the fix establishes, and what holds that invariant mechanically: a test, a type,
-  an assertion, or a schema constraint. Record both. State the invariant as the rule the domain
-  imposes, then enumerate the distinct ways that rule can be violated; the mechanism covers every
-  form, or the ledger records which forms stay open and why. The negation of the reported symptom is
-  not an invariant: "the first of several results is taken" is one sighting of "the response must
-  identify exactly one subject, consistently", and a check written against the sighting leaves every
-  other violation of the same rule for the next pass to find. "Verified by inspection" is not a
-  mechanism, and neither is this description of the fix;
-- choose the change that removes the cause for every dependent, not the narrowest edit that silences
-  the reported symptom.
+Use proportionate evidence:
 
-A mechanism is not trusted for existing. A check already standing at a seam this fix touches earns its
-place the same way a new one does: run it against the broken behavior and see it fail. A check that
-passes with the behavior removed names that behavior without holding it, and a fix pinned to such a
-check is a fix nothing pins. Record the red and the green run of every mechanism this batch relies on,
-new or pre-existing, together with the evidence that the environment was held exclusively while they
-ran. A run against a database, cache, queue, or fixture another process could reach concurrently is
-evidence about neither the defect nor the mechanism, and a red run that shared its environment is not a
-red run.
+- For an ordinary local defect, use a focused regression test or an existing check that observes the
+  failure. When practical, reproduce it before editing and confirm the fix with the same check.
+- For permissions, concurrency, migrations, irreversible operations, and recovery, exercise the
+  relevant failure states and operation ordering. Isolate mutable test state when another process
+  could change the result; do not treat interference as evidence of a defect or a fix.
+- If a check is the only evidence for a fix, establish that it detects the failure. Reuse an applicable
+  red/green result; do not repeat mutation testing of unchanged checks on every pass. If mutation is
+  needed, use an isolated copy and preserve the working tree.
+- When execution is unavailable, distinguish code evidence from unverified runtime claims. Explain
+  the gap and escalate or defer under the blocking rules if the fix cannot be established reliably.
 
-Then sweep the class before the first edit. Express the root cause as a search the repository can
-answer — the pattern's grep, the callers of the function, every writer of the field, every branch that
-publishes the flag — and run it over the whole tree, not over the diff. Record in the ledger the search
-itself, its complete hit list, and a disposition for every hit. A hit is a candidate, not a defect:
-repair it only where the failure path — input, state, consequence — can be shown at that location, and
-otherwise record it as not an instance, with the reason. Both dispositions carry the same burden;
-repairing a hit "just in case" damages correct code exactly the way skipping one leaves the class
-open. A hit without a disposition means the fix is not finished. Record the sweep as the pattern it
-searches for and the exact search that ran, so the next pass can run the same search over its tree and
-refute the hit list against what it returns. When the class genuinely cannot be expressed as a search,
-record that, and the pinning mechanism carries the whole weight.
+Search for related instances when the root cause gives a concrete reason to expect them. Inspect
+relevant callers or occurrences, and fix only demonstrated defects within scope. Summarize affected
+paths and unresolved instances; a complete repository-wide hit ledger is not required for every fix.
+Repeated syntax or a second similar implementation is not, by itself, evidence of a defect class.
 
-Account for the inputs of every branch the fix touches. Each condition on the edited path is a fork,
-and each side of a fork is a scenario: record which inputs or states travel it, what happened to them
-before the edit, and what happens after. A scenario whose "after" cannot be stated is an edit that is
-not understood — stop rather than commit it. Removing or narrowing a branch demands one of exactly two
-proofs: evidence that no reachable state enters it, drawn from the system's actual states rather than
-from a likelihood judgment or a label like "ceremony"; or the named path that now serves those inputs,
-shown to do the same job. Name the state the system is left in if execution stops between the steps this
-edit introduces, because the sequence the code now runs is itself a scenario and an interrupted one is
-reachable whenever the process can die. Then run the affected scenarios against the edited tree — a
-test, a dry run, or a recorded trace — before the batch closes. A fix is not finished when it answers the finding; it
-is finished when it answers the system.
+Removing the cause does not require a universal detector of every future instance. Add shared types,
+constraints, or checks when they provide a bounded, reliable defense for an actual recurring risk.
+Building or broadening a language parser, a general policy checker, or another prevention framework is
+separate scope, not an automatic condition for closing a finding. Do not widen a check's promise beyond
+what it can establish. Existing checks that the fix relies on must still support their stated claims.
 
-A fix that visits N places and repairs each one, while leaving nothing that fails when the N+1st place
-appears, is a symptom fix however wide it is. Twenty-four tests for twenty-four specification keys are
-symptoms; one test that turns red when an unclassified key is encountered is the cause. The
-fix-regression ratio cannot expose this, because a wide patch regresses nothing — it merely fails to
-generalize — so the named mechanism is what stands in for it.
+A fix may add a focused test or assertion. Ask before expanding the agreed task through a new public
+interface, dependency, architecture, data model or migration, security policy, or production action.
+Preserve unrelated work. A lack of permission for a broad redesign is not permission for an unsafe
+local patch.
 
-A fix must not add a new file, a new public interface, a new dependency, or a new abstraction, with one
-exception: a test or assertion that pins the invariant may always be added, since it is the mechanism
-this section already requires and it widens no product surface. If the root-cause fix needs any of the
-others, mark the finding `escalated` and ask the user rather than applying a symptom patch. Stop at the
-authority boundary and ask when the fix would change public behavior, architecture, data models or
-migrations, security policy, dependencies, production state, or the task scope. Preserve unrelated
-work.
+Update a document when a reader's decision, action, or contract would otherwise become wrong. A
+decision-only finding needs a bounded decision, routed open question, or corrected statement, not a
+description of the implementation. Operational commands and external contracts remain substantive
+even in Markdown. Do not add a permanent invariant or ADR merely because a review found a defect;
+use one only when it records a lasting rule or decision. Deferred defects still follow the register
+requirements in **Classify what blocks**.
 
-A validated defect on a path that carries no code is fixed by the record the finding named and by
-nothing wider: a decided acceptance criterion, an open question recorded with an owner and an interim
-default, a decision record, or an explicit out-of-scope entry. That record is the mechanism this section
-requires, since no test pins a decision, and creating the file it belongs in is not the new surface the
-paragraph above forbids. A defect answered by expanding prose is not fixed, it is enlarged. When the
-decision is the user's to make, record it as an open question with an interim default or ask them; do not
-settle a product question yourself to close a finding.
+Before requesting another pass, inspect the fix diff and its affected interactions, and run relevant
+available checks. Reuse trustworthy results for unaffected behavior; run the required full gate at the
+repository's commit, merge, or release boundary. Keep the ledger concise: cause, changed paths,
+evidence, disposition, and any remaining limitation. Reference existing tests, commands, and CI results
+instead of copying their contents into permanent project documents.
 
-A fix batch is closed, not just finished. Closing starts with proof the edits landed: re-read every
-edited region from disk and see each hunk in the diff, because an edit is applied when the file shows
-it, not when the editing tool exited cleanly. A shell that writes files reports success without
-comparing anything, so a write through a stream editor, a heredoc, or a script is unproven until the
-region is read back. Record in the ledger the paths each finding's fix touched and the hunk that shows
-it, so the next pass has the diff and not the claim. Then, before the post-batch checks run, walk the recorded
-dependents list and confirm each entry against the edited tree, one by one — an enumeration nobody
-walks after the edit is bookkeeping, not verification. Then inventory what the batch itself
-introduced — each new event, message, interface element, exemption, and document statement — and hold
-it to the same contracts the findings were validated against, because the batch is code no reviewer
-has seen and its own additions are where fix regressions live. Finally reread the complete batch diff
-in one sitting, asking the reviewer's questions rather than recalling the author's intent. The next
-pass exists to verify the fixes, not to be the first reader of their side effects.
-
-Write comments for a reader who never saw the review. Explain why the code is the way it is — "the row
-is re-read inside the lock because the balance can change between the check and the write" — and never
-which pass, round, or finding produced it. That reader cannot see the review, so the reference is noise
-to them, and the provenance already lives in the git history, the phase record, and the test name.
+Write comments for a reader who never saw the review. Explain the non-obvious reason or constraint;
+keep pass numbers and finding history in the review record.
 
 <!-- /shared:root-cause-fix -->
 
@@ -402,11 +358,13 @@ to them, and the provenance already lives in the git history, the phase record, 
 
 ## Stop honestly
 
-A pass that produced no edit ends the loop, because a further pass would read identical code.
+A pass that produced no substantive edit needs no further pass. Determine its outcome from the
+findings; unchanged code is not evidence of a clean result.
 
 Return `Review: CLEAN` when the latest complete reviewer result leaves no blocking defect open, because
 it reported none or because every one it reported was rejected with evidence, and no task-related edit
-followed it. When validated defects were deferred instead, return `Review: CLEAN (N deferred)` and list
+followed it except the inspected administrative updates allowed by **Establish the review scope**.
+When validated defects were deferred instead, return `Review: CLEAN (N deferred)` and list
 them: a clean line concealing fifteen accepted defects is the overclaim this loop exists to prevent.
 Neither line says anything about whether tests passed.
 
@@ -414,6 +372,8 @@ Return `Review: BLOCKED` immediately when:
 
 - the same unresolved finding repeats without the new evidence the contract requires;
 - fixes oscillate or reviewer conclusions contradict without changed evidence;
+- a repaired defect class keeps recurring, or fixes keep introducing substantial new defects, without
+  a credible change of approach;
 - no safe progress is possible;
 - a valid defect crosses the authority boundary or cannot be fixed without expanding the surface;
 - the task scope cannot be separated from unrelated work;
@@ -423,11 +383,21 @@ Return `Review: BLOCKED` immediately when:
 
 Do not start pass 11 without a new user instruction.
 
+Judge convergence across the task, not only the current run-id. A reset, context compaction, or expired
+wrapper state does not erase earlier findings or authorize repeating a failing approach. On a
+convergence stop, briefly name the pattern and propose a concrete next step: simplify the construction,
+split independently reviewable work, or resolve a disputed premise. Carry the relevant history into
+any authorized continuation, state what changes in the approach, and keep unresolved blocking defects
+blocking. If the user explicitly chooses to continue unchanged, explain that the reset does not resolve
+the diagnosed problem and honor the instruction within the existing safety and authority boundaries.
+Use the existing review record; create no separate convergence register.
+
 <!-- /shared:stop-honestly -->
 
 ## Report the outcome
 
-Keep review and test evidence distinct. Report:
+Keep review and test evidence distinct. Give a short outcome and link the existing ledger or results
+for detail; do not copy the report into permanent project rules. Report:
 
 - `Review: CLEAN`, `Review: CLEAN (N deferred)`, or `Review: BLOCKED`, the number of completed reviewer
   passes, the run identifier those passes were recorded under, whether that identifier was derived or
@@ -442,24 +412,21 @@ Keep review and test evidence distinct. Report:
 - that the external wrapper enforced read-only, test-free inspection on Claude's built-in-tool
   surface, the managed-hook or OS-isolation status, or the exact native-host enforcement used;
 <!-- /host:report-runtime -->
-- fixed, rejected, escalated, repeated, and remaining defects with concise evidence, and for each fix
-  the root cause, the dependents that were checked, the invariant with the mechanism that holds it, the
-  mechanism's red and green runs, and the sweep pattern with its hit count and the confirmation that
-  every hit carries a disposition. A fix that left no mechanism behind, or whose mechanism never ran
-  red, needs an explicit reason here, because by default it is a symptom patch;
-- every sweep failure — a later pass finding an instance a recorded sweep missed — named against the
-  pass whose sweep missed it, with both sweep patterns and their hit counts;
+- fixed, rejected, escalated, repeated, and remaining defects with concise evidence or ledger links;
+  for fixes, identify the cause, affected paths, verification, and material limitations;
+- recurring classes or demonstrated defects introduced by earlier fixes, with relevant earlier runs
+  and the change of approach when convergence was lost;
 - every deferred defect with its fingerprint, severity, the declared blocking area it falls outside,
   and where it was recorded, so what the run knowingly shipped unfixed is legible at a glance;
-- the fix-regression ratio: how many findings had an `introduced_by_pass` other than `none`, out of
-  all findings in the run. Report it even when the outcome is `CLEAN`. A high ratio means fixes are
-  patching symptoms and creating new defects; many passes with a low ratio means the reviewer is
-  re-deciding settled code, which the ledger and the fix-path list are there to prevent;
+- when useful, counts of demonstrated fix regressions and recurrences from the existing ledger,
+  with unknown attribution kept separate. Counts are diagnostic signals, not proof that a reviewer
+  or implementation is wrong; later passes may still find real pre-existing defects;
 - every unresolved advisory in the ledger, even if a later reviewer omits it, marked clearly as not
   fixed and left to the user;
 - primary-agent test or check commands and their results, including skips and limitations;
 - reviewed scope, the two exclusion categories kept apart, and for each excluded derived artifact the
-  generator, the reproducing command, and its result; plus any coverage limitations;
+  generator, the reproducing command, and its result; plus coverage limitations and administrative
+  updates inspected by the primary agent after the last reviewer result;
 - the exact blocker and requested user decision when blocked;
 - confirmation that no comment added in this run cites the review, a pass, or a finding;
 - confirmation that no commit, push, release, dependency, external, or production action was taken.

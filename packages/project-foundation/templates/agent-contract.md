@@ -91,6 +91,11 @@ agent-contract check, e.g. bash scripts/qa.sh}}
 - Any change that alters behavior, structure, or conventions updates the affected
   docs **in the same change**. Stale docs are bugs.
 - Never leave a doc describing planned behavior as implemented, or vice versa.
+- Keep documents for a reader's decision or action: intent, lasting constraints, external contracts,
+  and operational procedures. Link to implementation and verification evidence instead of mirroring
+  them. No document edit is required when its promises remain accurate.
+- A fixed finding needs no permanent invariant entry solely because it came from review. Keep review
+  history in the task's review record; record deferred defects and accepted risks in the register.
 
 ## Domain rules that code MUST enforce
 

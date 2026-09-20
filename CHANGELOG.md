@@ -7,6 +7,32 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-09-20
+
+### Changed
+
+- Review fixes now require evidence proportional to the affected behavior. A focused regression
+  check and inspection of related paths can establish a local fix; universal detectors, exhaustive
+  search ledgers, repeated mutation runs, and permanent invariant entries are no longer mandatory
+  for every finding. Permissions, concurrency, migrations, and recovery still require relevant
+  failure-state verification, and required repository gates remain in force.
+- The first independent review assesses the complete change. Later passes focus on fixes and their
+  effects while retaining access to the entire change and related code. Broad changes renew the full
+  assessment. Inspected administrative completion records may follow a clean review without another
+  pass; code, tests, contracts, decisions, and operational instructions may not.
+- Review convergence is assessed across the task's runs. A new run-id does not erase recurring
+  defects or authorize repeating an unsuccessful approach. Reports distinguish demonstrated fix
+  regressions from uncertain attribution and use the existing review record instead of new registers.
+- Foundation guidance and templates keep documentation for a reader's decisions and actions, reference
+  existing implementation and verification evidence, and avoid review histories in permanent rules.
+  Subphases no longer require an exhaustive sweep solely because syntax appears twice. Updating skills
+  leaves existing project contracts unchanged; the update guide explains how to adopt revised rules.
+
+### Fixed
+
+- Reviewer contracts assess executable examples, operator procedures, and external contracts by their
+  actual effects even in Markdown, instead of capping dangerous operational findings at `MEDIUM`.
+
 ## [3.0.0] - 2026-09-08
 
 ### Added
@@ -453,7 +479,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.0.0...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.1.0...HEAD
+[3.1.0]: https://github.com/ivni/project-foundation/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/ivni/project-foundation/compare/v2.1.0...v3.0.0
 [2.1.0]: https://github.com/ivni/project-foundation/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/ivni/project-foundation/compare/v1.10.0...v2.0.0

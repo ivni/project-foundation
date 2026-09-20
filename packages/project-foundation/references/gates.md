@@ -145,7 +145,7 @@ ADRs, and the changelog; the contract keeps one rewritten `> Status:` paragraph.
 
 ## Docs-stay-current as a gate
 
-The same-change rule (see [artifacts.md](artifacts.md)) is a gate, not a virtue:
-a behavior-changing commit that does not touch the affected docs is an incomplete
-commit. Reviewing your own diff before committing includes asking "which doc does this
-invalidate?".
+The same-change rule (see [artifacts.md](artifacts.md)) keeps retained contracts and procedures
+accurate: ask which reader's decision or action a change would invalidate, and update those records.
+It does not require a documentation edit for every commit, or a prose copy of tests and implementation.
+An unchanged document is correct when its promises still hold.
