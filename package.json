@@ -1,6 +1,6 @@
 {
   "name": "@ivni/project-foundation",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Interactive Bun installer for the Project Foundation agent skill suite.",
   "type": "module",
   "private": false,

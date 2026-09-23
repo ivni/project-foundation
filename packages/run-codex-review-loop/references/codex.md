@@ -13,7 +13,7 @@ description remains a second semantic boundary.
 1. Load `reviewer-contract.md` and `assets/review-result.schema.json`, then build the neutral context
    packet from the core workflow.
 2. Spawn a fresh native Codex subagent with:
-   - model `gpt-5.6-sol`;
+   - model `gpt-6-sol`;
    - reasoning effort `xhigh`;
    - no inherited implementation conversation or suspected findings;
    - a selected custom reviewer profile or delegation override that sets the sandbox to read-only;

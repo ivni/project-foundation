@@ -58,7 +58,7 @@ codex --version
 codex exec --help
 ```
 
-The wrapper requires the exact `gpt-5.6-sol` model, `xhigh` reasoning, and Codex's `read-only`
+The wrapper requires the exact `gpt-6-sol` model, `xhigh` reasoning, and Codex's `read-only`
 sandbox. It never falls back automatically. If one is unavailable, the primary agent should report
 the capability blocker and ask before changing the reviewer profile.
 

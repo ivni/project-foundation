@@ -7,7 +7,7 @@ import { homedir, tmpdir } from "node:os";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const DEFAULT_MODEL = "gpt-5.6-sol";
+const DEFAULT_MODEL = "gpt-6-sol";
 const DEFAULT_REASONING_EFFORT = "xhigh";
 const DEFAULT_TIMEOUT_MS = 30 * 60 * 1000;
 const MAX_PASS = 10;

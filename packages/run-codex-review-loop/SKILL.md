@@ -41,7 +41,7 @@ Codex as the primary host uses a fresh native Codex subagent. Every other host m
 Codex CLI through `scripts/run-codex-review.ts`; a host-native subagent using an OpenAI model is not a
 substitute.
 
-Require `gpt-5.6-sol` with `xhigh` reasoning.
+Require `gpt-6-sol` with `xhigh` reasoning.
 <!-- /host:adapter -->
 
 If the exact profile or the selected path's read-only execution boundary is unavailable, report the

@@ -140,7 +140,7 @@ describe("Codex review wrapper arguments", () => {
     expect(options.runId).toBe(RUN_ID);
     expect(options.timeoutMs).toBe(9000);
     expect(args).toContain("read-only");
-    expect(args).toContain("gpt-5.6-sol");
+    expect(args).toContain("gpt-6-sol");
     expect(args).toContain('model_reasoning_effort="xhigh"');
     expect(args).toContain("--ephemeral");
     expect(args).toContain("--strict-config");

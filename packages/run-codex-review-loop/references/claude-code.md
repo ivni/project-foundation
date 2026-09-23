@@ -23,5 +23,5 @@ Create `<temporary-context>` outside the repository. Use an argument array or Cl
 without interpolating untrusted repository content into the command. Wait for completion, parse the
 single JSON envelope on stdout, and apply the core ledger and fix rules.
 
-If Bash access, Bun, Codex CLI authentication, `gpt-5.6-sol`, `xhigh`, or read-only execution is
+If Bash access, Bun, Codex CLI authentication, `gpt-6-sol`, `xhigh`, or read-only execution is
 unavailable, stop and request approval before any fallback. Do not ask Codex to run tests.
