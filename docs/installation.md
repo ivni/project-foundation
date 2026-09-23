@@ -46,7 +46,7 @@ release.
 `bunx` runs the package without creating a permanent global CLI installation. The package contains
 the installer and exact payloads for `project-foundation`, `find-blind-spots`,
 `run-discovery-interview`, `run-subphase`, `run-codex-review-loop`, `run-claude-review-loop`,
-`run-qwen-review-loop`, and `teach`. The selected skill directories remain after `bunx` exits.
+`run-qwen-review-loop`, `analyze-tests`, and `teach`. The selected skill directories remain after `bunx` exits.
 
 `run-codex-review-loop` has additional runtime requirements when invoked from Claude Code, Pi,
 OpenCode, or Hermes: `bun` and an authenticated `codex` CLI with access to `gpt-6-sol` and `xhigh`

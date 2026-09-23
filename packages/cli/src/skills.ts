@@ -32,6 +32,10 @@ export const SKILLS = {
     label: "Qwen Review Loop",
     summary: "Independent Qwen review, bounded fixes, and clean rechecks",
   },
+  "analyze-tests": {
+    label: "Analyze Tests",
+    summary: "Test value, parallelism, and runtime proposals; apply only on request",
+  },
   teach: {
     label: "Teach",
     summary: "Stateful learning workspace for teaching a topic over many sessions",

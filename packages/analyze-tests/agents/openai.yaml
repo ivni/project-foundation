@@ -1,0 +1,7 @@
+interface:
+  display_name: "Analyze Tests"
+  short_description: "Assess test value, parallelism, and runtime"
+  default_prompt: "Use $analyze-tests to report safe test removals, parallelization opportunities, and other speed improvements without applying changes."
+
+policy:
+  allow_implicit_invocation: true

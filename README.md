@@ -20,6 +20,9 @@ durable project foundation:
 - **Qwen Review Loop** runs the same bounded workflow through an actual Qwen Code CLI reviewer pinned
   to `qwen3.8-max` with `xhigh` reasoning in the read-only plan approval mode; the primary agent
   remains responsible for all tests.
+- **Analyze Tests** reports which tests can be removed or consolidated, what can run in parallel,
+  and what else can be faster. It starts with analysis and applies selected proposals only after a
+  separate command. It can use existing results and safe local measurements.
 - **Project Foundation** turns the resulting product and UX contract into agent-led technical
   synthesis, architecture, delivery process, and a canonical artifact set.
 
@@ -40,8 +43,8 @@ Install [Bun](https://bun.com/docs/installation), then run:
 bunx @ivni/project-foundation
 ```
 
-Choose any combination of the eight skills, the agent environments, a user or project scope, and a
-copy or managed-link installation. All eight skills are preselected; deselect the ones you do not
+Choose any combination of the nine skills, the agent environments, a user or project scope, and a
+copy or managed-link installation. All nine skills are preselected; deselect the ones you do not
 want. The wizard shows a complete preview before writing anything.
 
 The skill registry is the source of truth: each registry key is also the package directory, native
@@ -59,6 +62,17 @@ bunx @ivni/project-foundation remove
 Nothing is installed globally as an executable. `bunx` downloads and runs the package for that
 invocation. Use `@latest` for updates when you want to bypass ambiguity around cached package
 resolution.
+
+## Test-suite analysis
+
+Ask `$analyze-tests` to analyze the repository's tests. The report includes evidence, retained
+protection, expected benefit, risks, and validation plans under numbered proposals. By default it
+reads code and existing results and may run bounded safe local measurements without changing tests
+or configuration. Request static-only analysis when no commands with side effects should run.
+
+Then select proposals in a separate message, for example: `$analyze-tests apply T-02 and T-05`.
+The skill checks that the report still matches the code, applies only the selected scope, and verifies
+correctness and performance separately. It does not commit or publish automatically.
 
 ## Supported environments
 
@@ -105,7 +119,7 @@ bun run check
 ```
 
 The public package is the repository root. The private workspaces under `packages/` separate the
-CLI source from the eight raw skill payloads. See [Development](docs/development.md) for the full
+CLI source from the nine raw skill payloads. See [Development](docs/development.md) for the full
 layout and verification workflow.
 
 ## License

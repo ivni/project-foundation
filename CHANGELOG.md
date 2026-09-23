@@ -7,6 +7,15 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-09-23
+
+### Added
+
+- Analyze Tests skill reports safe removal or consolidation, parallelization opportunities, and other
+  test-runtime improvements with evidence and validation plans. Analysis uses code, existing results,
+  and bounded safe local measurements. A separate command applies selected proposals and verifies
+  correctness and performance. The installer registers it as an independent ninth skill.
+
 ### Changed
 
 - Subphase and review guidance now reuses or adapts existing checks before adding tests for concrete
@@ -495,7 +504,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.1.1...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.2.0...HEAD
+[3.2.0]: https://github.com/ivni/project-foundation/compare/v3.1.1...v3.2.0
 [3.1.1]: https://github.com/ivni/project-foundation/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/ivni/project-foundation/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/ivni/project-foundation/compare/v2.1.0...v3.0.0

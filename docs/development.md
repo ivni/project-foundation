@@ -5,6 +5,7 @@
 ```text
 .
 ├── packages/
+│   ├── analyze-tests/          Test-suite analysis and separately authorized improvements
 │   ├── cli/                     Private workspace with TypeScript source and tests
 │   ├── find-blind-spots/        Publishable read-only analysis skill payload
 │   ├── project-foundation/      Publishable foundation skill payload
@@ -44,7 +45,7 @@ bun run check
 ```
 
 `verify:skills` checks frontmatter, invocation policy, UI metadata, size, placeholders, local
-resource links, and shared-reference drift for all eight payloads. `verify:docs` checks public
+resource links, and shared-reference drift for all nine payloads. `verify:docs` checks public
 Markdown structure, local links, changelog state, and package metadata.
 `verify:package` inspects the exact file manifest produced by npm, the tool used for publishing.
 `bun run check` runs it as part of the release-level local verification command.

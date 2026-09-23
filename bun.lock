@@ -13,6 +13,10 @@
         "typescript": "^7.0.2",
       },
     },
+    "packages/analyze-tests": {
+      "name": "@ivni/analyze-tests-skill",
+      "version": "1.0.0",
+    },
     "packages/cli": {
       "name": "@ivni/project-foundation-cli",
       "version": "1.9.0",
@@ -70,6 +74,8 @@
     "@biomejs/cli-win32-x64": ["@biomejs/cli-win32-x64@2.5.3", "", { "os": "win32", "cpu": "x64" }, "sha512-ExSaJWi4/u6+GXCszlSKpWSjKNbDseAYqqkCznsCsZ/4uidZ/BEqsCc5/3ctlq6dfIubdIIRSVLC/PG9xPl70Q=="],
 
     "@clack/core": ["@clack/core@1.4.3", "", { "dependencies": { "fast-wrap-ansi": "^0.2.0", "sisteransi": "^1.0.5" } }, "sha512-/kr3UWNtdJfxZtPgDqUOmG2pvwlmcLGheex5yiZKdwbzZJxhV+HMNR9QNmyY5cGwTNV6LrR7Jtp+KjhUAP1qBQ=="],
+
+    "@ivni/analyze-tests-skill": ["@ivni/analyze-tests-skill@workspace:packages/analyze-tests"],
 
     "@ivni/find-blind-spots-skill": ["@ivni/find-blind-spots-skill@workspace:packages/find-blind-spots"],
 
