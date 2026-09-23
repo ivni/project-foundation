@@ -33,8 +33,13 @@ Properties:
   separate command for slow/integration tests next to it in the agent contract.
 - Split fast/default from slow/integration (markers, tags, or directories) so local
   verification stays cheap and the expensive suite is deliberate.
-- Run all applicable suites in CI. New behavior without a test is an incomplete
-  subphase (see [process.md](process.md)).
+- Run all applicable suites in CI. Changed behavior needs proportionate acceptance and regression
+  evidence, not a new test per change. Reuse or adapt existing tests; add one for a concrete gap in
+  protection. Preserve automated regression checks for substantive repeatable behavior. Low-risk
+  exceptions and safe removal of affected obsolete or duplicate tests follow the
+  [subphase contract](subphase-contract.md#proportionate-verification-and-test-maintenance).
+- Test count and coverage growth are not goals in themselves. Required project gates and coverage
+  thresholds still apply; do not lower them merely to accommodate cleanup.
 - Tests prove code paths; they do not prove the feature works. Behavior claims require
   actually running the thing (see [ai-collaboration.md](ai-collaboration.md)).
 

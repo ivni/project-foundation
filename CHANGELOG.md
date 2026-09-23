@@ -7,6 +7,16 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Subphase and review guidance now reuses or adapts existing checks before adding tests for concrete
+  gaps in regression protection. A new test is not required for every slice; low-risk changes can use
+  planned acceptance probes while substantive repeatable behavior retains automated protection.
+- Affected obsolete and duplicate tests are maintained with explicit criteria for preserving unique
+  regression protection. Reviewers assess missing and redundant tests by concrete risks, not test count
+  or coverage growth. Required project gates remain in force; generated agent contracts include the
+  maintenance guidance, while existing project contracts still require deliberate adoption.
+
 ## [3.1.1] - 2026-09-23
 
 ### Changed

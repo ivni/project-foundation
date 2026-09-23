@@ -33,7 +33,8 @@ Classify every finding by what it *is*, not by how much it matters.
 
 `ADVISORY` — the code is not demonstrably wrong, but something around it could be better:
 
-6. missing or incomplete tests, and test code that is weaker than the behavior it covers;
+6. missing or incomplete tests, test code weaker than its claimed protection, and demonstrably
+   obsolete, redundant, or incidentally implementation-coupled tests;
 7. maintainability, structure, naming, and duplication concerns.
 
 The dividing question is whether you can describe a way the code behaves incorrectly. If you can,
@@ -41,6 +42,12 @@ it is a `DEFECT` at whatever severity fits. If your finding is that something is
 duplicated, or could be structured better, it is an `ADVISORY` — even when you believe it is
 important, and even when it sits next to a real defect. Incorrect test code that asserts the wrong
 behavior is a `DEFECT`; a correct test that does not cover enough is an `ADVISORY`.
+
+When recommending a test addition, identify the concrete scenario or regression risk existing checks
+miss. For a removal or consolidation, identify the retired requirement or retained check providing the same
+protection. Similar names, shared coverage lines, or different levels testing the same behavior do
+not establish redundancy. Internal assertions can enforce real contracts such as ordering or resource
+limits. Keep findings tied to the change; do not demand a whole-suite cleanup or test-count target.
 
 A name that contradicts a term recorded in the project's glossary is not a style preference. Report
 it as an `ADVISORY`, quoting the recorded term and the name that departs from it — the project agreed

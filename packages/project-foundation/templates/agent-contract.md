@@ -70,6 +70,15 @@ agent-contract check, e.g. bash scripts/qa.sh}}
 {{slow / integration test command}}
 ```
 
+## Test maintenance
+
+- Reuse or adapt existing tests; add a test for a concrete gap in behavior or regression protection.
+- Review affected tests. Remove retired expectations or consolidate duplicates only when retained
+  checks preserve the same protection, including relevant boundaries and failure paths. Explain
+  removals briefly in the change summary. A failing or flaky test is not by itself obsolete.
+- Prefer behavior assertions; implementation details belong in tests when they enforce a real contract.
+  No whole-suite cleanup or test-count target is required. Required gates and coverage thresholds remain.
+
 ## Git & release workflow
 
 <!-- Choose one profile. Protected trunk is the default when the remote supports

@@ -26,8 +26,8 @@ A subphase is done only when **all** of the following hold:
 
 - Local verification green through the project's single recorded entry point; required CI green before
   merge or release.
-- New behavior covered by tests, and the change verified by actually running it — not only by tests
-  and typecheck passing.
+- Changed behavior has proportionate acceptance and regression evidence under the rules below, and
+  the change is verified by actually running it — not only by tests and typecheck passing.
 - Relevant related paths checked when a change or defect can affect them. Repeated syntax alone does
   not require a tree-wide sweep, per-hit ledger, or a universal detector of future occurrences.
 - Every linked requirement has acceptance evidence recorded in the traceability table. Evidence is a
@@ -36,5 +36,26 @@ A subphase is done only when **all** of the following hold:
 - Docs updated in the same change (same-change rule).
 - `checklist.md` ticked; the agent-contract status line updated if the completion is externally
   meaningful.
+
+## Proportionate verification and test maintenance
+
+Reuse or adapt existing tests before adding new ones. Checks must observe the changed contract and
+detect its violation; matching coverage lines or a green run alone does not establish this. Preserve
+automated regression protection for substantive repeatable behavior. For reversible, low-risk changes,
+a planned probe or manual flow can suffice when it directly verifies acceptance criteria and leaves no
+material regression risk unprotected. Required project gates still apply.
+
+Review tests affected by the change. Remove obsolete tests when their requirement or supported path
+has been retired; consolidate duplicates only when a retained check detects the same failure under
+the relevant conditions. Preserve unique boundaries, error paths, and regression cases. Different
+test levels can protect different failures of the same behavior. Prefer observable outcomes over
+incidental implementation details, but retain checks of internals when they enforce an actual contract,
+such as operation ordering or resource limits.
+
+Do not delete or weaken a test merely because it fails, is flaky, slow, or hard to update. If its
+protection is unclear, retain it until that is resolved. Briefly explain removals and retained protection
+in the change summary, then run applicable checks. No whole-suite audit, deletion quota, or separate
+test-value register is required. Test count and coverage growth are not goals in themselves; existing
+required coverage thresholds remain in force.
 
 Commit granularity follows subphases; a commit message names the phase and subphase when one applies.

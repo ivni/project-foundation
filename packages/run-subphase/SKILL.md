@@ -65,9 +65,12 @@ fail on the behavior it names is worse than a missing one, because it reports su
 
 ## 4. Build in vertical slices
 
-One seam, one failing test, the minimal implementation that passes it, then the next slice. Never all
-tests first and all implementation after: tests written in bulk verify imagined behavior, commit you to
-a test structure before you understand the implementation, and go insensitive to real change.
+For each slice, reuse or adapt a check at the agreed seam; add a focused test when existing checks
+leave a concrete behavior or regression risk unprotected. When practical, establish that the check
+fails on the missing or incorrect behavior, then implement the slice and confirm it passes. A green
+check that cannot detect the changed behavior is not sufficient. Do not write tests in bulk ahead of
+implementation or require a new test for every slice. Follow the subphase contract's proportionate
+verification and test-maintenance rules, including its allowance for low-risk changes.
 
 The requirement rows in scope are the whole scope. Something worth doing that is not among them becomes
 a `BLK-P{N}-*`, a debt entry, or an out-of-scope entry — never a silent extra commit. Refactoring
