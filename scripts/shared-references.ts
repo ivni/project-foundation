@@ -120,6 +120,14 @@ export const SHARED_BLOCKS: SharedBlock[] = [
 
 export const SHARED_REFERENCES: SharedReference[] = [
   {
+    source: "shared/tree-snapshot.ts",
+    copies: [
+      "packages/run-codex-review-loop/scripts/tree-snapshot.ts",
+      "packages/run-claude-review-loop/scripts/tree-snapshot.ts",
+      "packages/run-qwen-review-loop/scripts/tree-snapshot.ts",
+    ],
+  },
+  {
     source: "shared/decision-routing.md",
     copies: [
       "packages/find-blind-spots/references/decision-routing.md",

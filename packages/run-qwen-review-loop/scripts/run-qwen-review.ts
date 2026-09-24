@@ -6,6 +6,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { compareTreeDigests, readTreeSnapshot, TREE_DIGEST_COVERS } from "./tree-snapshot.ts";
 
 const DEFAULT_MODEL = "qwen3.8-max";
 const DEFAULT_REASONING_EFFORT = "xhigh";
@@ -17,7 +18,6 @@ const RUN_STATE_DIRECTORY = "qwen-review-runs";
 const RUN_STATE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 const DERIVED_RUN_ID_PREFIX = "auto-";
 const RUN_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{7,63}$/;
-const GIT_COMMAND_TIMEOUT_MS = 60_000;
 const MAX_PROMPT_BYTES = 8 * 1024 * 1024;
 const MAX_STDOUT_LENGTH = 4 * 1024 * 1024;
 const DIAGNOSTIC_LIMIT = 32 * 1024;
@@ -724,60 +724,6 @@ function resolveQwenExecutable(repositoryRoot: string): string {
   return executable;
 }
 
-/**
- * Read-only git inspection for the run identifier and the working-tree digest. A repository-local git
- * would be the reviewed change set executing itself, so it is refused the same way Qwen Code is.
- * Every failure degrades to `null`: the digest is reporting, and losing it must not fail a review.
- */
-function gitOutput(repositoryRoot: string, args: string[]): string | null {
-  const located = Bun.which("git");
-  if (located === null) return null;
-  const executable = resolve(located);
-  if (isInsideRepository(repositoryRoot, executable)) return null;
-  try {
-    const result = Bun.spawnSync([executable, ...args], {
-      cwd: repositoryRoot,
-      stdout: "pipe",
-      stderr: "ignore",
-      timeout: GIT_COMMAND_TIMEOUT_MS,
-      killSignal: "SIGKILL",
-    });
-    if (result.exitedDueToTimeout || result.exitCode !== 0) return null;
-    return result.stdout.toString();
-  } catch {
-    return null;
-  }
-}
-
-interface TreeSnapshot {
-  head: string | null;
-  digest: string | null;
-  limitation: string | null;
-}
-
-/**
- * The digest covers status entries and tracked-content changes. Untracked file contents are not
- * covered, because reaching them would need an index write and this wrapper never mutates the
- * repository, so the envelope states what the digest actually spans.
- */
-function readTreeSnapshot(repositoryRoot: string): TreeSnapshot {
-  const head = gitOutput(repositoryRoot, ["rev-parse", "HEAD"])?.trim() ?? null;
-  const status = gitOutput(repositoryRoot, ["status", "--porcelain=v1", "--untracked-files=all"]);
-  const diff = gitOutput(repositoryRoot, head === null ? ["diff"] : ["diff", "HEAD"]);
-  if (status === null || diff === null) {
-    return {
-      head,
-      digest: null,
-      limitation: `could not digest the working tree with git at ${repositoryRoot}`,
-    };
-  }
-  return {
-    head,
-    digest: createHash("sha256").update(status).update("\n").update(diff).digest("hex"),
-    limitation: null,
-  };
-}
-
 function verifyQwenCli(qwenExecutable: string, timeoutMs: number): string {
   let result: ReturnType<typeof Bun.spawnSync>;
   try {
@@ -887,7 +833,11 @@ async function runReview(options: ParsedArguments): Promise<Record<string, unkno
     );
   }
 
-  const tree = readTreeSnapshot(options.cwd);
+  const tree = readTreeSnapshot(options.cwd, [
+    ...["codex", "claude", "qwen"].map((name) =>
+      join(dirname(runStateDirectory()), `${name}-review-runs`),
+    ),
+  ]);
   const runIdSource = options.runId.length > 0 ? "explicit" : "derived";
   const runId =
     options.runId.length > 0 ? options.runId : deriveRunId(options.cwd, tree.head ?? "no-head");
@@ -897,8 +847,7 @@ async function runReview(options: ParsedArguments): Promise<Record<string, unkno
   const runState = discardedExpiredState ? freshRunState(runId, now) : storedState;
   assertPassAllowed(runState, options.pass);
   const previousDigest = runState.passes.at(-1)?.tree_digest ?? null;
-  const treeChangedSincePreviousPass =
-    previousDigest === null || tree.digest === null ? null : tree.digest !== previousDigest;
+  const treeChangedSincePreviousPass = compareTreeDigests(previousDigest, tree.digest);
   const elapsedBeforePreflight = performance.now() - startedAt;
   if (elapsedBeforePreflight >= options.timeoutMs) {
     throw new RunnerError("timeout", `Qwen review exceeded ${options.timeoutMs} ms`);
@@ -1041,7 +990,8 @@ async function runReview(options: ParsedArguments): Promise<Record<string, unkno
         max_passes_in_run: MAX_PASS,
         discarded_expired_run_state: discardedExpiredState,
         tree_digest: tree.digest,
-        tree_digest_covers: "git status entries and tracked-content diff",
+        tree_digest_covers: TREE_DIGEST_COVERS,
+        tree_digest_exclusions: tree.exclusions,
         tree_digest_limitation: tree.limitation,
         tree_changed_since_previous_pass: treeChangedSincePreviousPass,
         cwd: options.cwd,

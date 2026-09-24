@@ -125,3 +125,22 @@ Do not include credentials, private repository contents, or full skill diffs fro
 
 For an unexpected internal error, rerun the same interactive command with `--debug` to include a stack
 trace. Review and redact that trace before sharing it.
+
+## A review loop reports whether files changed between passes
+
+Codex, Claude, and Qwen wrappers hash tracked status, working-tree and staged binary diffs, plus the
+paths, types, executable bits, and contents of untracked files. Symlinks contribute their link targets, without reading the destination.
+Untracked files respect Git ignore rules (`.gitignore`, `.git/info/exclude`, and global ignores).
+Tracked changes remain included even when their paths match ignore rules or artifact directories.
+
+The three wrappers' actual run-state directories are excluded from untracked hashing if configured
+inside the repository, including paths reached through symlink ancestors. Context packets and temporary reviewer results belong outside the repository;
+keep other review logs and reports there too, or add their exact paths to `.git/info/exclude`.
+Hidden configuration directories such as `.github`, `.agents`, and `.codex` are not blanket exclusions.
+The envelope's `tree_digest_exclusions` reports the policy and excluded artifact directories.
+
+Digests carry a `v2:` prefix. Comparing against an older digest, a missing snapshot, or a failed read
+returns `tree_changed_since_previous_pass: null` (unknown), never a false claim that files stayed
+unchanged. Snapshot read failures, including Git warnings about skipped unreadable directories, appear in
+`tree_digest_limitation`. This flag describes the snapshot
+comparison only; it is not evidence that a review was clean.

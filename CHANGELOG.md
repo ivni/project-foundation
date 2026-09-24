@@ -7,6 +7,14 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.2.1] - 2026-09-24
+
+### Fixed
+
+- All three review wrappers now detect content edits to untracked files between passes, respect Git
+  ignores and narrow run-state exclusions, and keep tracked changes visible. Versioned snapshots
+  report unknown for legacy comparisons or read failures. Shared snapshot code prevents wrapper drift.
+
 ## [3.2.0] - 2026-09-23
 
 ### Added
@@ -504,7 +512,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.2.0...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.2.1...HEAD
+[3.2.1]: https://github.com/ivni/project-foundation/compare/v3.2.0...v3.2.1
 [3.2.0]: https://github.com/ivni/project-foundation/compare/v3.1.1...v3.2.0
 [3.1.1]: https://github.com/ivni/project-foundation/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/ivni/project-foundation/compare/v3.0.0...v3.1.0
