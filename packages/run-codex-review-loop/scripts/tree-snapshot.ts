@@ -52,10 +52,19 @@ function gitOutput(repositoryRoot: string, args: string[]): string | null {
   }
 }
 
+/** Bun realpath on Windows may return an extended-length path; Git returns a normal path. */
+function normalizePath(path: string): string {
+  const regular =
+    process.platform === "win32"
+      ? path.replace(/^\\\\\?\\UNC\\/i, "\\\\").replace(/^\\\\\?\\/, "")
+      : path;
+  return resolve(regular);
+}
+
 /** Resolve existing symlink ancestors even before the run-state directory has been created. */
 function canonicalPath(path: string): string {
   try {
-    return resolve(realpathSync(path));
+    return normalizePath(realpathSync(path));
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT" || dirname(path) === path) throw error;
     return join(canonicalPath(dirname(path)), basename(path));
@@ -83,11 +92,11 @@ export function readTreeSnapshot(
   let root: string;
   let excluded: string[];
   try {
-    root = resolve(realpathSync(topLevel));
+    root = normalizePath(realpathSync(topLevel));
     // Deduplicate by repository-relative paths: Windows realpath may change drive casing.
     const paths = artifactDirectories
       .flatMap((path) => {
-        const absolute = resolve(path);
+        const absolute = normalizePath(path);
         return [absolute, canonicalPath(absolute)];
       })
       .filter((path) => isWithin(root, path))
