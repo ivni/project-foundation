@@ -71,6 +71,33 @@ function canonicalPath(path: string): string {
   }
 }
 
+/** Rebase Windows 8.3 aliases that realpath leaves intact onto Git's working-tree root. */
+function rebaseRootAlias(root: string, path: string): string {
+  if (process.platform !== "win32" || isWithin(root, path)) return path;
+  const rootStat = lstatSync(root);
+  const suffix: string[] = [];
+  let ancestor = path;
+  while (true) {
+    try {
+      const stat = lstatSync(ancestor);
+      if (
+        stat.isDirectory() &&
+        stat.ino !== 0 &&
+        stat.dev === rootStat.dev &&
+        stat.ino === rootStat.ino
+      ) {
+        return resolve(root, ...suffix);
+      }
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    }
+    const parent = dirname(ancestor);
+    if (parent === ancestor) return path;
+    suffix.unshift(basename(ancestor));
+    ancestor = parent;
+  }
+}
+
 /** Artifact exclusions apply only to untracked files, never to tracked changes. */
 export function readTreeSnapshot(
   repositoryRoot: string,
@@ -97,7 +124,9 @@ export function readTreeSnapshot(
     const paths = artifactDirectories
       .flatMap((path) => {
         const absolute = normalizePath(path);
-        return [absolute, canonicalPath(absolute)];
+        return [absolute, canonicalPath(absolute)].map((candidate) =>
+          rebaseRootAlias(root, candidate),
+        );
       })
       .filter((path) => isWithin(root, path))
       .map((path) => relative(root, path))
