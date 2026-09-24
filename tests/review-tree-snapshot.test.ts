@@ -74,10 +74,12 @@ for (const [name, snapshot] of Object.entries({ codex, claude, qwen })) {
       write(".gitignore", "cache/\n");
       write(".git/info/exclude", "local-cache/\n");
       const exclusions = [join(root, ".state/project-foundation/codex-review-runs")];
+      const beforeSnapshot = snapshot.readTreeSnapshot(root, exclusions);
       const before = digest(exclusions);
       write("cache/generated", "ignored");
       write("local-cache/generated", "ignored");
       write(".state/project-foundation/codex-review-runs/run.json", "first");
+      expect(snapshot.readTreeSnapshot(root, exclusions)).toEqual(beforeSnapshot);
       expect(digest(exclusions)).toBe(before);
       write(".state/project-foundation/codex-review-runs/run.json", "other");
       expect(digest(exclusions)).toBe(before);
