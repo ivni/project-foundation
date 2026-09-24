@@ -201,8 +201,8 @@ for (const [name, snapshot] of Object.entries({ codex, claude, qwen })) {
     );
 
     test("includes staged content before the first commit", () => {
-      rmSync(join(root, ".git"), { recursive: true });
-      git("init", "--quiet");
+      git("checkout", "--orphan", "snapshot-unborn");
+      expect(snapshot.readTreeSnapshot(root).head).toBeNull();
       git("add", "tracked.txt");
       const first = digest();
       write("tracked.txt", "new staged content");

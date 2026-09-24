@@ -55,7 +55,7 @@ function gitOutput(repositoryRoot: string, args: string[]): string | null {
 /** Resolve existing symlink ancestors even before the run-state directory has been created. */
 function canonicalPath(path: string): string {
   try {
-    return realpathSync(path);
+    return resolve(realpathSync(path));
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT" || dirname(path) === path) throw error;
     return join(canonicalPath(dirname(path)), basename(path));
@@ -83,17 +83,17 @@ export function readTreeSnapshot(
   let root: string;
   let excluded: string[];
   try {
-    root = realpathSync(topLevel);
-    excluded = [
-      ...new Set(
-        artifactDirectories.flatMap((path) => {
-          const absolute = resolve(path);
-          return [absolute, canonicalPath(absolute)];
-        }),
-      ),
-    ]
-      .filter((path) => path !== root && isWithin(root, path))
-      .sort();
+    root = resolve(realpathSync(topLevel));
+    // Deduplicate by repository-relative paths: Windows realpath may change drive casing.
+    const paths = artifactDirectories
+      .flatMap((path) => {
+        const absolute = resolve(path);
+        return [absolute, canonicalPath(absolute)];
+      })
+      .filter((path) => isWithin(root, path))
+      .map((path) => relative(root, path))
+      .filter((path) => path !== "");
+    excluded = [...new Set(paths)].sort().map((path) => resolve(root, path));
   } catch {
     return failure("could not resolve the working-tree root or artifact directories");
   }
