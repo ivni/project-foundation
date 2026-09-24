@@ -4,6 +4,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  realpathSync,
   renameSync,
   rmSync,
   symlinkSync,
@@ -75,6 +76,15 @@ for (const [name, snapshot] of Object.entries({ codex, claude, qwen })) {
       write(".git/info/exclude", "local-cache/\n");
       const exclusions = [join(root, ".state/project-foundation/codex-review-runs")];
       const beforeSnapshot = snapshot.readTreeSnapshot(root, exclusions);
+      expect(
+        beforeSnapshot.exclusions.untracked_artifact_directories,
+        JSON.stringify({
+          root,
+          real: realpathSync(root),
+          gitRoot: git("rev-parse", "--show-toplevel").toString(),
+          exclusions,
+        }),
+      ).toEqual([join(".state", "project-foundation", "codex-review-runs")]);
       const before = digest(exclusions);
       write("cache/generated", "ignored");
       write("local-cache/generated", "ignored");
