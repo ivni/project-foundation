@@ -262,7 +262,7 @@ test.each([
     });
     const root =
       strategy === "link"
-        ? getManagedStore("user", workspace.context, "project-foundation")
+        ? await realpath(getManagedStore("user", workspace.context, "project-foundation"))
         : getTargetPath("codex", "user", workspace.context, "project-foundation");
     workspace.context.version = "1.1.0";
     await writeFile(join(workspace.payload, "SKILL.md"), "Updated packaged skill.\n");
@@ -334,7 +334,7 @@ test.each([
       strategy: "link",
       context: workspace.context,
     });
-    const root = getManagedStore("user", workspace.context, "project-foundation");
+    const root = await realpath(getManagedStore("user", workspace.context, "project-foundation"));
     await writeFile(join(root, "SKILL.md"), "Local changes.\n");
     workspace.context.version = "2.0.0";
     const prepared = await prepareMaintainSkill({
@@ -381,7 +381,7 @@ test("keeps current local modifications when offering an addition to a shared st
       strategy: "link",
       context: workspace.context,
     });
-    const root = getManagedStore("user", workspace.context, "project-foundation");
+    const root = await realpath(getManagedStore("user", workspace.context, "project-foundation"));
     await writeFile(join(root, "SKILL.md"), "Local changes.\n");
     const prepared = await prepareMaintainSkill({
       skillId: "project-foundation",
@@ -414,7 +414,7 @@ test("a later failure never rolls back concurrent edits in a kept shared store",
       strategy: "link",
       context: workspace.context,
     });
-    const root = getManagedStore("user", workspace.context, "project-foundation");
+    const root = await realpath(getManagedStore("user", workspace.context, "project-foundation"));
     await writeFile(join(root, "SKILL.md"), "Local changes.\n");
     const kept = await prepareMaintainSkill({
       skillId: "project-foundation",
@@ -450,7 +450,7 @@ test("rolls back an earlier mixed plan when a later addition changes after previ
       strategy: "link",
       context: workspace.context,
     });
-    const root = getManagedStore("user", workspace.context, "project-foundation");
+    const root = await realpath(getManagedStore("user", workspace.context, "project-foundation"));
     const before = await readFile(join(root, "SKILL.md"), "utf8");
     workspace.context.version = "1.1.0";
     const updateAndAdd = await prepareMaintainSkill({
