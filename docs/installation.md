@@ -19,27 +19,37 @@ bun --version
 bunx @ivni/project-foundation
 ```
 
-The no-argument command opens the main menu. Select `Install`, then:
+The no-argument command opens the main menu. Select `Install / update`, then:
 
-1. Choose one or more skills. All packaged skills are preselected.
-2. Choose one or more agent environments. Detected agents are preselected.
-3. Choose `User` or `Project` scope.
-4. Confirm the project root when using project scope.
-5. Choose `Link` or `Copy`.
-6. Review every skill and target path.
-7. Confirm the installation.
+1. Reuse a detected installation configuration, or choose different settings. Existing
+   configurations include agents, `User` or `Project` scope, and `Link` or `Copy` method. User
+   installations and installations in the current project are discovered automatically. Agents
+   using the same scope and method are grouped together, including independent copy targets.
+2. For new settings, choose scope, project root when applicable, agent environments, and the method
+   for new files. Detected compatible agents are preselected. Existing installations keep their method.
+3. Choose updates and additions from one list. Existing updates are preselected. Absent skills are
+   unchecked when the selected agents already have managed skills; on a first installation, all
+   additions are preselected. Current installations are shown separately.
+4. Resolve any local modifications or unmanaged target conflicts.
+5. Review the complete plan, then apply it or change the selection or configuration.
 
-The wizard can edit any selection from the preview screen. It performs its full conflict preflight
-before the first mutation.
+The wizard performs its full conflict preflight before the first mutation. Updates and additions
+share one confirmation and rollback boundary. The final counts report updated physical managed
+installations, added native targets, and selected actions skipped because content was kept. An
+installation shared by several agents counts as one update.
 
 ## Direct command
 
 ```bash
 bunx @ivni/project-foundation install
+bunx @ivni/project-foundation@latest update
 ```
 
-The command is still interactive. There is intentionally no unattended mutation mode in the first
-release.
+Both commands open the same interactive wizard. Either command can update existing skills and add
+absent skills without a second invocation. There is intentionally no unattended mutation mode.
+
+Absent skills are labeled as additions, not automatically as new release content: they may have
+been deliberately omitted or removed earlier. The wizard does not persist a full-suite subscription.
 
 ## What bunx installs
 

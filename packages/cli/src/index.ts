@@ -3,25 +3,18 @@
 import { stat } from "node:fs/promises";
 import { resolve } from "node:path";
 import packageJson from "../../../package.json";
-import {
-  AGENTS,
-  createRuntimeContext,
-  detectAgent,
-  findProjectRoot,
-  getTargetPath,
-} from "./agents.ts";
+import { AGENTS, createRuntimeContext, detectAgent, findProjectRoot } from "./agents.ts";
 import type { CleanupPreset } from "./backups.ts";
 import { deleteBackups, listBackups, selectBackupsForCleanup } from "./backups.ts";
 import { previewDiff } from "./diff.ts";
-import {
-  compareVersions,
-  getManagedInstallations,
-  needsPackageUpdate,
-  prepareInstallSkill,
-  prepareRemoveSkill,
-  prepareUpdateSkill,
-} from "./operations.ts";
-import { hashSnapshot, resolvePublishedPayloadRoot, snapshotPackagedPayload } from "./payload.ts";
+import type {
+  InstallationConfiguration,
+  MaintenanceAction,
+  ManagedSkillGroup,
+} from "./maintenance.ts";
+import { discoverConfigurations, getMaintenanceCatalog, scanManagedSkills } from "./maintenance.ts";
+import { getManagedInstallations, prepareMaintainSkill, prepareRemoveSkill } from "./operations.ts";
+import { resolvePublishedPayloadRoot } from "./payload.ts";
 import { SKILL_IDS, SKILLS } from "./skills.ts";
 import { combinePreparedOperations } from "./suite.ts";
 import { isRecoverableLinkPermissionError } from "./transaction.ts";
@@ -202,22 +195,6 @@ function hooks(): OperationHooks {
   };
 }
 
-function formatTargets(
-  agents: AgentId[],
-  skills: SkillId[],
-  scope: Scope,
-  ctx: RuntimeContext,
-  projectRoot?: string,
-) {
-  return agents.flatMap((agent) => [
-    `${AGENTS[agent].label}:`,
-    ...skills.map(
-      (skillId) =>
-        `  ${SKILLS[skillId].label}: ${getTargetPath(agent, scope, ctx, skillId, projectRoot)}`,
-    ),
-  ]);
-}
-
 async function maybeCleanBackups(ctx: RuntimeContext, result: OperationResult): Promise<void> {
   if (result.backups.length === 0) return;
   note(
@@ -310,184 +287,212 @@ async function confirmScopeCoexistence(options: {
   if (!(await confirm("Continue with both scopes?"))) throw new CancelledError();
 }
 
-async function installFlow(ctx: RuntimeContext): Promise<void> {
-  let skills = await multiselect<SkillId>({
-    message: "Choose skills",
-    choices: skillChoices(),
-    initialValues: [...SKILL_IDS],
-    required: true,
-  });
-  const detected = AGENT_IDS.filter((agent) => detectAgent(agent, ctx));
-  let agents = await multiselect<AgentId>({
-    message: "Choose agent environments",
-    choices: agentChoices(),
-    initialValues: detected,
-    required: true,
-  });
-  let scope = await chooseScope();
-  if (scope === "project" && agents.includes("hermes")) {
-    warn("Hermes has no project-scoped skill directory, so it was removed from this selection.");
-    agents = agents.filter((agent) => agent !== "hermes");
-    if (agents.length === 0) throw new UserFacingError("No project-compatible agents remain.");
+function configurationLabel(configuration: InstallationConfiguration): string {
+  const agents = configuration.agents.map((agent) => AGENTS[agent].label).join(", ");
+  return `${configuration.scope === "user" ? "User" : "Project"} · ${agents} · ${configuration.strategy}`;
+}
+
+async function chooseConfiguration(ctx: RuntimeContext): Promise<InstallationConfiguration> {
+  const configurations = await discoverConfigurations(ctx, findProjectRoot(ctx.cwd));
+  if (configurations.length > 0) {
+    const key = await select({
+      message: "Choose an installation configuration",
+      initialValue: configurations[0]?.key ?? "new",
+      choices: [
+        ...configurations.map((configuration) => ({
+          value: configuration.key,
+          label: configurationLabel(configuration),
+          hint: configuration.projectRoot ?? "Available across projects",
+        })),
+        {
+          value: "new",
+          label: "Choose different settings",
+          hint: "Agents, scope, or installation method",
+        },
+      ],
+    });
+    const existing = configurations.find((configuration) => configuration.key === key);
+    if (existing) return existing;
   }
-  let projectRoot = scope === "project" ? await chooseProjectRoot(ctx) : undefined;
-  let strategy: Strategy = await select({
-    message: "How should files be installed?",
+  const scope = await chooseScope();
+  const projectRoot = scope === "project" ? await chooseProjectRoot(ctx) : undefined;
+  const agents = await multiselect<AgentId>({
+    message: "Choose agent environments",
+    choices: agentChoices(scope),
+    initialValues: AGENT_IDS.filter(
+      (agent) => !(scope === "project" && agent === "hermes") && detectAgent(agent, ctx),
+    ),
+    required: true,
+  });
+  const strategy = await select<Strategy>({
+    message: "How should new files be installed?",
     initialValue: "link",
     choices: [
       { value: "link", label: "Link", hint: "One managed copy, shared by selected agents" },
       { value: "copy", label: "Copy", hint: "Independent files in each native location" },
     ],
   });
+  return { key: "custom", scope, agents, strategy, ...(projectRoot ? { projectRoot } : {}) };
+}
 
+function actionChoice(action: MaintenanceAction, ctx: RuntimeContext) {
+  if (action.kind === "add") {
+    return {
+      value: action.key,
+      label: `Add · ${SKILLS[action.skillId].label} · ${action.agents.map((agent) => AGENTS[agent].label).join(", ")}`,
+      hint: SKILLS[action.skillId].summary,
+    };
+  }
+  return {
+    value: action.key,
+    label: `Update · ${groupLabel({ key: action.key, skillId: action.skillId, group: action.group })} -> v${ctx.version}`,
+    hint: action.group.physicalRoot,
+  };
+}
+
+async function maintainFlow(ctx: RuntimeContext): Promise<void> {
+  let configuration = await chooseConfiguration(ctx);
+  let selectedKeys: string[] | undefined;
   while (true) {
-    note("Selection", [
-      `Skills: ${skills.map((skillId) => SKILLS[skillId].label).join(", ")}`,
-      `Scope: ${scope}`,
-      `Method: ${strategy}`,
-      ...formatTargets(agents, skills, scope, ctx, projectRoot),
-      "No mutating Git commands or .git writes. Project scope can change the working tree.",
+    if (configuration.projectRoot && !(await pathIsDirectory(configuration.projectRoot))) {
+      throw new UserFacingError(`Project directory does not exist: ${configuration.projectRoot}`);
+    }
+    const catalog = await getMaintenanceCatalog(ctx, configuration);
+    note("Configuration", [
+      configurationLabel(configuration),
+      ...(configuration.projectRoot ? [configuration.projectRoot] : []),
+      "Existing installations keep their installation method.",
     ]);
-    const action = await select({
-      message: "Continue to exact preflight?",
-      initialValue: "install",
+    if (catalog.current.length > 0) {
+      note(
+        "Already current",
+        catalog.current.map(
+          (entry) => `${groupLabel(entry)}${entry.group.modified ? " · Local changes kept" : ""}`,
+        ),
+      );
+    }
+    if (catalog.newer.length > 0) {
+      note("Newer than this package", catalog.newer.map(groupLabel));
+      warn("Run with @latest to update these installations. Downgrades are not supported.");
+    }
+    if (catalog.actions.length === 0) {
+      outro(
+        catalog.newer.length > 0
+          ? "No changes available with this package."
+          : "All skills in this configuration are current.",
+      );
+      return;
+    }
+    info("Selected updates and additions will be applied together.");
+    selectedKeys = await multiselect({
+      message: "Choose updates and additions",
+      choices: catalog.actions.map((action) => actionChoice(action, ctx)),
+      initialValues: selectedKeys ?? catalog.initialValues,
+    });
+    const selected = catalog.actions.filter((action) => selectedKeys?.includes(action.key));
+    if (selected.length === 0) {
+      outro("Nothing selected. Nothing changed.");
+      return;
+    }
+    const additions = selected.filter((action) => action.kind === "add");
+    if (additions.length > 0) {
+      await confirmScopeCoexistence({
+        agents: [...new Set(additions.flatMap((action) => action.agents))],
+        skills: [...new Set(additions.map((action) => action.skillId))],
+        scope: configuration.scope,
+        context: ctx,
+        ...(configuration.projectRoot ? { projectRoot: configuration.projectRoot } : {}),
+      });
+    }
+    const operations: PreparedOperation[] = [];
+    for (const skillId of SKILL_IDS) {
+      const actions = selected.filter((action) => action.skillId === skillId);
+      if (actions.length === 0) continue;
+      operations.push(
+        await prepareMaintainSkill({
+          skillId,
+          agents: actions.flatMap((action) => (action.kind === "add" ? action.agents : [])),
+          updateGroupIds: actions.flatMap((action) =>
+            action.kind === "update" ? [action.group.id] : [],
+          ),
+          scope: configuration.scope,
+          strategy: configuration.strategy,
+          context: contextForSkill(ctx, skillId),
+          ...(configuration.projectRoot ? { projectRoot: configuration.projectRoot } : {}),
+          hooks: hooks(),
+        }),
+      );
+    }
+    const prepared = combinePreparedOperations(operations);
+    if (prepared.breaking) {
+      note("Breaking update", [
+        "This plan includes a major-version update.",
+        "Review the matching release notes in CHANGELOG.md before applying it.",
+      ]);
+    }
+    note("Exact mutation preview", [
+      ...previewLines(prepared.preview),
+      "Shared files may affect every agent listed for an installation.",
+    ]);
+    const decision = await select({
+      message: "Apply exactly these changes?",
+      initialValue: prepared.breaking ? "cancel" : "apply",
       choices: [
-        { value: "install", label: "Review exact changes" },
-        { value: "skills", label: "Change skills" },
-        { value: "agents", label: "Change agents" },
-        { value: "scope", label: "Change scope" },
-        { value: "strategy", label: "Change method" },
+        { value: "apply", label: "Apply changes" },
+        { value: "skills", label: "Change selection" },
+        { value: "configuration", label: "Change configuration" },
         { value: "cancel", label: "Cancel" },
       ],
     });
-    if (action === "cancel") throw new CancelledError();
-    if (action === "skills") {
-      skills = await multiselect({
-        message: "Choose skills",
-        choices: skillChoices(),
-        initialValues: skills,
-        required: true,
-      });
+    if (decision === "cancel") throw new CancelledError();
+    if (decision === "skills") continue;
+    if (decision === "configuration") {
+      configuration = await chooseConfiguration(ctx);
+      selectedKeys = undefined;
       continue;
     }
-    if (action === "agents") {
-      agents = await multiselect({
-        message: "Choose agent environments",
-        choices: agentChoices(scope),
-        initialValues: agents.filter((agent) => !(scope === "project" && agent === "hermes")),
-        required: true,
-      });
-      continue;
-    }
-    if (action === "scope") {
-      scope = await chooseScope(scope);
-      if (scope === "project") {
-        agents = agents.filter((agent) => agent !== "hermes");
-        projectRoot = await chooseProjectRoot(ctx);
-      } else projectRoot = undefined;
-      continue;
-    }
-    if (action === "strategy") {
-      strategy = await select({
-        message: "How should files be installed?",
-        initialValue: strategy,
-        choices: [
-          { value: "link", label: "Link" },
-          { value: "copy", label: "Copy" },
-        ],
-      });
-      continue;
-    }
-    break;
-  }
-
-  if (projectRoot && !(await pathIsDirectory(projectRoot))) {
-    throw new UserFacingError(`Project directory does not exist: ${projectRoot}`);
-  }
-  await confirmScopeCoexistence({
-    agents,
-    skills,
-    scope,
-    context: ctx,
-    ...(projectRoot ? { projectRoot } : {}),
-  });
-  let result: OperationResult;
-  while (true) {
+    let result: OperationResult;
     try {
-      const operations: PreparedOperation[] = [];
-      for (const skillId of skills) {
-        operations.push(
-          await prepareInstallSkill({
-            agents,
-            skillId,
-            scope,
-            strategy,
-            context: contextForSkill(ctx, skillId),
-            ...(projectRoot ? { projectRoot } : {}),
-            hooks: hooks(),
-          }),
-        );
-      }
-      const prepared = combinePreparedOperations(operations);
-      note("Exact mutation preview", previewLines(prepared.preview));
-      if (!(await confirm("Apply exactly these changes?"))) throw new CancelledError();
-      info("Applying the installation plan...");
+      info("Applying updates and additions...");
       result = await prepared.execute();
-      break;
     } catch (error) {
       if (
         ctx.platform !== "win32" ||
-        strategy !== "link" ||
+        configuration.strategy !== "link" ||
+        additions.length === 0 ||
         !isRecoverableLinkPermissionError(error)
-      ) {
+      )
         throw error;
-      }
-      while (true) {
-        const fallback = await select({
-          message: "Windows could not create directory links",
-          initialValue: "copy",
-          choices: [
-            { value: "copy", label: "Install copies instead" },
-            { value: "help", label: "Show help" },
-            { value: "cancel", label: "Cancel" },
-          ],
-        });
-        if (fallback === "cancel") throw new CancelledError();
-        if (fallback === "help") {
-          note("Allow directory junctions on Windows", [
-            "Project Foundation uses directory junctions, which normally do not need Developer Mode.",
-            "Check write access to the target and whether endpoint policy blocks junctions.",
-            "You can use the copy strategy when directory links are restricted.",
-            "The installer never elevates itself.",
-          ]);
-          continue;
-        }
-        strategy = "copy";
-        info("Continuing with copy strategy.");
-        break;
-      }
+      note("Windows could not create directory links", [
+        "The operation was rolled back. Check target write access and junction policy.",
+        "You can retry additions as copies. Existing installations keep their method.",
+      ]);
+      if (!(await confirm("Review a new plan using copies for additions?", false)))
+        throw new CancelledError();
+      configuration = { ...configuration, strategy: "copy" };
+      continue;
     }
-  }
-  reportResult(result, "Installed");
-  await maybeCleanBackups(ctx, result);
-  if (await confirm("Show agent discovery checks?", false)) {
-    note(
-      "Check the installation",
-      agents.flatMap((agent) =>
-        skills.map(
-          (skillId) =>
-            `${AGENTS[agent].label} · ${SKILLS[skillId].label}: ${AGENTS[agent].manualCheck(skillId)}`,
+    reportResult(result, "Changed");
+    if (result.maintenance) {
+      info(
+        `Updated: ${result.maintenance.updated}; added: ${result.maintenance.added}; skipped: ${result.maintenance.skipped}.`,
+      );
+    }
+    await maybeCleanBackups(ctx, result);
+    if (result.changed.length > 0 && (await confirm("Show agent discovery checks?", false))) {
+      note(
+        "Check the installation",
+        configuration.agents.flatMap((agent) =>
+          [...new Set(selected.map((action) => action.skillId))].map(
+            (skillId) =>
+              `${AGENTS[agent].label} · ${SKILLS[skillId].label}: ${AGENTS[agent].manualCheck(skillId)}`,
+          ),
         ),
-      ),
-    );
+      );
+    }
+    outro("Selected changes completed.");
+    return;
   }
-  outro("Selected skills are ready.");
-}
-
-interface ManagedSkillGroup {
-  key: string;
-  skillId: SkillId;
-  group: InstallationGroup;
 }
 
 async function chooseManagedScope(ctx: RuntimeContext): Promise<{
@@ -497,22 +502,7 @@ async function chooseManagedScope(ctx: RuntimeContext): Promise<{
 }> {
   const scope = await chooseScope();
   const projectRoot = scope === "project" ? await chooseProjectRoot(ctx) : undefined;
-  const groups: ManagedSkillGroup[] = [];
-  for (const skillId of SKILL_IDS) {
-    const installations = await getManagedInstallations(
-      scope,
-      contextForSkill(ctx, skillId),
-      skillId,
-      projectRoot,
-    );
-    groups.push(
-      ...installations.map((group) => ({
-        key: `${skillId}:${group.id}`,
-        skillId,
-        group,
-      })),
-    );
-  }
+  const groups = await scanManagedSkills(ctx, scope, projectRoot);
   return { scope, ...(projectRoot ? { projectRoot } : {}), groups };
 }
 
@@ -520,85 +510,6 @@ function groupLabel(entry: ManagedSkillGroup): string {
   const group = entry.group;
   const agents = group.receipt.intendedAgents.map((agent) => AGENTS[agent].label).join(", ");
   return `${SKILLS[entry.skillId].label} · ${agents}  ${theme.muted(`v${group.receipt.version} ${group.strategy}`)}`;
-}
-
-async function updateFlow(ctx: RuntimeContext): Promise<void> {
-  const selection = await chooseManagedScope(ctx);
-  const packagedPayloadHashes = new Map(
-    await Promise.all(
-      SKILL_IDS.map(async (skillId) => {
-        const skillContext = contextForSkill(ctx, skillId);
-        const files = await snapshotPackagedPayload(skillContext.payloadRoot);
-        return [skillId, hashSnapshot(files)] as const;
-      }),
-    ),
-  );
-  const newer = selection.groups.filter(
-    (entry) => compareVersions(entry.group.receipt.version, ctx.version) > 0,
-  );
-  const updateable = selection.groups.filter((entry) =>
-    needsPackageUpdate(
-      entry.group.receipt,
-      ctx.version,
-      packagedPayloadHashes.get(entry.skillId) ?? "",
-    ),
-  );
-  if (updateable.length === 0) {
-    if (newer.length > 0) {
-      warn("Managed installations are newer than this package. Run with @latest.");
-    } else {
-      info(
-        selection.groups.length === 0
-          ? "No managed installations found."
-          : "Everything is current.",
-      );
-    }
-    return;
-  }
-  const groupIds = await multiselect({
-    message: "Choose installations to update or repair",
-    choices: updateable.map((entry) => ({
-      value: entry.key,
-      label: groupLabel(entry),
-      hint: entry.group.physicalRoot,
-    })),
-    initialValues: updateable.map((entry) => entry.key),
-    required: true,
-  });
-  const selected = new Set(groupIds);
-  const operations: PreparedOperation[] = [];
-  for (const skillId of SKILL_IDS) {
-    const selectedGroupIds = updateable
-      .filter((entry) => entry.skillId === skillId && selected.has(entry.key))
-      .map((entry) => entry.group.id);
-    if (selectedGroupIds.length === 0) continue;
-    operations.push(
-      await prepareUpdateSkill({
-        skillId,
-        scope: selection.scope,
-        context: contextForSkill(ctx, skillId),
-        groupIds: selectedGroupIds,
-        ...(selection.projectRoot ? { projectRoot: selection.projectRoot } : {}),
-        hooks: hooks(),
-      }),
-    );
-  }
-  const prepared = combinePreparedOperations(operations);
-  if (prepared.breaking) {
-    note("Breaking update", [
-      ...previewLines(prepared.preview.filter((entry) => entry.action === "update")),
-      "Review the matching release notes in CHANGELOG.md before continuing.",
-    ]);
-    if (!(await confirm("Continue with this breaking update?", false))) {
-      throw new CancelledError();
-    }
-  }
-  note("Exact mutation preview", previewLines(prepared.preview));
-  if (!(await confirm("Apply exactly these changes?"))) throw new CancelledError();
-  const result = await prepared.execute();
-  reportResult(result, "Updated");
-  await maybeCleanBackups(ctx, result);
-  outro("Selected installations are up to date.");
 }
 
 async function removeFlow(ctx: RuntimeContext): Promise<void> {
@@ -660,7 +571,8 @@ function printHelp(): void {
     "Usage:\n  bunx @ivni/project-foundation [install|update|remove] [--debug]\n\n",
   );
   process.stdout.write(
-    "Run without a command to open the main menu. Mutating commands require a TTY.\n",
+    "Install and update open the same wizard for updates and additions.\n" +
+      "Run without a command to open the main menu. Mutating commands require a TTY.\n",
   );
 }
 
@@ -685,7 +597,7 @@ async function main(): Promise<void> {
     );
   }
   const ctx = context();
-  intro("Project Foundation", "Install a focused skill suite across your coding agents.");
+  intro("Project Foundation", "Install and update skills across your coding agents.");
   const valid = ["install", "update", "remove"] as const;
   if (argument && !valid.includes(argument as (typeof valid)[number])) {
     throw new UserFacingError(`Unknown command: ${argument}`, "Use install, update, or remove.");
@@ -696,15 +608,17 @@ async function main(): Promise<void> {
         message: "What would you like to do?",
         initialValue: "install",
         choices: [
-          { value: "install", label: "Install", hint: "Add skills to agent environments" },
-          { value: "update", label: "Update", hint: "Replace older managed installations" },
+          {
+            value: "install",
+            label: "Install / update",
+            hint: "Update installed skills and add others",
+          },
           { value: "remove", label: "Remove", hint: "Remove selected agent access" },
           { value: "exit", label: "Exit" },
         ],
       });
   if (action === "exit") throw new CancelledError("Nothing changed.");
-  if (action === "install") await installFlow(ctx);
-  else if (action === "update") await updateFlow(ctx);
+  if (action === "install" || action === "update") await maintainFlow(ctx);
   else await removeFlow(ctx);
 }
 

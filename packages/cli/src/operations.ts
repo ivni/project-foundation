@@ -61,6 +61,10 @@ export interface InstallOptions extends OperationBase {
   strategy: Strategy;
 }
 
+export interface MaintainOptions extends InstallOptions {
+  updateGroupIds: string[];
+}
+
 export interface UpdateOptions extends OperationBase {
   groupIds?: string[];
 }
@@ -282,13 +286,24 @@ async function resolveConflict(
 }
 
 export async function prepareInstallSkill(options: InstallOptions): Promise<PreparedOperation> {
+  return prepareSkillChanges(options);
+}
+
+export async function prepareMaintainSkill(options: MaintainOptions): Promise<PreparedOperation> {
+  return prepareSkillChanges(options, [...options.updateGroupIds]);
+}
+
+async function prepareSkillChanges(
+  options: InstallOptions,
+  requestedUpdates?: string[],
+): Promise<PreparedOperation> {
   const context = snapshotContext(options.context);
   const skillId = options.skillId;
   const agents = [...options.agents];
   const scope = options.scope;
   const strategy = options.strategy;
   const projectRoot = options.projectRoot;
-  if (agents.length === 0) {
+  if (agents.length === 0 && !requestedUpdates?.length) {
     throw new UserFacingError("Select at least one agent.");
   }
   if (scope === "project" && agents.includes("hermes")) {
@@ -297,14 +312,77 @@ export async function prepareInstallSkill(options: InstallOptions): Promise<Prep
 
   const hooks = options.hooks ?? {};
   const expectedFiles = await snapshotPackagedPayload(context.payloadRoot);
+  const expectedPayloadHash = hashSnapshot(expectedFiles);
   const scanned = await scanScope(scope, context, skillId, projectRoot);
+  const requested = new Set(requestedUpdates ?? []);
+  if ([...requested].some((id) => !scanned.groups.some((group) => group.id === id))) {
+    throw new UserFacingError("An installation changed after selection. Review the choices again.");
+  }
+  const updatedGroups = new Map<string, { group: InstallationGroup; backup: boolean }>();
+  const updateReceipts = new Map<string, Receipt>();
+  const skippedUpdates: string[] = [];
+  const updatePreview: MutationPreviewEntry[] = [];
+  for (const group of scanned.groups.filter((entry) => requested.has(entry.id))) {
+    if (compareVersions(group.receipt.version, context.version) > 0) {
+      throw new UserFacingError(
+        `The installation at ${group.physicalRoot} is newer than this package.`,
+        "Run the latest package. Downgrades are not supported.",
+      );
+    }
+    if (!needsPackageUpdate(group.receipt, context.version, expectedPayloadHash)) continue;
+    const decision = group.modified
+      ? ((await options.hooks?.onModifiedUpdate?.(
+          group,
+          await diffAgainstPackage(group.physicalRoot, context),
+        )) ?? "skip")
+      : "replace";
+    if (decision === "skip") {
+      skippedUpdates.push(group.physicalRoot);
+      updatePreview.push({
+        action: "skip",
+        path: group.physicalRoot,
+        detail: "Keep local changes",
+      });
+      continue;
+    }
+    updatedGroups.set(group.id, { group, backup: decision === "backup-replace" });
+    updateReceipts.set(
+      group.physicalRoot,
+      createReceipt({
+        version: context.version,
+        scope,
+        strategy: group.strategy,
+        intendedAgents: group.receipt.intendedAgents,
+        files: expectedFiles,
+        skillId,
+      }),
+    );
+    if (decision === "backup-replace") {
+      updatePreview.push({
+        action: "backup",
+        path: group.physicalRoot,
+        detail: "Back up local changes",
+      });
+    }
+    updatePreview.push({
+      action: "update",
+      path: group.physicalRoot,
+      detail: `v${group.receipt.version} -> v${context.version}; ${group.receipt.intendedAgents.map((agent) => AGENTS[agent].label).join(", ")}`,
+    });
+  }
   const selected = new Set(agents);
   const covered = new Set<AgentId>();
   const receiptUpdates = new Map<string, Receipt>();
   const notes: string[] = [];
 
   for (const group of scanned.groups) {
-    if (compareVersions(group.receipt.version, context.version) > 0) {
+    const relevant = group.targets.some((target) =>
+      AGENTS[target.agent].discoveredBy.some((agent) => selected.has(agent)),
+    );
+    if (
+      compareVersions(group.receipt.version, context.version) > 0 &&
+      (requestedUpdates === undefined || relevant || requested.has(group.id))
+    ) {
       throw new UserFacingError(
         `The installation at ${group.physicalRoot} is newer than this package.`,
         "Run the latest package. Downgrades are not supported.",
@@ -320,10 +398,13 @@ export async function prepareInstallSkill(options: InstallOptions): Promise<Prep
       }
     }
     if (newlyCovered.length > 0) {
-      receiptUpdates.set(group.physicalRoot, {
-        ...group.receipt,
-        intendedAgents: mergeAgents(group.receipt.intendedAgents, newlyCovered),
-      });
+      const receipt = updateReceipts.get(group.physicalRoot) ?? group.receipt;
+      if (newlyCovered.some((agent) => !receipt.intendedAgents.includes(agent))) {
+        receiptUpdates.set(group.physicalRoot, {
+          ...receipt,
+          intendedAgents: mergeAgents(receipt.intendedAgents, newlyCovered),
+        });
+      }
       notes.push(
         `${newlyCovered.map((agent) => AGENTS[agent].label).join(", ")} already discover the skill.`,
       );
@@ -370,7 +451,15 @@ export async function prepareInstallSkill(options: InstallOptions): Promise<Prep
       storeEntry?.isDirectory() && !storeEntry.isSymbolicLink()
         ? await readReceipt(linkStore)
         : undefined;
-    const existingReceipt = candidateReceipt?.skillId === skillId ? candidateReceipt : undefined;
+    if (candidateReceipt?.skillId === skillId) {
+      // Managed groups use physical paths. Use that identity throughout this combined plan,
+      // including when a parent of the store is a symlink.
+      linkStore = await realpath(linkStore);
+    }
+    const existingReceipt =
+      candidateReceipt?.skillId === skillId
+        ? (updateReceipts.get(linkStore) ?? candidateReceipt)
+        : undefined;
     if (storeExisted) {
       if (!existingReceipt) {
         const inspection = await syntheticInspection(viablePlans[0]?.owner ?? "codex", linkStore);
@@ -409,6 +498,17 @@ export async function prepareInstallSkill(options: InstallOptions): Promise<Prep
     }
   }
 
+  if (
+    requestedUpdates !== undefined &&
+    linkStore &&
+    scanned.groups.some(
+      (group) => group.physicalRoot === linkStore && group.modified && !updatedGroups.has(group.id),
+    )
+  ) {
+    skippedPlans.add(linkStore);
+    notes.push(`Additions using ${linkStore} were skipped because its local changes were kept.`);
+  }
+
   if (linkReceipt && !skippedPlans.has(linkStore)) {
     const activeAgents = plans
       .filter((plan) => !skippedPlans.has(plan.path))
@@ -423,18 +523,19 @@ export async function prepareInstallSkill(options: InstallOptions): Promise<Prep
   }
 
   const touched = [
+    ...updateReceipts.keys(),
     ...receiptUpdates.keys(),
     ...plans.map((plan) => plan.path),
     ...(linkStore ? [linkStore] : []),
   ];
   const fingerprints = await captureFingerprints(touched);
-  const preview: MutationPreviewEntry[] = [];
+  const preview: MutationPreviewEntry[] = [...updatePreview];
   for (const root of receiptUpdates.keys()) {
     preview.push({ action: "update", path: root, detail: "Extend the managed receipt" });
   }
   if (linkStore) {
     const conflict = conflictActions.get(linkStore);
-    if (conflict?.action === "leave") {
+    if (skippedPlans.has(linkStore)) {
       preview.push({ action: "skip", path: linkStore, detail: "Keep the existing managed store" });
     } else {
       if (conflict?.action === "backup-replace") {
@@ -450,7 +551,7 @@ export async function prepareInstallSkill(options: InstallOptions): Promise<Prep
                 : "update"
               : "create",
         path: linkStore,
-        detail: "Managed link payload",
+        detail: `Managed link payload v${linkReceipt?.version ?? context.version}`,
       });
     }
   }
@@ -485,15 +586,45 @@ export async function prepareInstallSkill(options: InstallOptions): Promise<Prep
   let executed = false;
   return {
     preview,
+    breaking: [...updatedGroups.values()].some(({ group }) =>
+      isBreakingUpdate(group.receipt.version, context.version),
+    ),
     execute: async () => {
       if (executed) throw new Error("This prepared installation has already executed.");
       executed = true;
       const changed: string[] = [];
-      const skipped: string[] = [];
+      const skipped: string[] = [
+        ...skippedUpdates,
+        ...plans
+          .filter((plan) => skippedPlans.has(plan.path) || skippedPlans.has(linkStore))
+          .map((plan) => plan.path),
+      ];
 
       await withTransaction(
         touched,
         async (transaction) => {
+          for (const { group, backup } of updatedGroups.values()) {
+            if (backup) backups.push(await backupGroup(group, context, skillId));
+            await transaction.beforeMutation(group.physicalRoot);
+            await materializePayload(
+              context.payloadRoot,
+              group.physicalRoot,
+              updateReceipts.get(group.physicalRoot) as Receipt,
+            );
+            const persisted = await readReceipt(group.physicalRoot);
+            if (
+              !persisted ||
+              persisted.version !== context.version ||
+              persisted.payloadHash !== expectedPayloadHash ||
+              hashSnapshot(await snapshotPayload(group.physicalRoot)) !== expectedPayloadHash
+            ) {
+              throw new UserFacingError(
+                `Verification failed after updating ${group.physicalRoot}.`,
+                "The operation was rolled back.",
+              );
+            }
+            changed.push(group.physicalRoot);
+          }
           for (const [root, receipt] of receiptUpdates) {
             await transaction.beforeMutation(root);
             await writeReceipt(root, receipt);
@@ -604,7 +735,24 @@ export async function prepareInstallSkill(options: InstallOptions): Promise<Prep
         },
       );
 
-      return { changed: [...new Set(changed)], skipped: [...new Set(skipped)], backups, notes };
+      return {
+        changed: [...new Set(changed)],
+        skipped: [...new Set(skipped)],
+        backups,
+        notes,
+        ...(requestedUpdates === undefined
+          ? {}
+          : {
+              maintenance: {
+                updated: updatedGroups.size,
+                added: plans.filter((plan) => changed.includes(plan.path)).length,
+                skipped:
+                  skippedUpdates.length +
+                  plans.filter((plan) => skipped.includes(plan.path) || skippedPlans.has(linkStore))
+                    .length,
+              },
+            }),
+      };
     },
   };
 }

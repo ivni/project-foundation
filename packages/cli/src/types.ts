@@ -71,6 +71,11 @@ export interface OperationResult {
   skipped: string[];
   backups: BackupRecord[];
   notes: string[];
+  maintenance?: {
+    updated: number;
+    added: number;
+    skipped: number;
+  };
 }
 
 export interface MutationPreviewEntry {

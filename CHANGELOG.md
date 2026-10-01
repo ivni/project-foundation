@@ -7,6 +7,18 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.4.0] - 2026-10-01
+
+### Changed
+
+- Install and update now open one wizard that reuses existing agent, scope, and method settings.
+  Installed updates and optional absent skills can be selected and applied together, with one
+  preview and rollback boundary. Current installations still offer additions, and existing
+  configurations do not preselect omitted skills. The main menu exposes a single Install / update
+  action, while both direct commands remain supported.
+- Combined plans preserve local-change decisions and existing installation methods, report update,
+  addition, and skip counts, and default breaking-update confirmation to cancel.
+
 ## [3.3.0] - 2026-10-01
 
 ### Added
@@ -535,7 +547,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.3.0...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.4.0...HEAD
+[3.4.0]: https://github.com/ivni/project-foundation/compare/v3.3.0...v3.4.0
 [3.3.0]: https://github.com/ivni/project-foundation/compare/v3.2.2...v3.3.0
 [3.2.2]: https://github.com/ivni/project-foundation/compare/v3.2.1...v3.2.2
 [3.2.1]: https://github.com/ivni/project-foundation/compare/v3.2.0...v3.2.1

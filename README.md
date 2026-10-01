@@ -47,9 +47,11 @@ Install [Bun](https://bun.com/docs/installation), then run:
 bunx @ivni/project-foundation
 ```
 
-Choose any combination of the eleven skills, the agent environments, a user or project scope, and a
-copy or managed-link installation. All eleven skills are preselected; deselect the ones you do not
-want. The wizard shows a complete preview before writing anything.
+Choose `Install / update`. The wizard reuses an existing installation's agents, scope, and method,
+or lets you choose different settings. On a first installation, all eleven skills are preselected.
+For an existing installation, updates are preselected and absent skills are optional additions.
+You can update installed skills and add others in one run, with one complete preview before writing
+anything.
 
 The skill registry is the source of truth: each registry key is also the package directory, native
 target name, managed-store name, and receipt `skillId`. Adding another skill does not require a new
@@ -62,6 +64,9 @@ bunx @ivni/project-foundation install
 bunx @ivni/project-foundation@latest update
 bunx @ivni/project-foundation remove
 ```
+
+`install` and `update` open the same wizard. Both update existing managed installations and offer
+absent skills for installation; running both commands is unnecessary.
 
 Nothing is installed globally as an executable. `bunx` downloads and runs the package for that
 invocation. Use `@latest` for updates when you want to bypass ambiguity around cached package

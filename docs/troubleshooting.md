@@ -17,7 +17,7 @@ not through a pipe, redirected input, or a non-interactive CI step.
 
 ## Windows cannot create directory junctions
 
-Choose `Install copies instead` in the wizard. Project Foundation uses directory junctions on
+Accept `Review a new plan using copies for additions?` in the wizard. Project Foundation uses directory junctions on
 Windows, which do not normally require Developer Mode. Check write access to the target parent and
 managed store; if an endpoint policy blocks junctions, use copy strategy. The installer does not
 elevate itself.

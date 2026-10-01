@@ -83,14 +83,26 @@ test("combines successful skill results and rejects a second execution", async (
         preview: [{ action: "create", path: first, detail: "First skill" }],
         execute: async () => {
           await writeFile(first, "one\n");
-          return { changed: [first], skipped: [], backups: [], notes: ["shared"] };
+          return {
+            changed: [first],
+            skipped: [],
+            backups: [],
+            notes: ["shared"],
+            maintenance: { updated: 1, added: 0, skipped: 0 },
+          };
         },
       },
       {
         preview: [{ action: "create", path: second, detail: "Second skill" }],
         execute: async () => {
           await writeFile(second, "two\n");
-          return { changed: [second], skipped: [], backups: [], notes: ["shared"] };
+          return {
+            changed: [second],
+            skipped: [],
+            backups: [],
+            notes: ["shared"],
+            maintenance: { updated: 0, added: 1, skipped: 1 },
+          };
         },
       },
     ]);
@@ -98,6 +110,7 @@ test("combines successful skill results and rejects a second execution", async (
     expect(await combined.execute()).toMatchObject({
       changed: [first, second],
       notes: ["shared"],
+      maintenance: { updated: 1, added: 1, skipped: 1 },
     });
     await expect(combined.execute()).rejects.toThrow("already executed");
   } finally {

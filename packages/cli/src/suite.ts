@@ -51,6 +51,21 @@ export function combinePreparedOperations(operations: PreparedOperation[]): Prep
           skipped: [...new Set(results.flatMap((result) => result.skipped))],
           backups: results.flatMap((result) => result.backups),
           notes: [...new Set(results.flatMap((result) => result.notes))],
+          ...(results.some((result) => result.maintenance)
+            ? {
+                maintenance: {
+                  updated: results.reduce(
+                    (sum, result) => sum + (result.maintenance?.updated ?? 0),
+                    0,
+                  ),
+                  added: results.reduce((sum, result) => sum + (result.maintenance?.added ?? 0), 0),
+                  skipped: results.reduce(
+                    (sum, result) => sum + (result.maintenance?.skipped ?? 0),
+                    0,
+                  ),
+                },
+              }
+            : {}),
         };
       });
     },
