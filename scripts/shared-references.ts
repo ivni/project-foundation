@@ -120,6 +120,20 @@ export const SHARED_BLOCKS: SharedBlock[] = [
 
 export const SHARED_REFERENCES: SharedReference[] = [
   {
+    source: "shared/issue-publication.md",
+    copies: [
+      "packages/plan-feature/references/issue-publication.md",
+      "packages/run-feature-stage/references/issue-publication.md",
+    ],
+  },
+  {
+    source: "shared/feature-workflow.md",
+    copies: [
+      "packages/plan-feature/references/feature-workflow.md",
+      "packages/run-feature-stage/references/feature-workflow.md",
+    ],
+  },
+  {
     source: "shared/tree-snapshot.ts",
     copies: [
       "packages/run-codex-review-loop/scripts/tree-snapshot.ts",

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Run Feature Stage"
+  short_description: "Build, verify, review, and commit one feature stage"
+  default_prompt: "Use $run-feature-stage to complete the next unfinished stage of the active feature issue, then stop."
+
+policy:
+  allow_implicit_invocation: true

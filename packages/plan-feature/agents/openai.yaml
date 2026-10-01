@@ -1,0 +1,7 @@
+interface:
+  display_name: "Plan Feature"
+  short_description: "Turn completed discovery into an issue plan"
+  default_prompt: "Use $plan-feature to create the implementation issue for the completed discovery in this project."
+
+policy:
+  allow_implicit_invocation: true

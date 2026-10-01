@@ -45,8 +45,16 @@ release.
 
 `bunx` runs the package without creating a permanent global CLI installation. The package contains
 the installer and exact payloads for `project-foundation`, `find-blind-spots`,
-`run-discovery-interview`, `run-subphase`, `run-codex-review-loop`, `run-claude-review-loop`,
-`run-qwen-review-loop`, `analyze-tests`, and `teach`. The selected skill directories remain after `bunx` exits.
+`run-discovery-interview`, `plan-feature`, `run-feature-stage`, `run-subphase`, `run-codex-review-loop`,
+`run-claude-review-loop`, `run-qwen-review-loop`, `analyze-tests`, and `teach`. The selected skill
+directories remain after `bunx` exits.
+
+For the small-feature workflow, install `plan-feature`, `run-feature-stage`, and
+`run-codex-review-loop` together. The planner publishes to the project's authenticated issue forge
+and needs a supported document-upload route or a verified immutable discovery file link. The
+executor owns checks and review and commits locally; it does not push or deploy automatically.
+The workflow follows the repository's actual forge, including self-managed GitLab. `gh` is not a
+requirement for GitLab: use the available `glab`/connector/API with the verified host and project.
 
 `run-codex-review-loop` has additional runtime requirements when invoked from Claude Code, Pi,
 OpenCode, or Hermes: `bun` and an authenticated `codex` CLI with access to `gpt-6.1-sol` and `xhigh`

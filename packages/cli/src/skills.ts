@@ -16,6 +16,14 @@ export const SKILLS = {
     label: "Discovery Interview",
     summary: "Product value, functionality, and UX discovery",
   },
+  "plan-feature": {
+    label: "Plan Feature",
+    summary: "Completed discovery to an issue with stages and an attached record",
+  },
+  "run-feature-stage": {
+    label: "Run Feature Stage",
+    summary: "One issue stage: implement, verify, Codex review, commit, and record",
+  },
   "run-subphase": {
     label: "Run Subphase",
     summary: "Bounded execution of one subphase: build, verify, review, commit",

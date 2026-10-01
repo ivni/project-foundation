@@ -25,6 +25,10 @@
       "name": "@ivni/find-blind-spots-skill",
       "version": "1.9.0",
     },
+    "packages/plan-feature": {
+      "name": "@ivni/plan-feature-skill",
+      "version": "1.0.0",
+    },
     "packages/project-foundation": {
       "name": "@ivni/project-foundation-skill",
       "version": "1.9.0",
@@ -40,6 +44,10 @@
     "packages/run-discovery-interview": {
       "name": "@ivni/run-discovery-interview-skill",
       "version": "1.9.0",
+    },
+    "packages/run-feature-stage": {
+      "name": "@ivni/run-feature-stage-skill",
+      "version": "1.0.0",
     },
     "packages/run-qwen-review-loop": {
       "name": "@ivni/run-qwen-review-loop-skill",
@@ -79,6 +87,8 @@
 
     "@ivni/find-blind-spots-skill": ["@ivni/find-blind-spots-skill@workspace:packages/find-blind-spots"],
 
+    "@ivni/plan-feature-skill": ["@ivni/plan-feature-skill@workspace:packages/plan-feature"],
+
     "@ivni/project-foundation-cli": ["@ivni/project-foundation-cli@workspace:packages/cli"],
 
     "@ivni/project-foundation-skill": ["@ivni/project-foundation-skill@workspace:packages/project-foundation"],
@@ -88,6 +98,8 @@
     "@ivni/run-codex-review-loop-skill": ["@ivni/run-codex-review-loop-skill@workspace:packages/run-codex-review-loop"],
 
     "@ivni/run-discovery-interview-skill": ["@ivni/run-discovery-interview-skill@workspace:packages/run-discovery-interview"],
+
+    "@ivni/run-feature-stage-skill": ["@ivni/run-feature-stage-skill@workspace:packages/run-feature-stage"],
 
     "@ivni/run-qwen-review-loop-skill": ["@ivni/run-qwen-review-loop-skill@workspace:packages/run-qwen-review-loop"],
 

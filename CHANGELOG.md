@@ -7,6 +7,23 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-10-01
+
+### Added
+
+- Plan Feature creates a staged implementation issue from completed discovery and publishes its
+  discovery snapshot. Run Feature Stage restores the selected issue, completes one stage with
+  agent-owned verification, Codex review, and a local commit, then records progress and stops.
+  Shared recovery metadata supports bare invocations after compaction and partial publication failures.
+  Both skills resolve the actual issue forge and share GitLab, GitHub, and other-platform operation
+  guidance, including self-managed hosts, nested namespaces, and authenticated discovery readback.
+  Repeated planning reuses the published issue and preserves execution/review checkpoints; explicit
+  replanning retains completed stages and the original base while updating unstarted work.
+
+### Changed
+
+- Review loops accept the review step delegated by a user-started Run Feature Stage workflow.
+
 ## [3.2.2] - 2026-09-30
 
 ### Changed
@@ -518,7 +535,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.2.2...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.3.0...HEAD
+[3.3.0]: https://github.com/ivni/project-foundation/compare/v3.2.2...v3.3.0
 [3.2.2]: https://github.com/ivni/project-foundation/compare/v3.2.1...v3.2.2
 [3.2.1]: https://github.com/ivni/project-foundation/compare/v3.2.0...v3.2.1
 [3.2.0]: https://github.com/ivni/project-foundation/compare/v3.1.1...v3.2.0

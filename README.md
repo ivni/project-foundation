@@ -9,6 +9,10 @@ durable project foundation:
 - **Discovery Interview** defaults to a non-technical product-owner track for product value,
   functionality, domain rules, UX, and business constraints. It asks one stakeholder-owned decision
   at a time while writing only one scratch discovery record.
+- **Plan Feature** turns completed discovery for a small feature into an implementation issue with
+  ordered stages, acceptance checks, and an attached discovery snapshot.
+- **Run Feature Stage** restores the active issue after compaction, completes one stage with
+  agent-owned verification, Codex review, and a local commit, then records progress and stops.
 - **Run Subphase** takes exactly one subphase of a phase requirements slice to done — entry gate,
   agreed verification seams, vertical slices, verification evidence, an independent review, one
   commit — and then stops, because a subphase is sized to a single context window.
@@ -43,8 +47,8 @@ Install [Bun](https://bun.com/docs/installation), then run:
 bunx @ivni/project-foundation
 ```
 
-Choose any combination of the nine skills, the agent environments, a user or project scope, and a
-copy or managed-link installation. All nine skills are preselected; deselect the ones you do not
+Choose any combination of the eleven skills, the agent environments, a user or project scope, and a
+copy or managed-link installation. All eleven skills are preselected; deselect the ones you do not
 want. The wizard shows a complete preview before writing anything.
 
 The skill registry is the source of truth: each registry key is also the package directory, native
@@ -62,6 +66,28 @@ bunx @ivni/project-foundation remove
 Nothing is installed globally as an executable. `bunx` downloads and runs the package for that
 invocation. Use `@latest` for updates when you want to bypass ambiguity around cached package
 resolution.
+
+## Small-feature delivery
+
+After `$run-discovery-interview` finishes, invoke `$plan-feature` to create the implementation issue
+and attach the discovery record. Then compact the session and invoke `$run-feature-stage` once per
+stage. Both commands work without repeated parameters: a small local pointer selects the active
+issue, while the issue owns the plan and progress. Explicit issue or discovery arguments select a
+different task when needed.
+Repeating `$plan-feature` returns the existing published plan and preserves stage progress and review
+checkpoints. Replanning is an explicit request and retains completed work and the original base.
+
+The stage executor runs acceptance checks and `run-codex-review-loop`, fixes permitted findings,
+commits locally, updates the issue, and stops. An interrupted stage is resumed; a committed stage
+whose issue update failed is reconciled instead of implemented again. The last stage verifies the
+whole feature. Push, merge, release, and deployment require their own authorization.
+
+Install `run-codex-review-loop` alongside `run-feature-stage`. Both feature skills use the issue
+platform selected by the destination or verified remote. GitLab, including self-managed instances
+and nested groups, uses `glab` or an available authenticated connector/API; GitHub uses its own
+integration. Other platforms use equivalent issue and upload operations without changing the workflow.
+Planning needs an actual document-upload route or an existing immutable discovery file link. The
+planner verifies the published file; a local path does not count as an attachment.
 
 ## Test-suite analysis
 
@@ -119,7 +145,7 @@ bun run check
 ```
 
 The public package is the repository root. The private workspaces under `packages/` separate the
-CLI source from the nine raw skill payloads. See [Development](docs/development.md) for the full
+CLI source from the eleven raw skill payloads. See [Development](docs/development.md) for the full
 layout and verification workflow.
 
 ## License

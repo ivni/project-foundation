@@ -2,8 +2,8 @@
 
 Every installed skill lives in an immediate child directory under one of the roots below. The
 packaged child names are `project-foundation`, `find-blind-spots`, `run-discovery-interview`,
-`run-subphase`, `run-codex-review-loop`, `run-claude-review-loop`, `run-qwen-review-loop`, `analyze-tests`, and
-`teach`.
+`plan-feature`, `run-feature-stage`, `run-subphase`, `run-codex-review-loop`, `run-claude-review-loop`,
+`run-qwen-review-loop`, `analyze-tests`, and `teach`.
 
 | Agent | User root | Project root | Shared discovery |
 | --- | --- | --- | --- |

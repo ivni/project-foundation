@@ -15,8 +15,9 @@ the defects it reports. A clean review and passing tests are separate claims.
 <!-- host:skill-id -->
 - Start only when the user explicitly invokes or names `run-claude-review-loop`, or when
 <!-- /host:skill-id -->
-  `run-subphase` invokes it as the review step of a subphase the user started. Do not infer consent
-  from a general request for code review, implementation, testing, cleanup, or completion.
+  `run-subphase` or `run-feature-stage` invokes it as the review step of work the user started.
+  Do not infer consent from a general request for code review, implementation, testing, cleanup,
+  or completion.
 - Invocation authorizes read-only repository research, reviewer delegation, safe local fixes inside
   the original task, one debt-register entry per deferred defect, and already-available
   repository-local checks run by the primary agent.
