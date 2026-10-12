@@ -153,6 +153,140 @@ documentation. The `--output-format json` envelope shape and the stats model inv
 from that documentation, not verified against a local `qwen` installation, and the wrapper rejects
 any envelope that does not match them instead of guessing.
 
+## Feature orchestration research (S1)
+
+Reviewed: 2026-10-12, for [feature issue #1](https://github.com/ivni/project-foundation/issues/1).
+This section selects mechanisms for implementation in S2/S3; `run-feature` is not shipped yet.
+It does not change the installer snapshot above or the existing stage/review authority boundaries.
+Documentation, capability probes, and full feature acceptance are separate evidence levels.
+
+### Selected executor routes
+
+Every dispatch names the installed `run-feature-stage`, its resolved skill root, the exact checkout,
+feature record, issue URL, expected stage, and orchestration/attempt identity. The worker reads the
+live issue, published discovery and recovery/review pointers itself. It receives no prior worker
+conversation. Preserve the effective executor model, reasoning, tools and permissions; preflight
+must identify any settings a fresh process needs explicitly rather than choose a different profile.
+All routes need project checks, local Git operations and authenticated access to the selected forge.
+
+| Host | Selected fresh-worker mechanism and completion | Independent Codex reviewer | S1 observation / validation dependency |
+| --- | --- | --- | --- |
+| Codex | Native spawn with no inherited turns (`fork_turns: "none"` on this Desktop surface); await terminal result before another spawn. Retain the handle for interruption; close completed agents when that host exposes a close operation. | Native pinned Sol/xhigh only when a real read-only override/profile is selectable; otherwise use the existing wrapper after the installed review adapter's required approval. | Three distinct sequential native agents read a disposable fixture; later agents received no first-prompt canary, and the third read the installed stage skill. CLI `0.162.1` completed the external read-only wrapper probe after approved fallback. Complete worker → review → commit → issue journey remains S2/S4 work. |
+| Claude Code | A new non-fork delegation call per stage (Agent in current docs; Task in this CLI's reported tool inventory); never resume the previous agent or choose the conversation-fork type. Use an available full worker, with `model: inherit` when defining it; no permanent global agent file. Foreground result or background completion notification is the completion seam. | Worker launches the packaged Bun/Codex wrapper through permitted Bash. No nested reviewer Agent is necessary. | CLI `2.1.296` loaded the transient probe definition, but both bounded launches returned `is_error: true`, OAuth expired and refresh failed, before delegation. Authenticated execution is unverified (E-CLAUDE). |
+| Pi | Fresh same-host subprocess in the selected checkout: argument array `pi --mode json -p --no-session <brief>`, with effective model/thinking passed when needed. Wait for exit and parse terminal output. No delegation extension is required. | Worker runs the existing Bun/Codex wrapper through its permitted shell tool. | No `pi` executable on PATH (E-PI). Source supports the process mechanism; no local runtime result. |
+| OpenCode | New native child session through the installed delegation tool, with no prior session identifier; await its completed result. Inspect the actual tool schema: public docs call it Task, while the inspected upstream `dev` implementation uses `subagent` and `sessionID`. Do not pin a development API as a stable-runtime guarantee. | Worker launches the existing Bun/Codex wrapper through permitted shell access. | No `opencode` executable on PATH (E-OPENCODE). Tool/skill permission checks and actual child schema remain runtime preflight, not permission overrides. |
+| Hermes | Fresh same-host CLI worker per stage: argument array `hermes chat --in <checkout> --query-file <packet> --oneshot --format stream-json`; no resume/continue/worktree flag. Wait for process exit and terminal result. Preserve the active profile/provider/model/reasoning/toolsets and effective permissions. | Worker runs the existing Bun/Codex wrapper through its inherited terminal capability, without native reviewer delegation. | No `hermes` executable on PATH (E-HERMES). Source selects an explicit checkout and independent session; execution remains unverified. |
+
+Route evidence:
+
+- [OpenAI subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents) documents lifecycle,
+  inherited permissions and custom-agent controls. The actual Desktop delegation schema here offers
+  no sandbox override. An instruction to stay read-only cannot satisfy the native reviewer adapter.
+- [Claude subagents](https://code.claude.com/docs/en/sub-agents) distinguishes non-fork fresh context
+  from full-history forks, chaining, skill access and tool inheritance. Current default nesting is
+  three layers; the stage worker uses an external reviewer process and needs no extra Agent depth.
+  [CLI reference](https://code.claude.com/docs/en/cli-reference) documents transient `--agents`
+  definitions and structured print output. The probe narrowed tools to Read/Agent and used dontAsk;
+  those probe restrictions are not the implementation worker profile.
+- [Pi's upstream extension](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/examples/extensions/subagent/README.md)
+  and its [launcher source](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/examples/extensions/subagent/index.ts)
+  establish separate processes, JSON/no-session flags, cwd and dispatch model/thinking propagation.
+  The new workflow will own termination/wait/cleanup for its subprocesses, without installing the
+  example extension. [Pi skills](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/skills.md)
+  describes exact-name invocation and reading the resolved skill file.
+- [OpenCode agents](https://opencode.ai/docs/agents/) documents child sessions and `permission.task`;
+  [skills](https://opencode.ai/docs/skills/) documents skill allow/ask/deny. The inspected
+  [upstream delegation source](https://github.com/anomalyco/opencode/blob/dev/packages/core/src/tool/plugin/subagent.ts)
+  creates a fresh child when its session identifier is omitted and enforces dispatch permissions.
+  S3 must bind the adapter to the installed schema and its permission key, preserving ask/deny;
+  neither a hidden/denied tool nor a denied skill authorizes a CLI bypass.
+- [Hermes CLI](https://hermes-agent.nousresearch.com/docs/user-guide/cli) and its
+  [parser](https://github.com/NousResearch/hermes-agent/blob/main/hermes_cli/_parser.py) support the
+  selected file/JSON/checkout route. [Delegation](https://hermes-agent.nousresearch.com/docs/user-guide/features/delegation)
+  has different interactive/background delivery and a default total of two children in a one-shot
+  native delegation run. The selected independent CLI-worker route needs no nested native children,
+  depth increase or change to that limit. It also avoids native worktree isolation creating a
+  different stage checkout. No session-closure durability or scheduler is promised.
+
+For subprocess routes, cancellation stops the owned process tree, waits for termination, and
+reconciles Git/issue state before any retry. Temporary packets are removed after the awaited run,
+including error/timeout paths; durable review/result evidence is retained first. Native routes use
+their actual cancellation/completion surface. A running handle or exit zero is not stage completion.
+
+### Validation environments
+
+The engineering agent owns each validation and must resolve these dependencies before S4 acceptance.
+Source of access is the current authenticated installation or a user-provided execution environment;
+discover available access first and ask only for concrete missing environment/auth information.
+Do not install runtimes, refresh credentials interactively, widen permissions or change global config
+without the separately required authority.
+
+| Dependency | Missing capability / source | Due and required proof |
+| --- | --- | --- |
+| E-CLAUDE | Working Claude authentication in the installed `2.1.296` runtime or another named compatible authenticated environment; current OAuth cannot refresh. | Agent, before S4: three fresh workers with real Codex review, checks, commits and issue readback; record runtime version. |
+| E-PI | Available authenticated Pi installation and permitted process/shell/skill access. | Agent, before S4: same complete three-stage proof on the actual runtime. |
+| E-OPENCODE | Available authenticated OpenCode installation with actual delegation schema, permitted worker and skill/shell access. | Agent, before S4: same proof, including ask/deny behavior without rewriting policy. |
+| E-HERMES | Available authenticated Hermes CLI, selected effective profile and permitted terminal/skill access. | Agent, before S4: same proof through three independent workers with default native child limits unchanged. |
+
+The Codex probe establishes fresh-context dispatch and the wrapper's capability, not FA-06 or the
+complete future workflow. No host has yet passed the full feature journey. An absent validation
+environment can be a dependency of S4 while a selected source-backed adapter is implemented in S3;
+an unknown mechanism must be resolved before its dependent implementation starts.
+
+### Result and recovery decisions for S2/S3
+
+UNK-003 and UNK-005 use a small JSON result, validated by the parent against real persisted evidence.
+The chosen fields are `schema: 1`, orchestration/attempt IDs, feature ID, canonical repository and
+issue URLs, original base commit, checkout, stage ID, outcome, optional commit SHA, and evidence
+pointers (checks/tested state, review ledger/run/pass, issue result). The outcomes are:
+
+| Outcome | Parent action |
+| --- | --- |
+| `stage-complete` | Verify stage contract, commit presence/ancestry in the selected checkout, checks/review tied to that state, latest issue/result readback and cleared stage checkpoint; then select the next unfinished stage from this same issue. |
+| `retryable-error` | Inspect cause and side effects, repair permitted failures or change approach, then launch a fresh attempt of the same stage. No mechanical retry-count stop. |
+| `review-exhausted` | End the current bounded review run; carry its ledger, dispositions, fixes/tested states and task-wide history into an explicitly identified new run for the same stage. Never pass 11 in the old run. |
+| `needs-user-input` | Persist the exact missing information, question and why available sources cannot supply it; stop for that answer. A sufficient answer resumes the same stage. |
+| `interrupted` | Preserve the current action and evidence; reconcile side effects before resuming. Usage/runtime interruption and explicit cancellation do not mean done; explicit cancellation needs an explicit resume. |
+
+Missing/malformed output, stale identity, mismatched SHA or false child success cannot authorize
+advancement. Diagnose them using the record, Git and issue; do not blindly re-run writes or label
+every error a stakeholder blocker. A worker without a clarification tool returns its question.
+
+Use the existing feature record for stage recovery and a minimal
+`.agents/work/features/<feature-id>.orchestrator.json` sidecar for parent recovery: fixed selected
+identity, run/attempt, active handle, action, result/review pointers and cancellation/question facts.
+The sidecar contains no copied plan or completed-stage list. Parent and worker own their respective
+records; serialize dispatch so there is one active stage executor for this feature. Atomic sibling
+write/rename, identity/path validation and ownership reconciliation precede replacement or resumption.
+An existing active owner must be inspected/waited/stopped before another dispatch, never overwritten
+as stale solely on elapsed time. A changed active-feature pointer does not retarget a running feature.
+
+Recover `committed-awaiting-issue` as the same stage's missing publication, with no second commit or
+implementation. Refetch before merging status/checkbox edits, preserve concurrent authors' content,
+find uncertain writes by saved stage/commit identity, and verify readback. Resolve consequential plan
+changes before claiming completion. Carry only short results/pointers through parent compaction.
+
+### Scoped authority decision for S2
+
+Extend `run-feature-stage` and canonical `shared/feature-workflow.md` to recognize an explicit
+user-started `run-feature` invocation and its pinned child packet as delegated stage authority.
+Each worker still consumes one stage, including committed-result recovery; the parent may dispatch
+the next worker. Standalone stage invocation still stops after one stage. No delivery or installation
+authority is added. Existing review fallback approvals must be carried explicitly, not invented.
+
+Add a Codex-review-only orchestration continuation rule: a terminal exhausted/disputed/non-converged
+review run returns its cause to the parent. The parent diagnoses it, preserves blocking findings and
+history, and chooses a permitted recovery/new run rather than treating repetition itself as a user
+blocker. A genuine missing permission/scope decision or unreliable unavailable capability still needs
+the specific user information it cannot obtain. Review requirements are never waived.
+Preserve the ten-completed-pass limit per run and standalone review stops. Scope the exception in the
+Codex payload and shared registry/template hooks; do not silently change the shared manual
+Claude/Qwen loops. Any canonical changes require `bun run sync:shared`.
+
+S2 must exercise the protocol and authority changes with fault injection at the local issue seam;
+S3 implements the selected other-host routes; S4 requires actual full journeys on all five hosts.
+The live plan and completion evidence remain in issue #1.
+
 ## Maintenance policy
 
 - Re-check all five primary sources before a compatibility-affecting release.
