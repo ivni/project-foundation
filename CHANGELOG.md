@@ -7,6 +7,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.5.0] - 2026-10-13
+
 ### Added
 
 - Run Feature orchestrates one published feature through sequential fresh stage workers, verified
@@ -19,6 +21,11 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Standalone Run Feature Stage still completes one stage and stops. A user-started Run Feature can
   delegate subsequent stages and review cycles without repeated commands or manual compaction.
+
+### Fixed
+
+- Orchestration fixtures use canonical checkout paths on macOS and Windows, preserving strict
+  identity checks when temporary directories have aliases or short names.
 
 ## [3.4.0] - 2026-10-01
 
@@ -560,7 +567,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.4.0...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.5.0...HEAD
+[3.5.0]: https://github.com/ivni/project-foundation/compare/v3.4.0...v3.5.0
 [3.4.0]: https://github.com/ivni/project-foundation/compare/v3.3.0...v3.4.0
 [3.3.0]: https://github.com/ivni/project-foundation/compare/v3.2.2...v3.3.0
 [3.2.2]: https://github.com/ivni/project-foundation/compare/v3.2.1...v3.2.2
