@@ -13,6 +13,8 @@ durable project foundation:
   ordered stages, acceptance checks, and an attached discovery snapshot.
 - **Run Feature Stage** restores the active issue after compaction, completes one stage with
   agent-owned verification, Codex review, and a local commit, then records progress and stops.
+- **Run Feature** orchestrates the remaining stages of one published feature with fresh workers,
+  verifies each stage before continuing, and preserves recovery and review history.
 - **Run Subphase** takes exactly one subphase of a phase requirements slice to done — entry gate,
   agreed verification seams, vertical slices, verification evidence, an independent review, one
   commit — and then stops, because a subphase is sized to a single context window.
@@ -48,7 +50,7 @@ bunx @ivni/project-foundation
 ```
 
 Choose `Install / update`. The wizard reuses an existing installation's agents, scope, and method,
-or lets you choose different settings. On a first installation, all eleven skills are preselected.
+or lets you choose different settings. On a first installation, all twelve skills are preselected.
 For an existing installation, updates are preselected and absent skills are optional additions.
 You can update installed skills and add others in one run, with one complete preview before writing
 anything.
@@ -76,12 +78,14 @@ resolution.
 
 After `$run-discovery-interview` finishes, invoke `$plan-feature` to create the implementation issue
 and attach the discovery record. Invoke `$run-feature-stage` once per stage, or start `$run-feature`
-to orchestrate the remaining stages with a fresh worker for each one. The new orchestration route
-has adapters for Codex, Claude Code, Pi, OpenCode and Hermes. Full five-host runtime acceptance
-remains in progress; each adapter requires its actual authenticated runtime and permissions.
-These workflows work without repeated parameters: a local pointer
-selects the active
-issue, while the issue owns the plan and progress. Explicit issue or discovery arguments select a
+to orchestrate the remaining stages with a fresh worker for each one. The orchestration route
+has adapters for Codex, Claude Code, Pi, OpenCode and Hermes. Codex has observed execution evidence;
+the four other routes have documentation and contract evidence, with authenticated runtime checks
+omitted by the feature owner's acceptance decision. See [compatibility](docs/compatibility.md#feature-orchestration-acceptance)
+for the evidence and platform limits. Each adapter requires its actual authenticated runtime and
+permissions when used.
+These workflows work without repeated parameters: a local pointer selects the active issue,
+while the issue owns the plan and progress. Explicit issue or discovery arguments select a
 different task when needed.
 Repeating `$plan-feature` returns the existing published plan and preserves stage progress and review
 checkpoints. Replanning is an explicit request and retains completed work and the original base.
@@ -90,6 +94,12 @@ The stage executor runs acceptance checks and `run-codex-review-loop`, fixes per
 commits locally, updates the issue, and stops. An interrupted stage is resumed; a committed stage
 whose issue update failed is reconciled instead of implemented again. The last stage verifies the
 whole feature. Push, merge, release, and deployment require their own authorization.
+
+The orchestrator diagnoses ordinary failures and retries the same stage. A bounded Codex review
+stop starts a new review cycle with the existing findings and history. When necessary information
+is missing, it saves a checkpoint and asks a concrete question; a sufficient answer continues that
+stage. Cancellation stops the active worker, waits for termination and retains recovery evidence;
+explicit cancellation requires explicit resume. It does not continue after the session closes.
 
 Install `run-codex-review-loop` alongside `run-feature-stage`, and `run-feature` for orchestration.
 The feature skills use the issue platform selected by the destination or verified remote. GitLab, including self-managed instances

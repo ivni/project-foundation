@@ -55,7 +55,7 @@ been deliberately omitted or removed earlier. The wizard does not persist a full
 
 `bunx` runs the package without creating a permanent global CLI installation. The package contains
 the installer and exact payloads for `project-foundation`, `find-blind-spots`,
-`run-discovery-interview`, `plan-feature`, `run-feature-stage`, `run-subphase`, `run-codex-review-loop`,
+`run-discovery-interview`, `plan-feature`, `run-feature-stage`, `run-feature`, `run-subphase`, `run-codex-review-loop`,
 `run-claude-review-loop`, `run-qwen-review-loop`, `analyze-tests`, and `teach`. The selected skill
 directories remain after `bunx` exits.
 
@@ -63,6 +63,15 @@ For the small-feature workflow, install `plan-feature`, `run-feature-stage`, and
 `run-codex-review-loop` together. The planner publishes to the project's authenticated issue forge
 and needs a supported document-upload route or a verified immutable discovery file link. The
 executor owns checks and review and commits locally; it does not push or deploy automatically.
+Add `run-feature` to run the remaining stages with fresh workers from one invocation. Installing
+the payload does not install host CLIs, authenticate accounts or grant delegation/shell permissions.
+Codex and Claude Code use native delegation; OpenCode uses its observed `task` or V2 `subagent`
+tool with a compatible permitted worker. Pi and Hermes use fresh CLI processes in the checkout.
+The bundled Pi/Hermes supervisor requires Linux, readable owned `/proc` records and Bun FFI with
+libc `prctl`/pidfd functions. Installer support on macOS/Windows does not provide that supervisor;
+an equivalent lifecycle must be verified before using a process route there.
+See [orchestration acceptance](compatibility.md#feature-orchestration-acceptance) for observed
+execution, documentation evidence and the non-Codex runtime checks omitted by the owner.
 The workflow follows the repository's actual forge, including self-managed GitLab. `gh` is not a
 requirement for GitLab: use the available `glab`/connector/API with the verified host and project.
 

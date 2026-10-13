@@ -73,6 +73,21 @@ Markdown structure, local links, changelog state, and package metadata.
 
 Filesystem logic is UI-independent so tests can use isolated temporary homes and projects.
 
+`run-feature` keeps orchestration state and completion guards in its bundled `orchestrator.ts`.
+The host agent owns authenticated issue operations, native spawn/wait/cancel, and inspection of
+checks, review and commit evidence. `host-worker.ts` prepares native packets or runs the Linux
+Pi/Hermes supervisor; a transport exit is never stage completion.
+
+`tests/feature-orchestrator.test.ts` covers recovery, identity, review continuation and completion
+guards. `tests/feature-hosts.test.ts` uses explicit host/reviewer/forge doubles for packets and
+process lifecycle, including a three-stage successful handoff; it makes no authenticated host claim.
+`packages/cli/test/feature-skills.test.ts` exercises real payload install/update/remove in isolated
+homes/projects across supported agents, scopes and copy/link strategies. `bun run check` also
+checks shared references, invocation policy, UI metadata and the exact npm file manifest.
+Observed Codex execution and the owner's documentary acceptance of the other four routes are
+recorded in [compatibility](compatibility.md#feature-orchestration-acceptance). Changes to adapters
+must still follow current primary sources and actual runtime preflight when executed.
+
 ## Adding a skill
 
 1. Scaffold and validate the skill with the repository's supported skill-creation workflow.

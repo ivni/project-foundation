@@ -7,6 +7,19 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Run Feature orchestrates one published feature through sequential fresh stage workers, verified
+  progress, recovery and new bounded Codex review cycles that retain findings and history. Adapters
+  cover Codex, Claude Code, Pi, OpenCode and Hermes; non-Codex authenticated runtime checks were
+  omitted by the feature owner's decision, with documentation/contract evidence reported separately.
+  The bundled Pi/Hermes process supervisor requires Linux; installation remains portable.
+
+### Changed
+
+- Standalone Run Feature Stage still completes one stage and stops. A user-started Run Feature can
+  delegate subsequent stages and review cycles without repeated commands or manual compaction.
+
 ## [3.4.0] - 2026-10-01
 
 ### Changed

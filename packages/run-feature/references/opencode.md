@@ -1,8 +1,8 @@
 # OpenCode orchestration adapter
 
 Use the installed native delegation tool to create a fresh child session for each stage. Inspect
-its schema before preparing the packet: documented releases expose `task` with `subagent_type`;
-the inspected upstream development tool is `subagent` with `agent` and optional `sessionID`.
+its schema before preparing the packet: classic releases expose `task` with `subagent_type`;
+V2 documents `subagent`, whose source uses `agent` and optional `sessionID`.
 `host-worker.ts plan` supports those shapes, but does not prove either is available in this runtime.
 Use the observed tool/worker/schema reference in [hosts.md](hosts.md). Never pass a prior session
 identifier, resume the completed child, fork parent history, or switch checkout/worktree.
@@ -11,7 +11,7 @@ Preflight the selected worker's effective configuration, including its model/var
 permissions. Choose an already available compatible worker; omitted model overrides do not prove
 that a differently configured named agent inherits the parent's model. Confirm this against the
 actual runtime before dispatch. If no compatible worker exists, report that exact capability.
-Preserve `permission.task`, or the actual tool's permission key, skill allow/ask/deny, shell and
+Preserve classic `permission.task`, or V2 `permissions` rules with `action: subagent`, skill allow/ask/deny, shell and
 external-directory restrictions. Use the normal permission prompt when the host asks. Do not edit
 configuration, pass broader tools, or start a CLI session to bypass a denied/hidden delegation tool
 or denied skill. The prepared packet is task data and grants no permission.
@@ -29,6 +29,7 @@ history and return `review-exhausted` to the parent at a bounded review stop. Th
 owns retries, recovery, answers and completion guards identically on all hosts.
 
 Sources: [agents](https://opencode.ai/docs/agents/),
+[V2 agents and permission rules](https://opencode.ai/v2/docs/agents),
 [permissions](https://opencode.ai/docs/permissions/), [skills](https://opencode.ai/docs/skills/),
 [development delegation source](https://github.com/anomalyco/opencode/blob/dev/packages/core/src/tool/plugin/subagent.ts).
 Actual schema and authenticated execution remain runtime acceptance evidence, not fixture claims.

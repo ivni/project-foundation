@@ -112,6 +112,91 @@ async function double(plan: WorkerPlan, source: string) {
 }
 const outputArguments = `console.log(JSON.stringify(process.argv.slice(2)));`;
 
+processTest(
+  "worker-written successful results advance three dependent stages only after fresh readback",
+  async () => {
+    const f = await fixture();
+    f.request.host = "hermes";
+    await f.save("issue.json", f.issue);
+    const handles = new Set<string>();
+    const commits = new Set<string>();
+    for (const stageId of ["S1", "S2", "S3"]) {
+      const plan = await prepareWorker(f.request);
+      await double(
+        plan,
+        `
+      import { readFileSync, writeFileSync } from 'node:fs';
+      import { execFileSync } from 'node:child_process';
+      const git = (...args) => execFileSync('git', args, {encoding:'utf8'}).trim();
+      const read = path => JSON.parse(readFileSync(path, 'utf8'));
+      const save = (path, value) => writeFileSync(path, JSON.stringify(value));
+      const state = read(${JSON.stringify(f.request.state_path)});
+      const issue = read('issue.json');
+      const index = issue.stages.findIndex(stage => stage.id === state.stage_id);
+      if (index && Number(readFileSync('value.txt','utf8')) !== index) throw Error('predecessor missing');
+      writeFileSync('value.txt', String(index+1));
+      if (Number(readFileSync('value.txt','utf8')) !== index+1) throw Error('check failed');
+      git('add','value.txt'); git('commit','-qm',state.stage_id);
+      const commit = git('rev-parse','HEAD'); const tree = git('rev-parse','HEAD^{tree}');
+      const artifact = ${JSON.stringify(plan.artifact_ref)};
+      // Synthetic review/forge records exercise completion guards, not actual host/reviewer acceptance.
+      save(artifact+'/ledger.json', {feature_id:state.feature_id,runs:[{run_id:state.stage_id,completed_passes:1}],findings:[]});
+      save(artifact+'/review.json', {tree,verdict:'CLEAN',run_id:state.stage_id,passes:1,ledger:artifact+'/ledger.json'});
+      writeFileSync(artifact+'/check.log','value dependency check passed');
+      save(artifact+'/checks.json', {tree,passed:true,commands:['fixture value dependency check'],log:artifact+'/check.log'});
+      issue.stages[index].done=true;
+      issue.stages[index].result={commit_sha:commit,ref:'fixture-result-'+state.stage_id};
+      save('issue.json',issue);
+      save(${JSON.stringify(plan.result_ref)}, {
+        schema:1, feature_id:state.feature_id, repository:state.repository, issue_url:state.issue_url,
+        base_commit:state.base_commit, checkout:state.checkout, run_id:state.run_id,
+        attempt_id:state.active.attempt_id, stage_id:state.stage_id, outcome:'stage-complete',
+        commit_sha:commit, issue_result_ref:issue.stages[index].result.ref,
+        checks_ref:artifact+'/checks.json', review_ref:artifact+'/review.json', review_run_id:state.stage_id
+      });
+    `,
+      );
+      const transport = await runProcess(plan);
+      expect(transport.exit_code).toBe(0);
+      expect(transport.result_present).toBe(true);
+      handles.add(transport.handle);
+      const issue = JSON.parse(await readFile(join(f.cwd, "issue.json"), "utf8")) as Issue;
+      const result = JSON.parse(await readFile(join(f.cwd, plan.result_ref), "utf8"));
+      commits.add(result.commit_sha);
+      expect(result.stage_id).toBe(stageId);
+      const terminal = {
+        attempt_id: transport.attempt_id,
+        handle: transport.handle,
+        stopped: true,
+      };
+      const stale = {
+        ...issue,
+        stages: issue.stages.map((stage) =>
+          stage.id === stageId ? { ...stage, done: false } : stage,
+        ),
+      };
+      await expect(
+        f.call("settle", { result_ref: plan.result_ref, terminal, issue: stale }),
+      ).rejects.toThrow();
+      expect(
+        (await f.call("settle", { result_ref: plan.result_ref, terminal, issue })).status,
+      ).toBe("ready");
+      const next = await f.call("dispatch", { issue });
+      expect(next.status).toBe(stageId === "S3" ? "implemented" : "dispatching");
+    }
+    expect(handles.size).toBe(3);
+    expect(commits.size).toBe(3);
+    expect(await readFile(join(f.cwd, "value.txt"), "utf8")).toBe("3");
+    const issue = JSON.parse(await readFile(join(f.cwd, "issue.json"), "utf8")) as Issue;
+    await expect(f.call("dispatch", { issue })).rejects.toThrow("Cannot dispatch");
+    expect(JSON.parse(await readFile(join(f.cwd, f.request.state_path), "utf8")).status).toBe(
+      "implemented",
+    );
+    expect(issue.open).toBe(true);
+    expect(git(f.cwd, "rev-list", "--count", "HEAD")).toBe("4");
+  },
+);
+
 test("native packets pin identity/paths and omit conversation/model/permission/session overrides", async () => {
   const f = await fixture();
   for (const [host, tool] of [

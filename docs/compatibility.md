@@ -214,9 +214,11 @@ reconciles Git/issue state before any retry. Temporary packets are removed after
 including error/timeout paths; durable review/result evidence is retained first. Native routes use
 their actual cancellation/completion surface. A running handle or exit zero is not stage completion.
 
-### Validation environments
+### Validation environments at S1
 
-The engineering agent owns each validation and must resolve these dependencies before S4 acceptance.
+The original plan assigned the following runtime dependencies to the engineering agent before S4.
+The owner replaced their acceptance method on 2026-10-13; see
+[Feature orchestration acceptance](#feature-orchestration-acceptance) for the current decision.
 Source of access is the current authenticated installation or a user-provided execution environment;
 discover available access first and ask only for concrete missing environment/auth information.
 Do not install runtimes, refresh credentials interactively, widen permissions or change global config
@@ -230,7 +232,7 @@ without the separately required authority.
 | E-HERMES | Available authenticated Hermes CLI, selected effective profile and permitted terminal/skill access. | Agent, before S4: same proof through three independent workers with default native child limits unchanged. |
 
 The Codex probe establishes fresh-context dispatch and the wrapper's capability, not FA-06 or the
-complete future workflow. No host has yet passed the full feature journey. An absent validation
+complete future workflow. At S1 no host had passed the full feature journey. An absent validation
 environment can be a dependency of S4 while a selected source-backed adapter is implemented in S3;
 an unknown mechanism must be resolved before its dependent implementation starts.
 
@@ -285,7 +287,8 @@ Codex payload and shared registry/template hooks; do not silently change the sha
 Claude/Qwen loops. Any canonical changes require `bun run sync:shared`.
 
 S2 must exercise the protocol and authority changes with fault injection at the local issue seam;
-S3 implements the selected other-host routes; S4 requires actual full journeys on all five hosts.
+S3 implements the selected other-host routes. The original S4 required actual full journeys on all
+five hosts; the owner amended non-Codex acceptance on 2026-10-13 as recorded below.
 The live plan and completion evidence remain in issue #1.
 
 ## Feature orchestration adapters (S3)
@@ -325,11 +328,37 @@ Kernel mechanism sources: [subreaper](https://man7.org/linux/man-pages/man2/PR_S
 [/proc](https://docs.kernel.org/filesystems/proc.html),
 [pidfd](https://man7.org/linux/man-pages/man2/pidfd_send_signal.2.html),
 [Bun FFI](https://bun.com/docs/runtime/ffi).
-No runtime, extension or global configuration was installed/changed. E-CLAUDE/E-PI/E-OPENCODE/
-E-HERMES retain the engineering agent as owner and current authenticated installation or a named
-user environment as source, due before S4. FA-06 stays open until each actual runtime completes the
-three-stage worker → mandatory Codex reviewer → checks/commit/issue-readback journey. Other feature
-acceptance criteria and release/merge/issue closure are not inferred from these contract fixtures.
+No runtime, extension or global configuration was installed/changed. Those S3 observations remain
+runtime limitations; the owner subsequently changed their acceptance requirement below.
+
+## Feature orchestration acceptance
+
+Reviewed on **2026-10-13**. The feature owner explicitly requested proceeding from documentation
+without checks of the unavailable Claude Code, Pi, OpenCode and Hermes installations. The
+[issue amendment](https://github.com/ivni/project-foundation/issues/1#issuecomment-6145220940)
+replaces those four authenticated journeys with primary-source reconciliation and contract evidence.
+The original discovery snapshot remains unchanged. This is acceptance of unverified runtime behavior;
+it does not disable auth, permissions, independent review or completion checks when the skill runs.
+
+| Host | Route and current primary source | Evidence and limit |
+| --- | --- | --- |
+| Codex | Fresh native executor with a minimal packet; [official subagents documentation](https://learn.chatgpt.com/docs/agent-configuration/subagents). Actual read-only reviewer override or the review skill's approved CLI fallback. | S2 observed three distinct native executors, three actual Codex CLI review passes, local checks/commits and issue readback through a controllable local forge seam. The seam was not a live forge. |
+| Claude Code | Native Agent with a compatible worker and fresh prompt; [subagents](https://code.claude.com/docs/en/sub-agents) documents context, model/effort, permissions and lifecycle. | Documentation and native-packet contracts; authenticated execution omitted by owner. Select the effective worker configuration, await its terminal result and use actual Codex CLI review. |
+| Pi | Fresh CLI `--mode json -p --no-session`; [argument parser](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/src/cli/args.ts) and [upstream process example](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/examples/extensions/subagent/index.ts). | Documentation and process doubles; authenticated execution omitted by owner. The bundled supervisor requires Linux. No delegation extension is installed. |
+| OpenCode | Classic `task` or V2 `subagent`; [classic agents](https://opencode.ai/docs/agents/), [V2 agents](https://opencode.ai/v2/docs/agents) and [delegation source](https://github.com/anomalyco/opencode/blob/dev/packages/core/src/tool/plugin/subagent.ts). | Documentation and native-packet contracts; authenticated execution omitted by owner. V2 uses `agents` and `permissions` action/resource/effect rules; classic `permission.task` is not its configuration schema. Actual tool/schema, worker permissions and cancellation still require preflight. |
+| Hermes | Fresh same-checkout CLI leaf with `--query-file`, `--oneshot`, `--format stream-json`; [CLI reference](https://github.com/NousResearch/hermes-agent/blob/main/website/docs/reference/cli-commands.md) and [delegation](https://hermes-agent.nousresearch.com/docs/user-guide/features/delegation). | Documentation and process doubles; authenticated execution omitted by owner. Linux supervisor; leaf uses zero native children and retains the documented one-shot total-child cap. |
+
+Local acceptance covers the shared state/result guards, recovery after commit/publication failure,
+necessary answers, cancellation and review-history continuation. A synthetic ten-pass history tests
+rollover ordering; it is not ten actual reviewer calls. Contract fixtures preserve unrelated work
+and distinguish successful worker results from transport exits. Isolated filesystem tests cover
+real payload copy/link install, update and removal for every supported agent/scope combination,
+preserving other payloads. No new installer topology was introduced, so these are local filesystem
+checks rather than a new OS execution matrix or pending CI claim.
+
+All four non-Codex routes remain unverified with authenticated runtimes. Unsupported or unavailable
+runtime permissions/lifecycle must still produce an honest checkpoint during use. Merge, required
+CI and authorized issue closure remain separate delivery gates.
 
 ## Maintenance policy
 
