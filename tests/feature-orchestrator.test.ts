@@ -1,6 +1,6 @@
 import { afterEach, expect, test } from "bun:test";
 import { createHash } from "node:crypto";
-import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -26,7 +26,7 @@ async function json(cwd: string, path: string, data: unknown) {
   await writeFile(join(cwd, path), `${JSON.stringify(data)}\n`);
 }
 async function fixture() {
-  const cwd = await mkdtemp(join(tmpdir(), "pf-orchestrator-test-"));
+  const cwd = await realpath(await mkdtemp(join(tmpdir(), "pf-orchestrator-test-")));
   roots.push(cwd);
   git(cwd, "init", "-q");
   git(cwd, "config", "user.name", "Fixture");

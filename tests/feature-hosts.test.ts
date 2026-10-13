@@ -1,6 +1,6 @@
 import { afterEach, expect, test } from "bun:test";
 import { createHash } from "node:crypto";
-import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import {
@@ -23,7 +23,7 @@ function git(cwd: string, ...args: string[]) {
   return result.stdout.toString().trim();
 }
 async function fixture() {
-  const cwd = await mkdtemp(join(tmpdir(), "pf-feature-hosts-"));
+  const cwd = await realpath(await mkdtemp(join(tmpdir(), "pf-feature-hosts-")));
   roots.push(cwd);
   git(cwd, "init", "-q");
   git(cwd, "config", "user.name", "Fixture");
