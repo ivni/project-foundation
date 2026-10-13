@@ -27,6 +27,9 @@ the defects it reports. A clean review and passing tests are separate claims.
 - Stop for user direction before a fix changes public behavior, architecture, data models or
   migrations, security policy, dependencies, production state, or the agreed task scope.
 
+<!-- host:orchestration-continuation -->
+<!-- /host:orchestration-continuation -->
+
 ## Select the host adapter
 
 Identify the primary agent host and read exactly one adapter before launching the reviewer:

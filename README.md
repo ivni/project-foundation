@@ -75,8 +75,11 @@ resolution.
 ## Small-feature delivery
 
 After `$run-discovery-interview` finishes, invoke `$plan-feature` to create the implementation issue
-and attach the discovery record. Then compact the session and invoke `$run-feature-stage` once per
-stage. Both commands work without repeated parameters: a small local pointer selects the active
+and attach the discovery record. Invoke `$run-feature-stage` once per stage, or start `$run-feature`
+to orchestrate the remaining stages with a fresh worker for each one. The new orchestration route
+currently has Codex implementation; Claude Code, Pi, OpenCode and Hermes adapters and full five-host
+acceptance remain in progress. These workflows work without repeated parameters: a local pointer
+selects the active
 issue, while the issue owns the plan and progress. Explicit issue or discovery arguments select a
 different task when needed.
 Repeating `$plan-feature` returns the existing published plan and preserves stage progress and review
@@ -87,8 +90,8 @@ commits locally, updates the issue, and stops. An interrupted stage is resumed; 
 whose issue update failed is reconciled instead of implemented again. The last stage verifies the
 whole feature. Push, merge, release, and deployment require their own authorization.
 
-Install `run-codex-review-loop` alongside `run-feature-stage`. Both feature skills use the issue
-platform selected by the destination or verified remote. GitLab, including self-managed instances
+Install `run-codex-review-loop` alongside `run-feature-stage`, and `run-feature` for orchestration.
+The feature skills use the issue platform selected by the destination or verified remote. GitLab, including self-managed instances
 and nested groups, uses `glab` or an available authenticated connector/API; GitHub uses its own
 integration. Other platforms use equivalent issue and upload operations without changing the workflow.
 Planning needs an actual document-upload route or an existing immutable discovery file link. The
@@ -150,7 +153,7 @@ bun run check
 ```
 
 The public package is the repository root. The private workspaces under `packages/` separate the
-CLI source from the eleven raw skill payloads. See [Development](docs/development.md) for the full
+CLI source from the twelve raw skill payloads. See [Development](docs/development.md) for the full
 layout and verification workflow.
 
 ## License

@@ -2,6 +2,7 @@
 # Small-feature workflow contract
 
 `plan-feature` prepares an issue from completed discovery. `run-feature-stage` executes one stage.
+`run-feature` orchestrates fresh one-stage executors for a user-started multi-stage run.
 They share this contract so a fresh session can work from persisted evidence instead of chat memory.
 
 ## Authority and storage
@@ -37,9 +38,34 @@ or force-adding working records. Known workflow metadata may remain dirty betwee
 is not permission to exclude authored requirements, implementation, or tests from review. Inspect
 metadata changes and handle them under the review loop's administrative-update rule.
 
+## Delegated orchestration
+
+A user invocation of `run-feature` authorizes the parent to launch fresh `run-feature-stage` workers
+sequentially and continue Codex review through explicitly identified bounded runs. Each worker
+consumes exactly one stage, including committed-result recovery, then returns to its parent. The
+standalone stage still stops after one stage; automatic discovery does not start either workflow.
+Delivery/install permissions are unchanged. Pass actual approval evidence into workers; do not
+invent reviewer fallback permission. The parent pins one selected identity for the run and verifies
+commit, acceptance/checks, independent review and live issue readback before dispatching the next
+worker. A changed active pointer does not retarget a run.
+
+The parent owns a minimal `.agents/work/features/<feature-id>.orchestrator.json` sidecar (identity,
+run/attempt, active owner/action, result/review/question/cancellation pointers), not another plan.
+The executor owns the existing feature record. Serialize owners and inspect/wait/stop an active
+worker before replacement; no age-based stale overwrite. Both records use atomic sibling rename.
+Preserve task-wide review ledgers, findings, dispositions, fixes and tested states across fresh
+workers/compaction/new bounded runs. The Codex review skill defines scoped continuation; manual
+review and each ten-pass run retain their boundaries. No pass 11 is authorized in an old run.
+
+An orchestrated parent researches ordinary errors and retries the same stage with a fresh worker;
+repetition, non-convergence and budget alone do not end the feature. Stop for a concrete missing
+user fact/permission/scope/access answer, or checkpoint an actual runtime interruption. A sufficient
+answer resumes that stage. Explicit cancellation stops and awaits the active worker, preserves side
+effects/checkpoints and requires explicit resume. Never blindly retry uncertain remote writes.
+
 ## Platform independence
 
-The selected issue forge follows the explicit destination or verified remote. Both skills use the
+The selected issue forge follows the explicit destination or verified remote. These workflows use the
 same confirmed host/project identity, including self-managed instances and nested namespaces. Keep
 full canonical URLs in state; an issue number alone or a GitHub-specific URL shape is insufficient.
 When older metadata lacks `forge`, derive it from verified project evidence before a remote write.

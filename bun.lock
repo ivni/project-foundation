@@ -45,6 +45,10 @@
       "name": "@ivni/run-discovery-interview-skill",
       "version": "1.9.0",
     },
+    "packages/run-feature": {
+      "name": "@ivni/run-feature-skill",
+      "version": "1.0.0",
+    },
     "packages/run-feature-stage": {
       "name": "@ivni/run-feature-stage-skill",
       "version": "1.0.0",
@@ -98,6 +102,8 @@
     "@ivni/run-codex-review-loop-skill": ["@ivni/run-codex-review-loop-skill@workspace:packages/run-codex-review-loop"],
 
     "@ivni/run-discovery-interview-skill": ["@ivni/run-discovery-interview-skill@workspace:packages/run-discovery-interview"],
+
+    "@ivni/run-feature-skill": ["@ivni/run-feature-skill@workspace:packages/run-feature"],
 
     "@ivni/run-feature-stage-skill": ["@ivni/run-feature-stage-skill@workspace:packages/run-feature-stage"],
 

@@ -5,8 +5,10 @@ description: Complete one stage of an active feature issue, including autonomous
 
 # Run Feature Stage
 
-Take exactly one stage of the active feature issue to done, then stop. A bare `$run-feature-stage`
-resumes an unfinished stage or selects the next one. The user need not repeat "test, review, commit,
+Take exactly one stage of the active feature issue to done, then stop. A pinned fresh-worker packet
+from a user-started `run-feature` is delegated authority for that one stage. Return its result to the
+parent; the parent may dispatch the next fresh worker. Standalone invocation retains its boundary.
+A bare `$run-feature-stage` resumes an unfinished stage or selects the next one. The user need not repeat "test, review, commit,
 update the issue" or inspect the implementation on the agent's behalf.
 
 Read [references/feature-workflow.md](references/feature-workflow.md) before selecting work. This
@@ -130,5 +132,8 @@ checkpoint and report it as awaiting commit. Do not mark the default commit-base
 start another stage over its uncommitted diff.
 
 Return the stage result, checks and review outcome, commit and issue links, any real blocker, and
-the next stage or feature completion status. Then stop. The next `$run-feature-stage` is a separate
-user invocation.
+the next stage or feature completion status. Then stop. For standalone execution, the next
+`$run-feature-stage` is a separate user invocation. In orchestration, write the pinned protocol result and evidence requested by the
+parent. A bounded review stop returns its diagnosis and durable ledger to the parent for scoped
+continuation; do not reset findings or claim completion. The parent handles missing-information
+questions and cancellation.

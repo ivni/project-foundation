@@ -61,6 +61,7 @@ export const HOST_REGIONS: Record<string, readonly string[]> = {
     "context-file",
     "launch-step",
     "report-runtime",
+    "orchestration-continuation",
   ],
   "packages/run-codex-review-loop/SKILL.md": [
     "intro",
@@ -69,6 +70,7 @@ export const HOST_REGIONS: Record<string, readonly string[]> = {
     "context-file",
     "launch-step",
     "report-runtime",
+    "orchestration-continuation",
   ],
   "packages/run-qwen-review-loop/SKILL.md": [
     "intro",
@@ -77,6 +79,7 @@ export const HOST_REGIONS: Record<string, readonly string[]> = {
     "context-file",
     "launch-step",
     "report-runtime",
+    "orchestration-continuation",
   ],
   "packages/run-claude-review-loop/references/reviewer-contract.md": [
     "title",
@@ -124,6 +127,7 @@ export const SHARED_REFERENCES: SharedReference[] = [
     copies: [
       "packages/plan-feature/references/issue-publication.md",
       "packages/run-feature-stage/references/issue-publication.md",
+      "packages/run-feature/references/issue-publication.md",
     ],
   },
   {
@@ -131,6 +135,7 @@ export const SHARED_REFERENCES: SharedReference[] = [
     copies: [
       "packages/plan-feature/references/feature-workflow.md",
       "packages/run-feature-stage/references/feature-workflow.md",
+      "packages/run-feature/references/feature-workflow.md",
     ],
   },
   {

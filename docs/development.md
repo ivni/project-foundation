@@ -13,6 +13,7 @@
 │   ├── run-claude-review-loop/  Publishable Claude review-loop payload
 │   ├── run-codex-review-loop/   Publishable independent review-loop payload
 │   ├── run-discovery-interview/ Publishable interview skill payload
+│   ├── run-feature/             Publishable sequential feature orchestration payload
 │   ├── run-feature-stage/       Publishable issue-stage execution payload
 │   ├── run-qwen-review-loop/    Publishable Qwen review-loop payload
 │   ├── run-subphase/            Publishable bounded subphase-execution payload
@@ -47,7 +48,7 @@ bun run check
 ```
 
 `verify:skills` checks frontmatter, invocation policy, UI metadata, size, placeholders, local
-resource links, and shared-reference drift for all eleven payloads. `verify:docs` checks public
+resource links, and shared-reference drift for all twelve payloads. `verify:docs` checks public
 Markdown structure, local links, changelog state, and package metadata.
 `verify:package` inspects the exact file manifest produced by npm, the tool used for publishing.
 `bun run check` runs it as part of the release-level local verification command.

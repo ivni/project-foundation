@@ -1,0 +1,7 @@
+interface:
+  display_name: "Run Feature"
+  short_description: "Run feature stages with fresh workers and recovery"
+  default_prompt: "Use $run-feature to orchestrate the remaining stages of the active feature issue."
+
+policy:
+  allow_implicit_invocation: true

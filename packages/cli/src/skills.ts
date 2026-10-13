@@ -24,6 +24,10 @@ export const SKILLS = {
     label: "Run Feature Stage",
     summary: "One issue stage: implement, verify, Codex review, commit, and record",
   },
+  "run-feature": {
+    label: "Run Feature",
+    summary: "Sequential fresh stage workers with verified progress and recovery",
+  },
   "run-subphase": {
     label: "Run Subphase",
     summary: "Bounded execution of one subphase: build, verify, review, commit",
