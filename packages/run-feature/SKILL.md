@@ -17,9 +17,13 @@ Each executor still consumes exactly one stage, including committed-result recov
 
 Read [references/feature-workflow.md](references/feature-workflow.md) and
 [references/issue-publication.md](references/issue-publication.md) before selection or remote work.
-Read [references/protocol.md](references/protocol.md) for the state/helper/result contract and
-[references/codex.md](references/codex.md) on Codex. Other host adapters are not implemented yet;
-report that exact limitation rather than pretend to delegate through a guessed API.
+Read [references/protocol.md](references/protocol.md) for the state/helper/result contract and the
+adapter for the current host: [Codex](references/codex.md),
+[Claude Code](references/claude-code.md), [Pi](references/pi.md),
+[OpenCode](references/opencode.md), or [Hermes](references/hermes.md).
+The four non-Codex routes use [references/hosts.md](references/hosts.md) for minimal packets and
+process lifecycle. Inspect actual runtime capabilities and effective permissions before dispatch;
+an implemented adapter is not proof that the current host is authenticated or accepted end to end.
 
 ## Restore and dispatch
 

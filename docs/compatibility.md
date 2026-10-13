@@ -156,7 +156,8 @@ any envelope that does not match them instead of guessing.
 ## Feature orchestration research (S1)
 
 Reviewed: 2026-10-12, for [feature issue #1](https://github.com/ivni/project-foundation/issues/1).
-This section selects mechanisms for implementation in S2/S3; `run-feature` is not shipped yet.
+This section records the S1 route selection. The local S2/S3 implementation is described below;
+release and full authenticated runtime acceptance remain separate gates.
 It does not change the installer snapshot above or the existing stage/review authority boundaries.
 Documentation, capability probes, and full feature acceptance are separate evidence levels.
 
@@ -286,6 +287,49 @@ Claude/Qwen loops. Any canonical changes require `bun run sync:shared`.
 S2 must exercise the protocol and authority changes with fault injection at the local issue seam;
 S3 implements the selected other-host routes; S4 requires actual full journeys on all five hosts.
 The live plan and completion evidence remain in issue #1.
+
+## Feature orchestration adapters (S3)
+
+Reviewed: 2026-10-13 against the primary sources linked in the S1 matrix and the installed runtime.
+`packages/run-feature` now routes all five hosts. Codex uses its native fresh delegation;
+Claude Code/OpenCode use observed native schemas, and Pi/Hermes use fresh same-host CLI processes.
+The non-Codex packet helper reads pinned feature/attempt state and names exact stage/review skills;
+it never invokes guessed native APIs or changes permission policy. Every non-Codex worker uses the
+actual Codex CLI wrapper for independent review. The same state/result guards own advancement,
+error diagnosis, necessary questions, review-history continuation and committed-result recovery.
+
+Effective runtime configuration is a preflight requirement. Native workers must already be
+compatible with the parent's model/effort, tools and permissions; omitting overrides alone is not
+proof of inheritance for a custom agent. Fresh CLI workers must reproduce effective config/env and
+session restrictions without installing extensions, granting trust, widening permissions or
+changing persistent profiles. The helper accepts only known scalar configuration fields and keeps
+credentials out of packets. OpenCode retains native task/skill ask/deny; no CLI bypass is provided.
+
+Pi/Hermes transport uses argument arrays, exclusive per-attempt artifacts and a private temporary
+brief. It awaits the host process, terminates owned background descendants and observes terminal
+owned descendant state before reporting transport completion, including shells/reviewers that
+create independent process groups/sessions. Cancellation requires the owning runner
+handle and `stop` before interruption; a crashed/killed runner leaves ownership for reconciliation.
+This process-tree implementation uses a dedicated Linux subreaper with readable owned `/proc`
+records and Bun FFI/libc `prctl`/pidfd functions; macOS/Windows execution is explicitly unavailable
+until a verified equivalent lifecycle exists. Stable descriptors prevent signalling recycled PIDs;
+the supervisor does not adopt or terminate unrelated children of an importing caller. Installer OS support does not
+claim worker-process support. Native cancellation likewise requires the actual host's lifecycle.
+Hermes leaf workers create no native children and keep the native one-shot two-child limit intact.
+
+Evidence levels remain distinct: executable native-schema/permission contracts and real POSIX
+process doubles exercise the adapter, not authenticated Claude/Pi/OpenCode/Hermes execution.
+On this checkout, Claude Code `2.1.296` reports `loggedIn: false`; the bounded no-tools startup probe
+cannot authenticate. Pi, OpenCode and Hermes are absent from PATH and checked standard locations.
+Kernel mechanism sources: [subreaper](https://man7.org/linux/man-pages/man2/PR_SET_CHILD_SUBREAPER.2const.html),
+[/proc](https://docs.kernel.org/filesystems/proc.html),
+[pidfd](https://man7.org/linux/man-pages/man2/pidfd_send_signal.2.html),
+[Bun FFI](https://bun.com/docs/runtime/ffi).
+No runtime, extension or global configuration was installed/changed. E-CLAUDE/E-PI/E-OPENCODE/
+E-HERMES retain the engineering agent as owner and current authenticated installation or a named
+user environment as source, due before S4. FA-06 stays open until each actual runtime completes the
+three-stage worker → mandatory Codex reviewer → checks/commit/issue-readback journey. Other feature
+acceptance criteria and release/merge/issue closure are not inferred from these contract fixtures.
 
 ## Maintenance policy
 

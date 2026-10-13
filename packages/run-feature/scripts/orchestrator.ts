@@ -92,7 +92,7 @@ function id(value: unknown): string {
 async function read(path: string): Promise<ObjectValue> {
   return object(JSON.parse(await readFile(path, "utf8")));
 }
-async function safePath(cwd: string, name: unknown): Promise<string> {
+export async function safePath(cwd: string, name: unknown): Promise<string> {
   const text = string(name);
   if (isAbsolute(text) || text.split(/[\\/]/).includes(".."))
     throw new Error("Path must stay inside checkout");

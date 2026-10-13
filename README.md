@@ -77,8 +77,9 @@ resolution.
 After `$run-discovery-interview` finishes, invoke `$plan-feature` to create the implementation issue
 and attach the discovery record. Invoke `$run-feature-stage` once per stage, or start `$run-feature`
 to orchestrate the remaining stages with a fresh worker for each one. The new orchestration route
-currently has Codex implementation; Claude Code, Pi, OpenCode and Hermes adapters and full five-host
-acceptance remain in progress. These workflows work without repeated parameters: a local pointer
+has adapters for Codex, Claude Code, Pi, OpenCode and Hermes. Full five-host runtime acceptance
+remains in progress; each adapter requires its actual authenticated runtime and permissions.
+These workflows work without repeated parameters: a local pointer
 selects the active
 issue, while the issue owns the plan and progress. Explicit issue or discovery arguments select a
 different task when needed.
