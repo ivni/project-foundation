@@ -1,0 +1,7 @@
+interface:
+  display_name: "Run Phase"
+  short_description: "Run phase subphases with fresh workers and recovery"
+  default_prompt: "Use $run-phase to orchestrate the remaining subphases of the current prepared phase."
+
+policy:
+  allow_implicit_invocation: true

@@ -61,7 +61,6 @@ export const HOST_REGIONS: Record<string, readonly string[]> = {
     "context-file",
     "launch-step",
     "report-runtime",
-    "orchestration-continuation",
   ],
   "packages/run-codex-review-loop/SKILL.md": [
     "intro",
@@ -70,7 +69,6 @@ export const HOST_REGIONS: Record<string, readonly string[]> = {
     "context-file",
     "launch-step",
     "report-runtime",
-    "orchestration-continuation",
   ],
   "packages/run-qwen-review-loop/SKILL.md": [
     "intro",
@@ -79,7 +77,6 @@ export const HOST_REGIONS: Record<string, readonly string[]> = {
     "context-file",
     "launch-step",
     "report-runtime",
-    "orchestration-continuation",
   ],
   "packages/run-claude-review-loop/references/reviewer-contract.md": [
     "title",
@@ -96,6 +93,11 @@ export const HOST_REGIONS: Record<string, readonly string[]> = {
 export const RESIDUE_IDENTICAL_SKILLS = REVIEW_LOOP_SKILLS;
 
 export const SHARED_BLOCKS: SharedBlock[] = [
+  {
+    source: "shared/orchestration-review-continuation.md",
+    marker: "orchestration-continuation",
+    copies: REVIEW_LOOP_SKILLS,
+  },
   { source: "shared/review-scope.md", marker: "review-scope", copies: REVIEW_LOOP_SKILLS },
   {
     source: "shared/blocking-declaration.md",
@@ -155,10 +157,18 @@ export const SHARED_REFERENCES: SharedReference[] = [
     ],
   },
   {
+    source: "shared/phase-workflow.md",
+    copies: [
+      "packages/run-phase/references/phase-workflow.md",
+      "packages/run-subphase/references/phase-workflow.md",
+    ],
+  },
+  {
     source: "shared/subphase-contract.md",
     copies: [
       "packages/project-foundation/references/subphase-contract.md",
       "packages/run-subphase/references/subphase-contract.md",
+      "packages/run-phase/references/subphase-contract.md",
     ],
   },
 ];

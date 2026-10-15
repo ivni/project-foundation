@@ -7,6 +7,20 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Run Phase orchestrates the remaining subphases of one prepared phase with fresh workers, verified
+  checklist/acceptance/check/review/commit evidence and durable recovery. It stops at the phase
+  boundary and distinguishes completed subphases from pending phase-wide delivery gates. Native
+  workers require actual host lifecycle support; Pi/Hermes require an existing process supervisor.
+
+### Changed
+
+- Run Subphase accepts a pinned packet from a user-started Run Phase, includes checklist/status
+  closeout in its completion commit, and reconciles committed work instead of duplicating it.
+- All three review loops support diagnosed new bounded review cycles delegated through Run Phase,
+  retaining unresolved findings and task-wide history. Standalone calls retain their bounded stops.
+
 ## [3.5.0] - 2026-10-13
 
 ### Added

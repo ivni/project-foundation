@@ -18,6 +18,8 @@ durable project foundation:
 - **Run Subphase** takes exactly one subphase of a phase requirements slice to done — entry gate,
   agreed verification seams, vertical slices, verification evidence, an independent review, one
   commit — and then stops, because a subphase is sized to a single context window.
+- **Run Phase** orchestrates the remaining subphases of one prepared phase with a fresh worker for
+  each one, verifies completion and preserves recovery/review history before continuing.
 - **Codex Review Loop** explicitly launches an independent read-only Codex reviewer over the current
   task's uncommitted changes, then lets the primary agent validate findings, make bounded fixes, run
   checks, and re-review until clean or honestly blocked.
@@ -50,7 +52,7 @@ bunx @ivni/project-foundation
 ```
 
 Choose `Install / update`. The wizard reuses an existing installation's agents, scope, and method,
-or lets you choose different settings. On a first installation, all twelve skills are preselected.
+or lets you choose different settings. On a first installation, all thirteen skills are preselected.
 For an existing installation, updates are preselected and absent skills are optional additions.
 You can update installed skills and add others in one run, with one complete preview before writing
 anything.
@@ -108,6 +110,27 @@ integration. Other platforms use equivalent issue and upload operations without 
 Planning needs an actual document-upload route or an existing immutable discovery file link. The
 planner verifies the published file; a local path does not count as an attachment.
 
+## Phase delivery
+
+After the phase requirements slice is ready (`N.0` ticked), invoke `$run-phase` with the phase name,
+or use a bare invocation when the current phase is unambiguous in the agent contract. Install
+`run-phase`, `run-subphase` and an independent review loop together. The parent dispatches one fresh
+`run-subphase` worker at a time, verifies checks, acceptance evidence, review and committed checklist
+progress, then continues through the remaining subphases. Standalone `$run-subphase` still does one
+subphase and stops.
+
+Ordinary errors retry the same subphase; exhausted review cycles retain findings and resume in a new
+bounded run after diagnosis. A committed increment is reconciled instead of built again. Missing user
+information stops with a saved question; cancellation stops the owned worker and requires explicit
+resume. Recovery metadata lives under `.agents/work/phases/`; the slice remains the plan/progress
+source. The workflow stops at this phase boundary, verifies the full phase definition of done, and
+reports any pending CI/runtime/delivery gates separately. Push, release and deployment are separate.
+
+Workers require an actual fresh delegation and cancellation lifecycle. Codex, Claude Code and OpenCode
+use native workers when available. Pi/Hermes require an existing compatible process supervisor;
+`run-phase` does not bundle one. See [phase orchestration compatibility](docs/compatibility.md#phase-orchestration)
+for validation limits.
+
 ## Test-suite analysis
 
 Ask `$analyze-tests` to analyze the repository's tests. The report includes evidence, retained
@@ -164,7 +187,7 @@ bun run check
 ```
 
 The public package is the repository root. The private workspaces under `packages/` separate the
-CLI source from the twelve raw skill payloads. See [Development](docs/development.md) for the full
+CLI source from the thirteen raw skill payloads. See [Development](docs/development.md) for the full
 layout and verification workflow.
 
 ## License

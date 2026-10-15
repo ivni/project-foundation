@@ -1,6 +1,6 @@
 ---
 name: run-subphase
-description: Take exactly one phase subphase to done, then stop. Use only when invoked by name.
+description: Take exactly one phase subphase to done, then stop. Use only when invoked by name or delegated by a user-started run-phase.
 ---
 
 # Run Subphase
@@ -11,7 +11,15 @@ subphase, one context window.
 This skill does not loop. It never starts a second subphase, because the boundary it respects is the
 reason the subphase exists: a subphase is sized to one fresh context window, and an agent carrying two
 of them in one window is degraded exactly where this standard demands the most rigor. The last thing
-this skill does is name the next invocation. Running that invocation is the user's action.
+this skill does is name the next invocation. In standalone use, running it is the user's action.
+Under a user-started `run-phase`, the parent verifies completion and dispatches the next fresh worker.
+This child still consumes exactly one subphase, including recovery, and then stops.
+
+A pinned `run-phase` packet delegates authority for this subphase and its selected review loop.
+Read [references/phase-workflow.md](references/phase-workflow.md) when such a packet is present.
+Honor its exact phase/subphase, checkout/branch, constraints, approvals and checkpoint; do not select
+another subphase. Persist the structured result and recovery evidence before returning. A new bounded
+review run needs the parent's diagnosed continuation packet; standalone bounded stops remain.
 
 The contract this skill executes is not its own: [references/subphase-contract.md](references/subphase-contract.md)
 defines what a subphase is and when it is done, and the project's foundation skill ships the same copy.
@@ -32,7 +40,14 @@ project keeps its artifacts elsewhere, take the paths from the agent contract ra
 
 ## 1. Select the subphase
 
-Take the lowest-numbered unticked subphase, or the one the user named. Never reorder silently.
+Take the lowest-numbered unticked subphase, or the one the user named. Under orchestration restore
+the reserved subphase/checkpoint first. Never reorder silently.
+
+If its implementation is already committed, inspect that SHA and reconcile evidence/checklist/status
+instead of rebuilding or duplicating its commit. Refresh evidence affected by descendant changes.
+Preserve that implementation SHA in the result. If only factual closeout was omitted, an inspected
+administrative follow-up commit may record it; list both commits rather than duplicate implementation.
+Return completion only after all gates hold.
 
 Subphases carry no dependency edges — the number is the order. If the user names a subphase whose
 predecessor is unticked, say so and ask; skipping may be deliberate, but it is not yours to decide.
@@ -51,6 +66,12 @@ forbids — unknowns are resolved before build, not discovered during it.
   agreed to, and it will reach identifiers, tests, and commit messages before anyone notices.
 - The working tree is clean, or the user has declared what to exclude. The review in step 6 reads the
   uncommitted change set, so unrelated uncommitted work would silently enter its scope.
+  Under a user-started `run-phase`, inspect/list that workflow's own recovery metadata as the
+  administrative exception defined in `phase-workflow.md`; unrelated work still needs exclusion.
+  A pinned recovery packet may also carry unfinished edits attributed to this same subphase by its
+  checkpoint. Verify that attribution against the actual diff, retain those edits **in** the review
+  scope and resume them; they do not need exclusion or a new user approval. If their boundary from
+  unrelated work cannot be established safely, stop for the exact scope clarification.
 
 ## 3. Agree the seams before writing code
 
@@ -124,6 +145,11 @@ you do not re-classify a finding to change what happens to it.
 
 ## 7. Commit
 
+Before committing, tick the completed subphase in `checklist.md`, fill its traceability evidence and
+rewrite the agent-contract status line if this completion is externally meaningful. Inspect those
+administrative changes against the existing result; substantive changes require checks/review again.
+Include closeout in the same commit so a fresh executor reads committed progress.
+
 Commit only when the derived verdict permits it. A deferred defect enters the project's debt and risk
 register **in the same commit**: a deferral that exists only in the loop's report is known debt without
 a register entry, which violates the standard.
@@ -134,8 +160,9 @@ tag — a tag may trigger a release, and releases are not part of a subphase.
 
 ## 8. Close out and stop
 
-Tick `checklist.md`, and rewrite the agent-contract status line if this completion is externally
-meaningful. Then report, in five lines:
+Verify the commit contains checklist/traceability/status closeout. Under orchestration persist the
+result and checkpoint from the phase workflow; the parent decides whether to advance. Then report,
+in five lines:
 
 1. what was built, by requirement ID;
 2. the verification evidence, as commands and results;
@@ -146,6 +173,10 @@ meaningful. Then report, in five lines:
 Then stop. Do not begin it.
 
 ## When to stop early
+
+Under orchestration these conditions end this worker, not automatically the whole phase. Persist
+the matching result from `phase-workflow.md`; the parent researches safe engineering recovery or
+asks for the precise missing user fact. Never bypass an entry gate or commit a red/unreviewed tree.
 
 | What happened | What to do |
 |---|---|

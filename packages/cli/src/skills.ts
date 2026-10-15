@@ -32,6 +32,10 @@ export const SKILLS = {
     label: "Run Subphase",
     summary: "Bounded execution of one subphase: build, verify, review, commit",
   },
+  "run-phase": {
+    label: "Run Phase",
+    summary: "Sequential fresh subphase workers with verified phase progress and recovery",
+  },
   "run-codex-review-loop": {
     label: "Codex Review Loop",
     summary: "Independent review, bounded fixes, and clean rechecks",

@@ -53,6 +53,10 @@
       "name": "@ivni/run-feature-stage-skill",
       "version": "1.0.0",
     },
+    "packages/run-phase": {
+      "name": "@ivni/run-phase-skill",
+      "version": "1.0.0",
+    },
     "packages/run-qwen-review-loop": {
       "name": "@ivni/run-qwen-review-loop-skill",
       "version": "1.9.0",
@@ -106,6 +110,8 @@
     "@ivni/run-feature-skill": ["@ivni/run-feature-skill@workspace:packages/run-feature"],
 
     "@ivni/run-feature-stage-skill": ["@ivni/run-feature-stage-skill@workspace:packages/run-feature-stage"],
+
+    "@ivni/run-phase-skill": ["@ivni/run-phase-skill@workspace:packages/run-phase"],
 
     "@ivni/run-qwen-review-loop-skill": ["@ivni/run-qwen-review-loop-skill@workspace:packages/run-qwen-review-loop"],
 

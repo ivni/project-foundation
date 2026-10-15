@@ -371,3 +371,24 @@ CI and authorized issue closure remain separate delivery gates.
   behavior.
 - Add an automated filesystem test for every newly supported topology.
 - Do not infer undocumented project scope. That is why Hermes project scope is unavailable.
+
+## Phase orchestration
+
+Added: 2026-10-15. `run-phase` uses the same fresh-worker boundary as `run-feature`, with
+`run-subphase` as its executor and the prepared phase slice as the canonical plan/progress store.
+Its lifecycle is instruction-driven: parent-owned recovery metadata, one reserved writer, actual
+terminal observation, independent evidence readback, retries and diagnosed new review runs.
+It adds no feature issue/forge dependency and never automatically opens the next phase.
+
+Codex, Claude Code and OpenCode use observed native fresh-context delegation tools when available;
+actual effective model/tool/permission and cancellation semantics must be checked before dispatch.
+Pi/Hermes require an already available supervisor that can preserve session restrictions and await
+and cancel the whole owned process tree. This payload does not bundle that supervisor. The bundled
+`run-feature` scripts accept feature records and issue state only; they cannot run phase packets.
+An unavailable lifecycle is a capability checkpoint, not permission to launch an unmanaged worker.
+
+Local validation covers skill/shared-text/package integrity, isolated payload install/update/removal
+and independent simulated handoff decisions. It does not establish authenticated multi-subphase
+execution or cancellation on any host. The earlier feature-orchestration runtime/acceptance evidence
+above is evidence for that workflow only. Use the installed runtime's actual capability checks and
+the selected review loop's host adapter before running a phase.

@@ -55,7 +55,7 @@ been deliberately omitted or removed earlier. The wizard does not persist a full
 
 `bunx` runs the package without creating a permanent global CLI installation. The package contains
 the installer and exact payloads for `project-foundation`, `find-blind-spots`,
-`run-discovery-interview`, `plan-feature`, `run-feature-stage`, `run-feature`, `run-subphase`, `run-codex-review-loop`,
+`run-discovery-interview`, `plan-feature`, `run-feature-stage`, `run-feature`, `run-subphase`, `run-phase`, `run-codex-review-loop`,
 `run-claude-review-loop`, `run-qwen-review-loop`, `analyze-tests`, and `teach`. The selected skill
 directories remain after `bunx` exits.
 
@@ -74,6 +74,12 @@ See [orchestration acceptance](compatibility.md#feature-orchestration-acceptance
 execution, documentation evidence and the non-Codex runtime checks omitted by the owner.
 The workflow follows the repository's actual forge, including self-managed GitLab. `gh` is not a
 requirement for GitLab: use the available `glab`/connector/API with the verified host and project.
+
+For prepared phase slices, install `run-phase`, `run-subphase` and an independent review loop.
+`run-phase` delegates the remaining subphases from one invocation; it does not create the slice or
+start the next phase. Its instruction-driven lifecycle requires fresh native delegation, or an
+already available compatible CLI process supervisor on Pi/Hermes. It bundles no process supervisor
+and cannot use the feature-specific helpers. See [phase orchestration](compatibility.md#phase-orchestration).
 
 `run-codex-review-loop` has additional runtime requirements when invoked from Claude Code, Pi,
 OpenCode, or Hermes: `bun` and an authenticated `codex` CLI with access to `gpt-6.1-sol` and `xhigh`

@@ -15,6 +15,7 @@
 │   ├── run-discovery-interview/ Publishable interview skill payload
 │   ├── run-feature/             Publishable sequential feature orchestration payload
 │   ├── run-feature-stage/       Publishable issue-stage execution payload
+│   ├── run-phase/               Publishable sequential phase orchestration payload
 │   ├── run-qwen-review-loop/    Publishable Qwen review-loop payload
 │   ├── run-subphase/            Publishable bounded subphase-execution payload
 │   ├── teach/                   Publishable standalone teaching-workspace payload
@@ -48,7 +49,7 @@ bun run check
 ```
 
 `verify:skills` checks frontmatter, invocation policy, UI metadata, size, placeholders, local
-resource links, and shared-reference drift for all twelve payloads. `verify:docs` checks public
+resource links, and shared-reference drift for all thirteen payloads. `verify:docs` checks public
 Markdown structure, local links, changelog state, and package metadata.
 `verify:package` inspects the exact file manifest produced by npm, the tool used for publishing.
 `bun run check` runs it as part of the release-level local verification command.
@@ -87,6 +88,14 @@ checks shared references, invocation policy, UI metadata and the exact npm file 
 Observed Codex execution and the owner's documentary acceptance of the other four routes are
 recorded in [compatibility](compatibility.md#feature-orchestration-acceptance). Changes to adapters
 must still follow current primary sources and actual runtime preflight when executed.
+
+`run-phase` uses an instruction-driven lifecycle and the canonical `shared/phase-workflow.md`, copied
+into both phase skills. It delegates implementation to `run-subphase` and verifies actual Git,
+slice/checklist and review evidence before advancement. It does not reuse the feature-only helpers
+or ship a CLI process supervisor. The review-continuation block is generated for all three loops
+from `shared/orchestration-review-continuation.md`; standalone bounded stops remain unchanged.
+The orchestration payload matrix in `packages/cli/test/feature-skills.test.ts` also covers phase
+install/update/removal while preserving the independent subphase executor.
 
 ## Adding a skill
 
