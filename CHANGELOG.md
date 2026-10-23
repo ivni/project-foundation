@@ -7,12 +7,16 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.7.0] - 2026-10-23
+
 ### Added
 
 - Run Feature supervises worker progress with operation deadlines, recurring-error fingerprints,
   corrective instructions and diagnosed same-stage replacement. Failure/recovery history survives
   fresh attempts, and the command helper retains actual check logs. Watchdog stops require terminal
   ownership confirmation; explicit cancellation and all completion/review gates remain unchanged.
+  Managed shell commands use Linux subreaper/pidfd supervision; other systems require a verified
+  native command lifecycle with equivalent telemetry and termination evidence.
 
 ## [3.6.0] - 2026-10-15
 
@@ -590,7 +594,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.6.0...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.7.0...HEAD
+[3.7.0]: https://github.com/ivni/project-foundation/compare/v3.6.0...v3.7.0
 [3.6.0]: https://github.com/ivni/project-foundation/compare/v3.5.0...v3.6.0
 [3.5.0]: https://github.com/ivni/project-foundation/compare/v3.4.0...v3.5.0
 [3.4.0]: https://github.com/ivni/project-foundation/compare/v3.3.0...v3.4.0
