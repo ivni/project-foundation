@@ -333,6 +333,12 @@ runtime limitations; the owner subsequently changed their acceptance requirement
 
 ## Feature orchestration acceptance
 
+Watchdog extension (2026-10-23): local contract/command/process fixtures exercise repeated-error
+detection, persistent no-progress signals, correction and terminal replacement. Managed command
+execution, including from native workers, shares the Linux subreaper/pidfd supervisor; other OSes
+require a separately verified native command lifecycle. These fixtures and the independent code
+critique do not establish authenticated AI-host execution of the new watchdog behavior.
+
 Reviewed on **2026-10-13**. The feature owner explicitly requested proceeding from documentation
 without checks of the unavailable Claude Code, Pi, OpenCode and Hermes installations. The
 [issue amendment](https://github.com/ivni/project-foundation/issues/1#issuecomment-6145220940)

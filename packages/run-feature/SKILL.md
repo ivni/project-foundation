@@ -24,6 +24,8 @@ adapter for the current host: [Codex](references/codex.md),
 The four non-Codex routes use [references/hosts.md](references/hosts.md) for minimal packets and
 process lifecycle. Inspect actual runtime capabilities and effective permissions before dispatch;
 an implemented adapter is not proof that the current host is authenticated or accepted end to end.
+Read [references/watchdog.md](references/watchdog.md) for progress events, bounded waits,
+diagnosis, corrective instructions and terminal-owner replacement before starting workers.
 
 ## Restore and dispatch
 
@@ -45,7 +47,12 @@ invent an approval because a parent approved a different action.
 
 ## Await, verify and continue
 
-Wait through the host's completion surface. Retain short summaries and durable pointers; omit raw
+Wait through the host's completion surface in bounded intervals and inspect watchdog assessments
+between waits. Require operation boundaries and evidence-backed milestones; liveness alone is not
+progress. Diagnose recurring errors or overdue work, send a specific correction, and if ineffective
+stop and await the owned worker before a fresh attempt of the same stage. Preserve failure and
+recovery history so replacement cannot repeat the same loop. A timeout never releases ownership.
+Retain short summaries and durable pointers; omit raw
 traces from parent context. Save a result before cleaning temporary packets. Read the actual result,
 Git state, evidence artifacts, feature checkpoint and latest issue from the pinned forge. Normalize
 issue stages from that fresh read for the helper; a local snapshot is not live readback.

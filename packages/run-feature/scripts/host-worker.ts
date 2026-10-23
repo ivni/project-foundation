@@ -6,7 +6,6 @@ import {
   mkdir,
   mkdtemp,
   open,
-  readdir,
   readFile,
   realpath,
   rename,
@@ -16,6 +15,7 @@ import {
 import { tmpdir } from "node:os";
 import { isAbsolute, join, resolve } from "node:path";
 import { operate, type State, safePath } from "./orchestrator.ts";
+import { ownedProcessTree } from "./process-tree.ts";
 
 type Host = "claude-code" | "pi" | "opencode" | "hermes";
 export interface WorkerRequest {
@@ -112,11 +112,14 @@ export async function prepareWorker(request: WorkerRequest): Promise<WorkerPlan>
   const prompt = [
     `Invoke run-feature-stage at ${stageRoot}/SKILL.md for exactly the pinned stage below.`,
     `Read the shared result/continuation contract at ${resolve(import.meta.dir, "../references/protocol.md")}.`,
+    `Read progress/watchdog requirements at ${resolve(import.meta.dir, "../references/watchdog.md")}.`,
     "This is delegated authority from a user-started run-feature, not automatic skill discovery.",
     JSON.stringify(identity),
     `Read feature record ${state.feature_state_path}, parent sidecar ${request.state_path}, live issue and exact discovery.`,
     `Invoke independent run-codex-review-loop at ${reviewRoot}/SKILL.md using its ${request.host} adapter and actual Codex CLI wrapper.`,
     `Save the protocol.md structured result inside checkout at ${resultRef}; keep actual checks/review evidence durable.`,
+    `Run tests and shell checks through ${resolve(import.meta.dir, "worker-command.ts")} with the pinned run/attempt and sidecar; report evidence-backed milestones through orchestrator.ts report.`,
+    "Read watchdog corrective instructions and prior failures/recoveries from the sidecar; do not repeat an unchanged failing approach.",
     "Return one short summary and that path. Exit zero or a verbal success does not close a stage.",
     "If clarification is unavailable, return needs-user-input with the necessary question and sources_checked.",
     "Return review-exhausted to the parent at the bounded stop; preserve all run/finding/fix history.",
@@ -201,30 +204,6 @@ async function superviseProcess(plan: WorkerPlan, signal?: AbortSignal): Promise
   if (!plan.process || plan.native) throw new Error("Native plans must use the host's own tool");
   if (process.platform !== "linux")
     throw new Error("Process-tree supervision requires a verified Linux subreaper route");
-  const { dlopen, FFIType } = await import("bun:ffi");
-  const libc = dlopen("libc.so.6", {
-    prctl: {
-      args: [FFIType.i32, FFIType.u64, FFIType.u64, FFIType.u64, FFIType.u64],
-      returns: FFIType.i32,
-    },
-    pidfd_open: { args: [FFIType.i32, FFIType.u32], returns: FFIType.i32 },
-    pidfd_send_signal: {
-      args: [FFIType.i32, FFIType.i32, FFIType.ptr, FFIType.u32],
-      returns: FFIType.i32,
-    },
-    close: { args: [FFIType.i32], returns: FFIType.i32 },
-  });
-  if (libc.symbols.prctl(36, 1, 0, 0, 0) !== 0) {
-    libc.close();
-    throw new Error("Cannot enable dedicated child subreaper");
-  }
-  const ownFd = libc.symbols.pidfd_open(process.pid, 0);
-  if (ownFd < 0 || libc.symbols.pidfd_send_signal(ownFd, 0, null, 0) !== 0) {
-    if (ownFd >= 0) libc.symbols.close(ownFd);
-    libc.close();
-    throw new Error("Cannot use stable process descriptors");
-  }
-  libc.symbols.close(ownFd);
   if (signal?.aborted) throw new Error("Cancelled before spawn; no child created");
   const current = JSON.parse(
     await readFile(await safePath(plan.cwd, plan.state_path), "utf8"),
@@ -237,58 +216,14 @@ async function superviseProcess(plan: WorkerPlan, signal?: AbortSignal): Promise
     current.run_id !== plan.run_id
   )
     throw new Error("Dispatch changed before process launch");
-  // This dedicated supervisor has no unrelated children. Detached grandchildren are adopted
-  // when their parent exits, so they remain observable even after changing process groups.
-  const stat = async (pid: number) => {
-    const raw = await readFile(`/proc/${pid}/stat`, "utf8");
-    const fields = raw.slice(raw.lastIndexOf(")") + 2).split(" ");
-    return { pid, state: fields[0], parent: Number(fields[1]), start: fields[19] };
-  };
-  const processTable = async () => {
-    const seen = new Set<number>();
-    const rows: Awaited<ReturnType<typeof stat>>[] = [];
-    const visit = async (pid: number) => {
-      if (seen.has(pid)) return;
-      seen.add(pid);
-      const exited = (error: unknown) => {
-        // Exits during traversal are reconciled by another scan. Unreadable ownership is a
-        // capability error, never an empty tree or permission to release the stage.
-        if (!["ENOENT", "ESRCH"].includes((error as NodeJS.ErrnoException).code ?? "")) throw error;
-      };
-      let threads: string[];
-      try {
-        threads = await readdir(`/proc/${pid}/task`);
-      } catch (error) {
-        exited(error);
-        return;
-      }
-      for (const tid of threads) {
-        let ids: string;
-        try {
-          ids = await readFile(`/proc/${pid}/task/${tid}/children`, "utf8");
-        } catch (error) {
-          exited(error);
-          continue;
-        }
-        for (const id of ids.trim().split(/\s+/).filter(Boolean)) {
-          const child = Number(id);
-          try {
-            const row = await stat(child);
-            if (row.parent !== pid) continue;
-            if (row.state !== "Z") rows.push(row);
-            await visit(child);
-          } catch (error) {
-            exited(error);
-          }
-        }
-      }
-    };
-    await visit(process.pid);
-    return rows;
-  };
-  await processTable(); // No work starts unless descendant ownership can be observed.
+  const tree = await ownedProcessTree();
   const artifact = await safePath(plan.cwd, plan.artifact_ref);
-  await mkdir(artifact); // Exclusive per attempt: never overwrite earlier output.
+  try {
+    await mkdir(artifact);
+  } catch (error) {
+    tree.close();
+    throw error;
+  }
   let temp: string | undefined;
   let stdout: FileHandle | undefined;
   let stderr: FileHandle | undefined;
@@ -297,39 +232,15 @@ async function superviseProcess(plan: WorkerPlan, signal?: AbortSignal): Promise
   let pid: number | undefined;
   let hostChild: ReturnType<typeof spawn> | undefined;
   let killTimer: ReturnType<typeof setTimeout> | undefined;
+  let monitorTimer: ReturnType<typeof setInterval> | undefined;
+  let monitorPending: Promise<void> | undefined;
   const cancel = () => {
     interrupted = true;
     hostChild?.kill("SIGTERM");
     killTimer ??= setTimeout(() => hostChild?.kill("SIGKILL"), 1000);
   };
   const finishGroup = async () => {
-    const deadline = Date.now() + 5000;
-    let emptyScans = 0;
-    while (true) {
-      const owned = await processTable();
-      emptyScans = owned.length ? 0 : emptyScans + 1;
-      if (emptyScans === 2) break;
-      for (const row of owned) {
-        const fd = libc.symbols.pidfd_open(row.pid, 0);
-        try {
-          const current = await stat(row.pid);
-          if (current.start !== row.start || current.state === "Z") continue;
-          if (fd < 0 || libc.symbols.pidfd_send_signal(fd, 9, null, 0) !== 0) {
-            const after = await stat(row.pid);
-            if (after.start === row.start && after.state !== "Z" && after.state !== "X")
-              throw new Error("Cannot terminate owned process through stable descriptor");
-          }
-        } catch (error) {
-          if (!["ENOENT", "ESRCH"].includes((error as NodeJS.ErrnoException).code ?? ""))
-            throw error;
-        } finally {
-          if (fd >= 0) libc.symbols.close(fd);
-        }
-      }
-      if (Date.now() >= deadline)
-        throw new Error("Owned process tree is not terminal; retain ownership");
-      await new Promise((resolve) => setTimeout(resolve, 20));
-    }
+    await tree.finish();
     groupTerminal = true;
   };
   try {
@@ -395,9 +306,52 @@ async function superviseProcess(plan: WorkerPlan, signal?: AbortSignal): Promise
     }
     signal?.addEventListener("abort", cancel, { once: true });
     if (signal?.aborted) cancel();
+    let observedAt = 0;
+    const monitor = async () => {
+      const latest = JSON.parse(
+        await readFile(await safePath(plan.cwd, plan.state_path), "utf8"),
+      ) as State;
+      if (
+        latest.active?.attempt_id !== plan.attempt_id ||
+        latest.active.handle !== handle ||
+        latest.run_id !== plan.run_id
+      )
+        throw new Error("Running process lost its recorded owner");
+      if (latest.stop_requested) {
+        cancel();
+        return;
+      }
+      if (Date.now() - observedAt >= (latest.watchdog?.policy.poll_ms ?? 60_000)) {
+        await operate({
+          action: "observe",
+          cwd: plan.cwd,
+          state_path: plan.state_path,
+          input: { run_id: plan.run_id, attempt_id: plan.attempt_id },
+        });
+        observedAt = Date.now();
+      }
+    };
+    let monitorError: unknown;
+    monitorTimer = setInterval(() => {
+      if (monitorPending) return;
+      monitorPending = monitor()
+        .catch((error) => {
+          // A brief helper lock collision is retried. Unreadable ownership must stop work.
+          if ((error as NodeJS.ErrnoException).code !== "EEXIST") {
+            monitorError = error;
+            cancel();
+          }
+        })
+        .finally(() => {
+          monitorPending = undefined;
+        });
+    }, 250);
     const terminal = await closed;
+    clearInterval(monitorTimer);
+    await monitorPending;
     // A child shell may outlive the host leader; remove owned background processes as well.
     await finishGroup();
+    if (monitorError) throw monitorError;
     let resultPresent = false;
     try {
       const result = JSON.parse(await readFile(await safePath(plan.cwd, plan.result_ref), "utf8"));
@@ -430,13 +384,14 @@ async function superviseProcess(plan: WorkerPlan, signal?: AbortSignal): Promise
   } finally {
     signal?.removeEventListener("abort", cancel);
     if (killTimer) clearTimeout(killTimer);
+    if (monitorTimer) clearInterval(monitorTimer);
     try {
       if (pid && !groupTerminal) await finishGroup();
     } finally {
       await stdout?.close();
       await stderr?.close();
       if (temp) await rm(temp, { recursive: true, force: true });
-      libc.close();
+      tree.close();
     }
   }
 }

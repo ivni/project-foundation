@@ -78,10 +78,20 @@ Filesystem logic is UI-independent so tests can use isolated temporary homes and
 The host agent owns authenticated issue operations, native spawn/wait/cancel, and inspection of
 checks, review and commit evidence. `host-worker.ts` prepares native packets or runs the Linux
 Pi/Hermes supervisor; a transport exit is never stage completion.
+Its watchdog records operation boundaries, input/error fingerprints, meaningful progress claims,
+corrective instructions and recovery history. The host parent inspects these signals during bounded
+waits. `worker-command.ts` preserves command evidence and `watchdog.ts` evaluates recurrence and
+deadlines; the process supervisor honors recorded replacement only through owned-tree cleanup.
+Native hosts use the same protocol with their actual message/wait/stop lifecycle. On Linux,
+`worker-command.ts` and the process-host supervisor share `process-tree.ts` for dedicated subreaper
+ownership and pidfd cleanup; native command receipts require terminal descendants. Other systems
+need a verified native equivalent and are not covered by the Linux command execution fixtures.
 
 `tests/feature-orchestrator.test.ts` covers recovery, identity, review continuation and completion
 guards. `tests/feature-hosts.test.ts` uses explicit host/reviewer/forge doubles for packets and
 process lifecycle, including a three-stage successful handoff; it makes no authenticated host claim.
+`tests/feature-watchdog.test.ts` and command/host fixtures cover stalled operations, repeated errors
+across fresh attempts, corrections, terminal replacement and explicit cancellation precedence.
 `packages/cli/test/feature-skills.test.ts` exercises real payload install/update/remove in isolated
 homes/projects across supported agents, scopes and copy/link strategies. `bun run check` also
 checks shared references, invocation policy, UI metadata and the exact npm file manifest.

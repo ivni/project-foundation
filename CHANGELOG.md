@@ -7,6 +7,13 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Run Feature supervises worker progress with operation deadlines, recurring-error fingerprints,
+  corrective instructions and diagnosed same-stage replacement. Failure/recovery history survives
+  fresh attempts, and the command helper retains actual check logs. Watchdog stops require terminal
+  ownership confirmation; explicit cancellation and all completion/review gates remain unchanged.
+
 ## [3.6.0] - 2026-10-15
 
 ### Added

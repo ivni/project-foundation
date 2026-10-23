@@ -1,6 +1,7 @@
 # Orchestration state and result protocol
 
-The parent owns `.agents/work/features/<feature-id>.orchestrator.json`; the executor alone writes
+The parent owns `.agents/work/features/<feature-id>.orchestrator.json`; the executor may report
+only its attempt's telemetry through the serialized helper. The executor alone writes
 the existing feature record. Neither stores another plan. The live issue supplies ordered stages.
 Use the bundled helper with an argument file (no interpolated shell snippets):
 
@@ -28,6 +29,7 @@ the actual forge read and inspect the real content; the helper is not an authent
 
 - `start`: input `{feature_state_path, issue}`. Run only once after selection/preflight; an existing
   sidecar must be restored. It pins feature/repository/issue/base/checkout and assigns `run_id`.
+  Optional `watchdog` configures the parent-approved timing/repetition policy before dispatch.
 - `dispatch`: input `{issue}`. Resume a recorded stage/checkpoint before selecting the first undone
   one. Verify earlier stage results/ancestry; reserve an attempt before spawning. A committed checkpoint
   pins `recovery_commit`; verified recovery reuses that SHA even after unrelated descendant commits.
@@ -36,6 +38,9 @@ the actual forge read and inspect the real content; the helper is not an authent
   it returns `implemented`; the parent must also verify feature-wide criteria and evidence.
 - `bind`: input `{attempt_id, handle}` after successful spawn. Save the real handle immediately.
   If dispatch/spawn outcome is uncertain, inspect actual host children before another spawn.
+- `report`, `observe`, `intervene`: active-run/attempt-scoped supervision as described in
+  [watchdog.md](watchdog.md). Reports never establish completion. A watchdog replacement retains
+  ownership until terminal `settle` and requires a changed `dispatch.input.recovery` before retry.
 - `settle`: input `{result_ref, terminal: {attempt_id, handle, stopped: true}, issue?}`. The terminal
   observation must come from the real host (use handle null only after proving reserved spawn never
   created a child). `issue` is mandatory for completion. Results must be saved within the checkout.
@@ -60,6 +65,8 @@ Provide: delegation authorized by the current user-started `run-feature`; pinned
 repository/issue/base/checkout, `run_id`, `attempt_id`, selected `stage_id`, exact stage and review skill
 paths, sidecar/feature-record paths, result destination, existing review/checkpoint pointers, narrower
 user/repository constraints and explicit fallback approvals. Include an answer if one was verified.
+Include the absolute watchdog reference/helper paths and failure/recovery pointers for telemetry
+and correction, including native workers. Supervise while awaiting, not just after worker exit.
 Do not copy earlier implementation conversation, stage lists, full logs or suspected reviewer findings.
 The worker loads prior findings from the actual ledger and gives neutral task context to the reviewer.
 

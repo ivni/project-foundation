@@ -5,7 +5,10 @@ spawn/wait/cancel/close surfaces differently. Do not assume a CLI tool name on D
 
 In Desktop, use `collaboration.spawn_agent` with `fork_turns: "none"` and the complete minimal packet;
 omit model/effort overrides so the executor retains the user's current defaults. Record the returned
-canonical handle with the helper's `bind`. Wait for its final notification with `wait_agent`; progress
+canonical handle with the helper's `bind`. Use bounded `wait_agent` calls and inspect progress with
+the [watchdog protocol](watchdog.md) between waits. Deliver a persisted corrective instruction through
+the actual messaging tool when needed; an interrupt alone does not prove command termination.
+Wait for its final notification; progress
 or an idle list alone is not a structured stage result. Save and inspect the worker's persisted result.
 Use `interrupt_agent` on cancellation, then confirm terminal status before releasing ownership.
 Close completed children if the actual host supports it; do not reuse them via follow-up for another
@@ -25,6 +28,11 @@ are unavailable, use its external wrapper only with explicit user approval alrea
 obtained for that fallback; pass the approval evidence into the child. Parent and executor never
 replace independent review with each other's assessment. Native stage workers and CLI reviewers
 are separate lifecycles.
+
+Preflight the watchdog command lifecycle too. On Linux use the bundled managed command supervisor
+and inspect its terminal receipt when stopping a native worker. On other systems require an actual
+native command tool with equivalent telemetry and owned-tree termination evidence before dispatch;
+the Linux-only helper must not be replaced with an unverified shell/PID cancellation assumption.
 
 Source: [official Codex subagent documentation](https://learn.chatgpt.com/docs/agent-configuration/subagents).
 The native fresh-worker and approved CLI-review path were probed in S1; complete multi-stage

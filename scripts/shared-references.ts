@@ -146,6 +146,7 @@ export const SHARED_REFERENCES: SharedReference[] = [
       "packages/run-codex-review-loop/scripts/tree-snapshot.ts",
       "packages/run-claude-review-loop/scripts/tree-snapshot.ts",
       "packages/run-qwen-review-loop/scripts/tree-snapshot.ts",
+      "packages/run-feature/scripts/tree-snapshot.ts",
     ],
   },
   {

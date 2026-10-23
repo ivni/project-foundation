@@ -215,7 +215,9 @@ test("native packets pin identity/paths and omit conversation/model/permission/s
     expect(Object.keys(args).sort()).toEqual(
       ["description", "prompt", tool === "subagent" ? "agent" : "subagent_type"].sort(),
     );
-    const identity = JSON.parse(plan.prompt.split("\n")[3] ?? "null");
+    const identity = JSON.parse(
+      plan.prompt.split("\n").find((line) => line.startsWith('{"schema":')) ?? "null",
+    );
     expect(identity).toEqual(f.result(f.state, {}));
     expect(plan.prompt).toContain(f.request.stage_skill_root);
     expect(plan.prompt).toContain(f.request.review_skill_root);
@@ -383,6 +385,74 @@ processTest(
     const resumed = await f.call("dispatch", { issue: f.issue });
     expect(resumed.stage_id).toBe(f.state.stage_id);
     expect(resumed.active?.attempt_id).not.toBe(f.state.active?.attempt_id);
+  },
+);
+
+processTest(
+  "supervisor observes watchdog state and stops the owned process tree on replacement",
+  async () => {
+    const f = await fixture();
+    const plan = await double(
+      await prepareWorker(f.request),
+      `import {spawn} from 'node:child_process'; const child=spawn(process.execPath,['-e',"setInterval(()=>{},100)"],{stdio:'ignore',detached:true});console.log(child.pid);setInterval(()=>{},100);`,
+    );
+    const controller = new AbortController();
+    const pending = runProcess(plan, controller.signal);
+    try {
+      let childPid = 0;
+      let current: State = f.state;
+      for (let i = 0; i < 100; i++) {
+        childPid = Number(
+          (
+            await Bun.file(join(f.cwd, plan.artifact_ref, "stdout.log"))
+              .text()
+              .catch(() => "")
+          ).trim(),
+        );
+        current = JSON.parse(await readFile(join(f.cwd, f.request.state_path), "utf8"));
+        if (childPid && current.status === "running") break;
+        await Bun.sleep(20);
+      }
+      expect(childPid).toBeGreaterThan(0);
+      if (!current.watchdog) throw new Error("watchdog missing");
+      current.watchdog.last_progress_at = 0;
+      current.watchdog.policy.grace_ms = 1;
+      await f.save(f.request.state_path, current);
+      const owner = { run_id: current.run_id, attempt_id: current.active?.attempt_id };
+      const evidence = `${plan.artifact_ref}/stdout.log`;
+      await f.call("intervene", {
+        ...owner,
+        mode: "nudge",
+        diagnosis: "no progress",
+        instruction: "diagnose before continuing",
+        evidence_ref: evidence,
+      });
+      await Bun.sleep(5);
+      await f.call("intervene", {
+        ...owner,
+        mode: "replace",
+        diagnosis: "no response to correction",
+        evidence_ref: evidence,
+      });
+      const transport = await pending;
+      expect(transport.interrupted).toBe(true);
+      expect(transport.terminal).toBe(true);
+      const ps = Bun.spawnSync(["ps", "-o", "stat=", "-p", String(childPid)])
+        .stdout.toString()
+        .trim();
+      expect(ps === "" || ps.startsWith("Z")).toBe(true);
+      expect(
+        (
+          await f.settle(plan, f.state, {
+            outcome: "retryable-error",
+            diagnosis: "watchdog stopped worker",
+          })
+        ).status,
+      ).toBe("ready");
+    } finally {
+      controller.abort();
+      await pending.catch(() => {});
+    }
   },
 );
 
@@ -639,22 +709,33 @@ processTest(
     const f = await fixture();
     const scripts = join(f.cwd, "isolated-scripts");
     await mkdir(scripts);
-    const original = await readFile(resolve("packages/run-feature/scripts/host-worker.ts"), "utf8");
+    const original = await readFile(
+      resolve("packages/run-feature/scripts/process-tree.ts"),
+      "utf8",
+    );
     const seam = "const current = await stat(row.pid);";
     expect(original.split(seam).length).toBe(2);
     const gate = join(f.cwd, "descendant-exit-gate");
     // Force a real child exit and parent reaping after a live observation with an open pidfd.
     // Only an isolated source copy controls ordering; production signaling/error logic is unchanged.
     await writeFile(
-      join(scripts, "host-worker.ts"),
+      join(scripts, "process-tree.ts"),
       original.replace(
         seam,
-        `${seam}\n          await writeFile(${JSON.stringify(gate)}, "exit");\n          const waiter = dlopen("libc.so.6", { waitpid: { args: [FFIType.i32, FFIType.ptr, FFIType.i32], returns: FFIType.i32 } });\n          if (waiter.symbols.waitpid(row.pid, null, 0) !== row.pid) throw new Error("Controlled child reaping failed");\n          waiter.close();`,
+        `${seam}\n          await Bun.write(${JSON.stringify(gate)}, "exit");\n          const waiter = dlopen("libc.so.6", { waitpid: { args: [FFIType.i32, FFIType.ptr, FFIType.i32], returns: FFIType.i32 } });\n          if (waiter.symbols.waitpid(row.pid, null, 0) !== row.pid) throw new Error("Controlled child reaping failed");\n          waiter.close();`,
       ),
     );
     await writeFile(
       join(scripts, "orchestrator.ts"),
       await readFile(resolve("packages/run-feature/scripts/orchestrator.ts"), "utf8"),
+    );
+    await writeFile(
+      join(scripts, "watchdog.ts"),
+      await readFile(resolve("packages/run-feature/scripts/watchdog.ts"), "utf8"),
+    );
+    await writeFile(
+      join(scripts, "host-worker.ts"),
+      await readFile(resolve("packages/run-feature/scripts/host-worker.ts"), "utf8"),
     );
     const childCode = `const {existsSync}=require('node:fs');setInterval(()=>{if(existsSync(${JSON.stringify(gate)}))process.exit(0)},10);`;
     const plan = await double(

@@ -9,6 +9,7 @@ import {
   type Request,
   type State,
 } from "../packages/run-feature/scripts/orchestrator.ts";
+import { runCommand } from "../packages/run-feature/scripts/worker-command.ts";
 
 const roots: string[] = [];
 afterEach(async () => {
@@ -132,6 +133,297 @@ test("three dependent stages reserve distinct fresh attempts and require all com
   expect(handles.size).toBe(3);
   expect((await f.call("dispatch", { issue: f.issue })).status).toBe("implemented");
   expect(git(f.cwd, "rev-list", "--count", "HEAD")).toBe("4");
+});
+
+(process.platform === "linux" ? test : test.skip)(
+  "real command failures trigger diagnosis, terminal replacement and a changed recovery plan",
+  async () => {
+    const f = await fixture();
+    const s = await f.reserve();
+    const request = {
+      cwd: f.cwd,
+      state_path: statePath,
+      run_id: s.run_id,
+      attempt_id: s.active?.attempt_id as string,
+      phase: "checks",
+      summary: "fixture test launcher",
+      argv: [process.execPath, "-e", "console.error('missing test executable');process.exit(7)"],
+    };
+    let result = await runCommand(request);
+    expect(result.exit_code).toBe(7);
+    await runCommand(request);
+    result = await runCommand(request);
+    expect(result.watchdog).toEqual({ reason: "repeated-error", action: "inspect" });
+    await expect(runCommand(request)).rejects.toThrow("requires parent diagnosis");
+    const owner = { run_id: s.run_id, attempt_id: s.active?.attempt_id };
+    await expect(f.call("report", { ...owner, attempt_id: "stale", event: {} })).rejects.toThrow(
+      "owner",
+    );
+    await expect(
+      f.call("intervene", {
+        ...owner,
+        mode: "replace",
+        diagnosis: "stuck",
+        evidence_ref: result.evidence_ref,
+      }),
+    ).rejects.toThrow("grace period");
+    await f.call("intervene", {
+      ...owner,
+      mode: "nudge",
+      diagnosis: "launcher fails before tests",
+      instruction: "inspect executable resolution before another test launch",
+      evidence_ref: result.evidence_ref,
+    });
+    result = await runCommand(request);
+    expect(result.watchdog?.action).toBe("replace");
+    const stopped = await f.call("intervene", {
+      ...owner,
+      mode: "replace",
+      diagnosis: "instruction ignored",
+      evidence_ref: result.evidence_ref,
+    });
+    expect(stopped.stop_requested).toBe("watchdog");
+    await expect(f.call("dispatch", { issue: f.issue })).rejects.toThrow("active/stopped");
+    await expect(f.call("settle", { terminal: { ...s.active, stopped: false } })).rejects.toThrow(
+      "terminal",
+    );
+    const ready = await f.settle(s, {
+      outcome: "retryable-error",
+      diagnosis: "owned worker stopped",
+    });
+    expect(ready.status).toBe("ready");
+    expect(ready.watchdog?.failures[0]?.count).toBe(4);
+    await expect(f.call("dispatch", { issue: f.issue })).rejects.toThrow();
+    const recovery = {
+      diagnosis: "verified executable is missing",
+      approach: "inspect repository test scripts and resolve executable",
+      evidence_ref: result.evidence_ref,
+    };
+    const next = await f.call("dispatch", { issue: f.issue, recovery });
+    expect(next.stage_id).toBe("S1");
+    expect(next.active?.attempt_id).not.toBe(s.active?.attempt_id);
+    expect(next.watchdog?.failures[0]?.count).toBe(4);
+    expect(next.watchdog?.recoveries).toEqual([recovery]);
+    await f.call("bind", { attempt_id: next.active?.attempt_id, handle: "next-worker" });
+    await expect(f.call("report", { ...owner, event: {} })).rejects.toThrow("owner");
+    const observed = await f.call("observe", {
+      run_id: next.run_id,
+      attempt_id: next.active?.attempt_id,
+    });
+    expect(observed.watchdog?.recoveries).toEqual([recovery]);
+    const journal = await readFile(
+      join(f.cwd, `.agents/work/features/fixture.${s.active?.attempt_id}.watchdog.jsonl`),
+      "utf8",
+    );
+    expect(journal).toContain("instruction ignored");
+    expect(
+      journal
+        .trim()
+        .split("\n")
+        .filter((line) => JSON.parse(line).event),
+    ).toHaveLength(8);
+  },
+);
+
+for (const mode of ["signal", "sidecar"] as const) {
+  (process.platform === "linux" ? test : test.skip)(
+    `native command supervisor cleans detached descendants after ${mode} cancellation`,
+    async () => {
+      const f = await fixture();
+      const state = await f.reserve();
+      const request = {
+        cwd: f.cwd,
+        state_path: statePath,
+        run_id: state.run_id,
+        attempt_id: state.active?.attempt_id,
+        phase: "checks",
+        summary: "native fixture",
+        argv: [
+          process.execPath,
+          "-e",
+          `const {spawn}=require('node:child_process');const child=spawn(process.execPath,['-e','setInterval(()=>{},100)'],{stdio:'ignore',detached:true});console.log(child.pid);process.on('SIGTERM',()=>{});setInterval(()=>{},100);`,
+        ],
+      };
+      const file = join(f.cwd, ".agents/work/features/command-request.json");
+      await writeFile(file, JSON.stringify(request));
+      const wrapper = Bun.spawn(
+        [
+          process.execPath,
+          join(import.meta.dir, "../packages/run-feature/scripts/worker-command.ts"),
+          file,
+        ],
+        {
+          cwd: f.cwd,
+          stdin: "ignore",
+          stdout: "pipe",
+          stderr: "pipe",
+        },
+      );
+      const output = new Response(wrapper.stdout).text();
+      const errors = new Response(wrapper.stderr).text();
+      try {
+        let op = "";
+        let grandchild = 0;
+        let artifact = "";
+        for (let i = 0; i < 200; i++) {
+          const latest = JSON.parse(await readFile(join(f.cwd, statePath), "utf8")) as State;
+          op = latest.watchdog?.operation?.id ?? "";
+          artifact = `.agents/work/features/fixture.${state.active?.attempt_id}.commands/${op}`;
+          if (op)
+            grandchild = Number(
+              (
+                await Bun.file(join(f.cwd, artifact, "stdout.log"))
+                  .text()
+                  .catch(() => "")
+              ).trim(),
+            );
+          if (grandchild) break;
+          await Bun.sleep(20);
+        }
+        expect(grandchild).toBeGreaterThan(0);
+        if (mode === "signal") wrapper.kill("SIGTERM");
+        else
+          await f.call("stop", { reason: "cancelled", diagnosis: "explicit native fixture stop" });
+        expect(await wrapper.exited).not.toBe(0);
+        expect(await errors).toBe("");
+        const result = JSON.parse(await output);
+        expect(result.terminal).toBe(true);
+        expect(result.interrupted).toBe(true);
+        const receipt = JSON.parse(await readFile(join(f.cwd, artifact, "result.json"), "utf8"));
+        expect(receipt).toMatchObject({
+          attempt_id: state.active?.attempt_id,
+          operation_id: op,
+          terminal: true,
+        });
+        const ps = Bun.spawnSync(["ps", "-o", "stat=", "-p", String(grandchild)])
+          .stdout.toString()
+          .trim();
+        expect(ps === "" || ps.startsWith("Z")).toBe(true);
+      } finally {
+        wrapper.kill("SIGTERM");
+        await wrapper.exited;
+      }
+    },
+    15_000,
+  );
+}
+
+test("parent resolution preserves error history; explicit cancellation wins over watchdog recovery", async () => {
+  const f = await fixture();
+  const s = await f.reserve();
+  const owner = { run_id: s.run_id, attempt_id: s.active?.attempt_id };
+  await writeFile(
+    join(f.cwd, ".agents/work/features/diagnosis.log"),
+    "new verified diagnostic evidence",
+  );
+  const evidence = ".agents/work/features/diagnosis.log";
+  let sequence = 0;
+  for (let i = 0; i < 3; i++) {
+    await f.call("report", {
+      ...owner,
+      event: {
+        sequence: ++sequence,
+        kind: "operation-start",
+        summary: "check",
+        operation: {
+          id: String(i),
+          key: "check",
+          inputs: "same",
+          phase: "checks",
+          summary: "check",
+          timeout_ms: 1000,
+        },
+      },
+    });
+    await f.call("report", {
+      ...owner,
+      event: {
+        sequence: ++sequence,
+        kind: "operation-end",
+        summary: "failed",
+        operation_id: String(i),
+        failure: "same failure",
+        evidence_ref: evidence,
+      },
+    });
+  }
+  const before = await f.call("observe", owner);
+  await expect(
+    f.call("observe", {
+      ...owner,
+      resolution: { failure: "wrong", evidence_ref: evidence, diagnosis: "fixed" },
+    }),
+  ).rejects.toThrow("identify");
+  const resolved = await f.call("observe", {
+    ...owner,
+    resolution: {
+      failure: before.watchdog?.last_failure,
+      evidence_ref: evidence,
+      diagnosis: "confirmed the cause has been corrected",
+    },
+  });
+  expect(resolved.watchdog?.assessment.action).toBe("wait");
+  expect(resolved.watchdog?.failures[0]?.count).toBe(3);
+  await f.call("stop", { reason: "cancelled", diagnosis: "explicit user cancellation" });
+  await expect(f.call("intervene", { ...owner, mode: "replace" })).rejects.toThrow("stop already");
+  const cancelled = await f.settle(s, { outcome: "retryable-error", diagnosis: "worker stopped" });
+  expect(cancelled.status).toBe("cancelled");
+});
+
+test("watchdog ignores late success and recovers a commit created before its checkpoint was written", async () => {
+  const f = await fixture();
+  const s = await f.reserve();
+  const done = await f.finish(s);
+  const stage = f.issue.stages[0];
+  if (!stage || !s.watchdog) throw new Error("fixture state missing");
+  stage.done = false;
+  delete stage.result;
+  const current = JSON.parse(await readFile(join(f.cwd, statePath), "utf8")) as State;
+  if (!current.watchdog) throw new Error("fixture watchdog missing");
+  current.watchdog.last_progress_at = 0;
+  current.watchdog.policy.grace_ms = 1;
+  await json(f.cwd, statePath, current);
+  const owner = { run_id: s.run_id, attempt_id: s.active?.attempt_id };
+  const evidence = ".agents/work/features/checks.json";
+  await f.call("intervene", {
+    ...owner,
+    mode: "nudge",
+    diagnosis: "worker stopped advancing",
+    instruction: "inspect the remaining closeout",
+    evidence_ref: evidence,
+  });
+  await Bun.sleep(5);
+  await f.call("intervene", {
+    ...owner,
+    mode: "replace",
+    diagnosis: "worker did not respond",
+    evidence_ref: evidence,
+  });
+  const ready = await f.settle(s, done);
+  expect(ready.stage_id).toBe("S1");
+  const recovery = {
+    diagnosis: "found stage commit before local checkpoint publication",
+    approach: "verify and publish the existing commit without reimplementation",
+    evidence_ref: evidence,
+    commit_sha: done.commit_sha,
+  };
+  await expect(
+    f.call("dispatch", { issue: f.issue, recovery: { ...recovery, commit_sha: s.base_commit } }),
+  ).rejects.toThrow("must be new");
+  const next = await f.call("dispatch", { issue: f.issue, recovery });
+  expect(next.recovery_commit).toBe(done.commit_sha);
+  expect(next.watchdog?.recoveries).toEqual([recovery]);
+  const bound = await f.call("bind", {
+    attempt_id: next.active?.attempt_id,
+    handle: "recovery-worker",
+  });
+  stage.done = true;
+  stage.result = { commit_sha: done.commit_sha, ref: done.issue_result_ref };
+  const settled = await f.settle(bound, done);
+  expect(settled.stage_id).toBeUndefined();
+  expect(settled.watchdog?.failures).toEqual([]);
+  expect(settled.watchdog?.recoveries).toEqual([]);
+  expect(git(f.cwd, "rev-list", "--count", "HEAD")).toBe("2");
 });
 
 test("false success, stale attempt, wrong tree, wrong SHA and changed contract leave ownership intact", async () => {

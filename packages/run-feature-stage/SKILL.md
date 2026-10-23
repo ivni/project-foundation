@@ -8,6 +8,10 @@ description: Complete one stage of an active feature issue, including autonomous
 Take exactly one stage of the active feature issue to done, then stop. A pinned fresh-worker packet
 from a user-started `run-feature` is delegated authority for that one stage. Return its result to the
 parent; the parent may dispatch the next fresh worker. Standalone invocation retains its boundary.
+For an orchestrated packet, read its watchdog reference and report operation boundaries and
+evidence-backed milestones using the pinned helpers. Run tests/shell checks through its command
+helper, inspect corrective instructions and preserve attempted diagnoses across recovery. A busy
+tool need not emit heartbeats; do not repeat an unchanged failing command or renew its deadline.
 A bare `$run-feature-stage` resumes an unfinished stage or selects the next one. The user need not repeat "test, review, commit,
 update the issue" or inspect the implementation on the agent's behalf.
 

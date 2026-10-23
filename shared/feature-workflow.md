@@ -53,6 +53,11 @@ The parent owns a minimal `.agents/work/features/<feature-id>.orchestrator.json`
 run/attempt, active owner/action, result/review/question/cancellation pointers), not another plan.
 The executor owns the existing feature record. Serialize owners and inspect/wait/stop an active
 worker before replacement; no age-based stale overwrite. Both records use atomic sibling rename.
+During execution, supervise bounded waits using the installed `run-feature` watchdog contract.
+Worker telemetry records operation boundaries and evidence-backed milestones through the serialized
+helper. The parent diagnoses repeated errors or missing progress, delivers a corrective instruction,
+then stops/awaits an ineffective owner before replacement. Preserve failure/recovery history across
+attempts; changing workers is not a reason to repeat an unchanged failing approach.
 Preserve task-wide review ledgers, findings, dispositions, fixes and tested states across fresh
 workers/compaction/new bounded runs. The Codex review skill defines scoped continuation; manual
 review and each ten-pass run retain their boundaries. No pass 11 is authorized in an old run.

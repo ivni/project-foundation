@@ -25,6 +25,8 @@ Native requests add `{tool, worker, schema_ref}` from the installed runtime. `pl
 minimal prompt/native arguments; use the actual host tool, retain its handle, `bind` immediately,
 await completion/cancellation and persist its structured result. No native tool is invoked by Bun,
 and fixture shape validation is not a real host smoke. Do not use `run` for native hosts.
+Use bounded waits and [watchdog.md](watchdog.md) to supervise progress; native packet execution
+must include its telemetry/command helper paths and the host's actual correction/stop surfaces.
 
 For Pi/Hermes, `run` spawns the selected binary with inherited environment, no shell and no detached
 durable job. It uses a dedicated Linux child subreaper while awaiting the child and binds the PID/attempt handle.
@@ -51,3 +53,9 @@ before another dispatch. A malformed/missing result is diagnosed from preserved 
 Git/issue/checkpoint facts, then normalized to the common failure result by the parent. Never invent
 a passing review, commit or readback. Temporary packet files are removed after the awaited lifecycle;
 durable evidence is retained. Retries use fresh attempts and never overwrite old transport records.
+
+The process supervisor samples watchdog assessments at the configured interval and checks recorded
+stop requests every 250 ms. It retains the owner until process-tree cleanup finishes. The parent
+still uses bounded tool/terminal waits to inspect assessments and decide correction/replacement;
+sampling alone does not diagnose a loop, send messages or claim stage completion. A watchdog
+replacement request is honored automatically by the owning supervisor without a second signal.

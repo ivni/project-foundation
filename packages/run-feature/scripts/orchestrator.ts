@@ -1,7 +1,16 @@
 #!/usr/bin/env bun
 import { randomUUID } from "node:crypto";
-import { lstat, mkdir, readFile, realpath, rename, rm, writeFile } from "node:fs/promises";
+import { lstat, mkdir, readFile, realpath, rename, rm, stat, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
+import {
+  assess,
+  beginWatchdog,
+  policy,
+  report,
+  shortText,
+  validateWatchdog,
+  type Watchdog,
+} from "./watchdog.ts";
 
 // The host owns delegation and authenticated issue reads. This helper owns serialized local
 // transitions and Git/evidence guards; it cannot grant permissions or perform forge writes.
@@ -48,11 +57,22 @@ export interface State extends Identity {
   diagnosis?: string;
   question?: string;
   answer?: string;
-  stop_requested?: "cancelled" | "interrupted";
+  stop_requested?: "cancelled" | "interrupted" | "watchdog";
   review_ledger?: string;
+  watchdog?: Watchdog;
 }
 export interface Request {
-  action: "start" | "dispatch" | "bind" | "settle" | "stop" | "resume" | "review-cycle";
+  action:
+    | "start"
+    | "dispatch"
+    | "bind"
+    | "settle"
+    | "stop"
+    | "resume"
+    | "review-cycle"
+    | "report"
+    | "observe"
+    | "intervene";
   cwd: string;
   state_path: string;
   input: ObjectValue;
@@ -123,6 +143,12 @@ async function atomic(path: string, value: unknown): Promise<void> {
   } finally {
     await rm(temp, { force: true });
   }
+}
+async function verifyEvidence(cwd: string, value: unknown): Promise<string> {
+  const ref = shortText(value);
+  const info = await stat(await safePath(cwd, ref));
+  if (!info.isFile() || info.size === 0) throw new Error("Expected nonempty evidence file");
+  return ref;
 }
 function git(cwd: string, ...args: string[]): string {
   const result = Bun.spawnSync(["git", ...args], { cwd, stdout: "pipe", stderr: "pipe" });
@@ -224,6 +250,11 @@ function restore(value: ObjectValue, cwd: string): State {
   }
   if (["dispatching", "running"].includes(String(value.status)) && !value.active)
     throw new Error("Active owner missing");
+  if (value.watchdog) {
+    const watch = validateWatchdog(value.watchdog);
+    if (value.active && watch.attempt_id !== object(value.active).attempt_id)
+      throw new Error("Watchdog attempt mismatch");
+  }
   return value as unknown as State;
 }
 async function completion(
@@ -365,6 +396,10 @@ export async function operate(request: Request): Promise<State> {
         feature_state_path: featurePath,
         status: "ready",
         attempt: 0,
+        watchdog: {
+          ...beginWatchdog("not-dispatched", Date.now()),
+          policy: policy(input.watchdog ?? {}),
+        },
       };
       parseIssue(input.issue, state);
       present(cwd, state.base_commit, state.base_commit);
@@ -393,7 +428,39 @@ export async function operate(request: Request): Promise<State> {
             throw new Error("Stage contract changed; reconcile scope before resuming");
           state.stage_id = stageId;
           state.contract_sha256 = stage.contract_sha256;
+          const previousHead = state.starting_head;
           state.starting_head = git(cwd, "rev-parse", "HEAD");
+          if (state.watchdog?.replacement) {
+            const recovery = object(input.recovery);
+            const diagnosis = shortText(recovery.diagnosis);
+            const approach = shortText(recovery.approach);
+            const evidenceRef = await verifyEvidence(cwd, recovery.evidence_ref);
+            const commit = recovery.commit_sha === undefined ? undefined : sha(recovery.commit_sha);
+            if (commit) {
+              present(cwd, commit, state.base_commit);
+              if (state.recovery_commit && state.recovery_commit !== commit)
+                throw new Error("Recovery commit changed");
+              if (!state.recovery_commit && (!previousHead || previousHead === commit))
+                throw new Error("Recovered stage commit must be new to the stopped attempt");
+              if (previousHead) git(cwd, "merge-base", "--is-ancestor", previousHead, commit);
+              state.recovery_commit = commit;
+            }
+            if (state.watchdog.recoveries.some((row) => row.approach === approach))
+              throw new Error("Recovery must change the previously attempted approach");
+            const recovered = {
+              diagnosis,
+              approach,
+              evidence_ref: evidenceRef,
+              ...(commit ? { commit_sha: commit } : {}),
+            };
+            state.watchdog.recoveries.push(recovered);
+            const journal = `.agents/work/features/${state.feature_id}.${state.watchdog.attempt_id}.watchdog.jsonl`;
+            await writeFile(
+              await safePath(cwd, journal),
+              `${JSON.stringify({ at: Date.now(), recovery_requested: recovered })}\n`,
+              { flag: "a", mode: 0o600 },
+            );
+          }
           const checkpoint = record.checkpoint ? object(record.checkpoint) : undefined;
           const recovery =
             checkpoint?.action === "committed-awaiting-issue"
@@ -409,6 +476,7 @@ export async function operate(request: Request): Promise<State> {
           }
           state.attempt += 1;
           state.active = { attempt_id: randomUUID(), handle: null };
+          state.watchdog = beginWatchdog(state.active.attempt_id, Date.now(), state.watchdog);
           state.status = "dispatching";
         }
       } else if (request.action === "bind") {
@@ -421,6 +489,69 @@ export async function operate(request: Request): Promise<State> {
           throw new Error("Reservation mismatch");
         state.active.handle = string(input.handle);
         state.status = "running";
+      } else if (["report", "observe", "intervene"].includes(request.action)) {
+        if (
+          !state.active ||
+          state.status !== "running" ||
+          input.run_id !== state.run_id ||
+          input.attempt_id !== state.active.attempt_id
+        )
+          throw new Error("Active watchdog owner mismatch");
+        const now = Date.now();
+        const watch = state.watchdog ?? beginWatchdog(state.active.attempt_id, now);
+        state.watchdog = watch;
+        const journal = `.agents/work/features/${state.feature_id}.${state.active.attempt_id}.watchdog.jsonl`;
+        let entry: unknown;
+        if (request.action === "report") {
+          if (state.stop_requested) throw new Error("Worker stop already requested");
+          const event = object(input.event);
+          if (event.evidence_ref !== undefined) await verifyEvidence(cwd, event.evidence_ref);
+          if (report(watch, event, now)) entry = { at: now, event };
+        } else if (request.action === "observe") {
+          if (input.resolution !== undefined) {
+            const resolution = object(input.resolution);
+            if (watch.operation || resolution.failure !== watch.last_failure || !watch.last_failure)
+              throw new Error("Resolution must identify the current idle failure");
+            await verifyEvidence(cwd, resolution.evidence_ref);
+            shortText(resolution.diagnosis);
+            const failure = watch.failures.find((row) => row.key === watch.last_failure);
+            if (failure) failure.resolved = true;
+            delete watch.last_failure;
+            delete watch.nudge;
+            watch.last_progress_at = now;
+            entry = { at: now, resolution };
+          }
+          watch.assessment = assess(watch, now);
+        } else {
+          if (state.stop_requested) throw new Error("Worker stop already requested");
+          watch.assessment = assess(watch, now);
+          if (watch.assessment.action === "wait")
+            throw new Error("Inspect a watchdog signal before intervention");
+          const diagnosis = shortText(input.diagnosis);
+          const evidenceRef = await verifyEvidence(cwd, input.evidence_ref);
+          if (input.mode === "nudge") {
+            if (watch.nudge) throw new Error("A corrective instruction is already pending");
+            const instruction = shortText(input.instruction);
+            watch.nudge = {
+              at: now,
+              failures: watch.failures.find((row) => row.key === watch.last_failure)?.count ?? 0,
+              diagnosis,
+              instruction,
+            };
+          } else if (input.mode === "replace") {
+            if (watch.assessment.action !== "replace")
+              throw new Error("Allow the corrective instruction its grace period");
+            watch.replacement = { diagnosis, evidence_ref: evidenceRef };
+            state.stop_requested = "watchdog";
+          } else throw new Error("Invalid watchdog intervention");
+          entry = { at: now, intervention: input };
+          watch.assessment = assess(watch, now);
+        }
+        if (entry)
+          await writeFile(await safePath(cwd, journal), `${JSON.stringify(entry)}\n`, {
+            flag: "a",
+            mode: 0o600,
+          });
       } else if (request.action === "stop") {
         const reason = input.reason;
         if (reason !== "cancelled" && reason !== "interrupted")
@@ -454,7 +585,16 @@ export async function operate(request: Request): Promise<State> {
           ].includes(outcome)
         )
           throw new Error("Invalid outcome");
-        if (state.stop_requested) state.status = state.stop_requested;
+        if (state.stop_requested === "watchdog") {
+          // Watchdog termination is an autonomous retry, not explicit user cancellation or success.
+          state.status = "ready";
+          state.diagnosis = state.watchdog?.replacement?.diagnosis ?? "Watchdog replacement";
+          if (outcome === "review-exhausted") {
+            await ownedLedger(cwd, state, result.review_ledger);
+            state.review_ledger = string(result.review_ledger);
+          }
+          delete state.stop_requested;
+        } else if (state.stop_requested) state.status = state.stop_requested;
         else if (outcome === "stage-complete") {
           await completion(cwd, state, result, parseIssue(input.issue, state), record);
           state.status = "ready";
@@ -465,6 +605,14 @@ export async function operate(request: Request): Promise<State> {
           delete state.answer;
           delete state.diagnosis;
           delete state.review_ledger;
+          if (state.watchdog) {
+            state.watchdog = beginWatchdog(state.watchdog.attempt_id, Date.now(), {
+              ...state.watchdog,
+              failures: [],
+              recoveries: [],
+            });
+            delete state.watchdog.last_failure;
+          }
         } else {
           state.diagnosis = string(result.diagnosis);
           state.status =
