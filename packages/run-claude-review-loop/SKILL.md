@@ -50,6 +50,9 @@ clean, permits ignoring convergence, changes reviewer selection or approves an u
 
 <!-- /shared:orchestration-continuation -->
 
+<!-- host:technical-recovery -->
+<!-- /host:technical-recovery -->
+
 ## Select the host adapter
 
 Identify the primary agent host and read exactly one adapter before launching the reviewer:

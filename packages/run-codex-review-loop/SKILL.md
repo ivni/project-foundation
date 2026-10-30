@@ -50,6 +50,29 @@ clean, permits ignoring convergence, changes reviewer selection or approves an u
 
 <!-- /shared:orchestration-continuation -->
 
+<!-- host:technical-recovery -->
+## Recover a standalone Codex review from a technical failure
+
+For this skill, an explicit invocation authorizes sending the task changes and the minimum relevant
+repository context to the Codex reviewer. Respect narrower user or repository restrictions and actual
+host permission decisions; this authority does not authorize another provider or unrelated content.
+
+The bounded stops still end each run. After a completed `BLOCKED` pass, a standalone caller may
+diagnose a demonstrable runtime or environment failure and start at most one new identified run
+without asking the user to repeat the invocation. Preserve the prior verdict, limitations, pass
+count, ledger, fixes and tested states; carry unresolved findings into the new packet. Record the
+diagnosis and a concrete change that can address it. Do not retry an unchanged failed approach,
+reset for a dispute or non-convergence, or start a new run merely to escape the ten-pass limit.
+The new run starts at pass 1 and has the same reviewer, isolation and other requirements. A second
+technical block, unavailable authorized recovery, or missing permission ends the attempt as
+`Review: BLOCKED`. This does not turn a failed or partial review into a clean one.
+
+Capability failures before a completed pass do not consume a pass. Diagnose and retry only with a
+changed, authorized approach; use the same single recovery budget for a failed preflight or launch.
+Follow the selected host adapter for capability checks and permission requests. An actual host
+rejection cannot be overridden by skill instructions or a new run identity.
+<!-- /host:technical-recovery -->
+
 ## Select the host adapter
 
 Identify the primary agent host and read exactly one adapter before launching the reviewer:

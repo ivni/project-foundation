@@ -7,6 +7,15 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.8.1] - 2026-10-30
+
+### Changed
+
+- Standalone Codex review can recover once from a diagnosed technical failure using a changed,
+  authorized approach while retaining the earlier run and its findings. The Codex adapter probes
+  Linux read-only sandbox startup and carries the user's explicit review authorization and the
+  launcher's actual boundaries into host permission requests.
+
 ## [3.8.0] - 2026-10-30
 
 ### Changed
@@ -605,7 +614,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.8.0...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.8.1...HEAD
+[3.8.1]: https://github.com/ivni/project-foundation/compare/v3.8.0...v3.8.1
 [3.8.0]: https://github.com/ivni/project-foundation/compare/v3.7.0...v3.8.0
 [3.7.0]: https://github.com/ivni/project-foundation/compare/v3.6.0...v3.7.0
 [3.6.0]: https://github.com/ivni/project-foundation/compare/v3.5.0...v3.6.0

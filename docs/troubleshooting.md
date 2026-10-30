@@ -99,6 +99,20 @@ and replaced. To start a fresh budget sooner, either commit the reviewed work, w
 derived identifier, or pass an explicit `--run-id`. Both choices appear in the wrapper envelope as
 `run_id` and `run_id_source`, so a reset stays visible in the reported outcome.
 
+## A Codex review cannot start its Linux sandbox
+
+The Codex host adapter probes the CLI's read-only sandbox before sending review context. If
+`codex sandbox --permission-profile :read-only -- /bin/true` fails, its diagnostic is a capability
+failure, not a completed or clean review. An outer Codex sandbox can mask the daemon socket directory
+needed by an inner sandbox. Do not repair this by changing socket permissions or disabling the
+reviewer's isolation. A successful probe does not guarantee that authentication or review will work.
+
+A standalone Codex review may make one diagnosed recovery attempt with a changed, authorized
+approach, preserving earlier review state. Host permission decisions still apply. When asking the
+host to run a launcher outside its sandbox, identify the explicit review invocation and describe
+the launcher's actual access separately from the reviewer's read-only boundary. A denial is not
+permission to bypass the host or to call the review clean.
+
 ## Update reports local changes
 
 The receipt hash differs from the current files. Review the diff. If those edits matter, choose

@@ -57,6 +57,7 @@ export const HOST_REGIONS: Record<string, readonly string[]> = {
   "packages/run-claude-review-loop/SKILL.md": [
     "intro",
     "skill-id",
+    "technical-recovery",
     "adapter",
     "context-file",
     "launch-step",
@@ -65,6 +66,7 @@ export const HOST_REGIONS: Record<string, readonly string[]> = {
   "packages/run-codex-review-loop/SKILL.md": [
     "intro",
     "skill-id",
+    "technical-recovery",
     "adapter",
     "context-file",
     "launch-step",
@@ -73,6 +75,7 @@ export const HOST_REGIONS: Record<string, readonly string[]> = {
   "packages/run-qwen-review-loop/SKILL.md": [
     "intro",
     "skill-id",
+    "technical-recovery",
     "adapter",
     "context-file",
     "launch-step",
