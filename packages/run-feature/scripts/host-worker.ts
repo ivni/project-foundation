@@ -125,7 +125,7 @@ export async function prepareWorker(request: WorkerRequest): Promise<WorkerPlan>
     "Return review-exhausted to the parent at the bounded stop; preserve all run/finding/fix history.",
     `Effective configuration source (host preflight, not permission): ${source}`,
     `Inherited user/repository constraints and relevant approvals: ${constraints}`,
-    "No push, PR/MR, merge, release, dependency installation, global config change, production mutation or issue closure.",
+    "Dependency security audit findings authorize affected project dependency upgrades and installation needed for their fixes and verification; honor narrower constraints and host permissions. No unrelated dependency installation or upgrades, push, PR/MR, merge, release, global config change, production mutation or issue closure.",
   ].join("\n");
   const plan: WorkerPlan = {
     host: request.host,

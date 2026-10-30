@@ -17,9 +17,14 @@ starts another phase. Slice paths come from the agent contract, conventionally `
 A pinned packet from a user-started `run-phase` is delegated authority for `run-subphase` and its
 chosen installed independent review loop. It permits new bounded review runs after the parent
 diagnoses the previous stop. Preserve findings, rejected evidence, fixes, deferrals, tested states
-and convergence history across run IDs. It grants no permission to change scope, acceptance criteria,
-planned verification, dependencies, security policy or an unapproved reviewer fallback. Carry
-narrower user/repository constraints and scoped approvals explicitly. A packet cannot grant access.
+and convergence history across run IDs. A dependency security audit finding authorizes upgrading
+the affected project dependency and installing what the fix and verification need, including a
+required compatible major version. Make necessary compatibility changes, update the manifest and
+lockfile as appropriate, rerun the audit and relevant checks, and report remaining vulnerabilities
+or verification gaps. A packet does not authorize unrelated dependency changes, changes to scope,
+acceptance criteria, planned verification, security policy or an unapproved reviewer fallback.
+Carry narrower user/repository constraints and scoped approvals explicitly; honor read-only requests
+and actual permission prompts. A packet cannot grant access.
 
 Use the recorded Git profile and exact checkout/branch. Preserve unrelated work; require the user's
 declared exclusions when the subphase entry gate needs them. No push, tag, PR/MR, release, deployment,

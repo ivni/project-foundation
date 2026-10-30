@@ -66,8 +66,9 @@ bun /absolute/run-feature/scripts/worker-command.ts /absolute/command-request.js
 The request is `{cwd, state_path, run_id, attempt_id, argv, phase, summary, timeout_ms?, directory?,
 context?}`. `argv` is an argument array, never an interpolated shell snippet. `directory` optionally
 selects an existing project-relative directory; omission uses the checkout root. `context` is a
-stable description of verified relevant environment changes, not a random per-run identifier or
-permission to install dependencies. Do not put credentials in requests, context, summaries or logs.
+stable description of verified relevant environment changes, not a random per-run identifier or a
+grant of permission. Dependency vulnerability fixes follow the stage skill's authority; `context`
+does not extend it. Do not put credentials in requests, context, summaries or logs.
 
 The helper records start/end events and preserves stdout/stderr plus result metadata in
 `.agents/work/features/<feature-id>.<attempt-id>.commands/<operation-id>/`. It fingerprints command,
@@ -100,7 +101,8 @@ not a claim of portable managed command supervision.
 An `inspect` assessment is a request to investigate. Confirm whether the operation is legitimately
 slow, waiting for a permission/user answer, stalled, or repeating an error. Check command arguments,
 working directory, test launcher and recent evidence before proposing a fix. A repeating error alone
-does not authorize changing permissions, scope, verification criteria or installing dependencies.
+does not authorize changing permissions, scope or verification criteria, or installing dependencies
+outside the stage skill's authorized dependency security audit fixes.
 
 For a confirmed loop, call `intervene` with `{run_id, attempt_id, mode: "nudge", diagnosis,
 instruction, evidence_ref}`. Persist one specific corrective instruction, then deliver it through

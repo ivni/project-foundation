@@ -11,8 +11,10 @@ another user command or manual compact. Do not implement the stage in the parent
 
 Automatic discovery is not execution authority. A user invocation authorizes sequential stage
 workers and Codex review continuation within the agreed feature, local checks/commits and issue
-progress. It adds no push, PR/MR, merge, release, deployment, issue closure, dependency installation,
-global profile change or background execution after session closure. Honor narrower instructions.
+progress. A dependency security audit finding authorizes the affected project dependency upgrade and
+installation needed to fix and verify it, as specified by the stage skill. It adds no unrelated
+dependency installation or upgrades, push, PR/MR, merge, release, deployment, issue closure, global
+profile change or background execution after session closure. Honor narrower instructions.
 Each executor still consumes exactly one stage, including committed-result recovery.
 
 Read [references/feature-workflow.md](references/feature-workflow.md) and

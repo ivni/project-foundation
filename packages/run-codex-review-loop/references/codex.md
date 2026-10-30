@@ -12,7 +12,7 @@ description remains a second semantic boundary.
 
 1. Load `reviewer-contract.md` and `assets/review-result.schema.json`, then build the neutral context
    packet from the core workflow.
-2. Spawn a fresh native Codex subagent with:
+2. Prefer a fresh native Codex subagent when the host can provide all of these controls:
    - model `gpt-6.1-sol`;
    - reasoning effort `xhigh`;
    - no inherited implementation conversation or suspected findings;
@@ -26,11 +26,25 @@ description remains a second semantic boundary.
    `assets/review-result.schema.json` and the semantic state rules in `reviewer-contract.md`.
 
 Native subagents normally inherit the parent sandbox. A read-only sentence in the task message is not
-proof of isolation when the parent can write. If native delegation cannot select a real read-only
-custom reviewer or sandbox override, pin the exact model and reasoning effort, or create a fresh
-context, stop before pass 1 and ask whether the user approves the external wrapper or another stated
-fallback. This package does not install a global Codex custom-agent configuration. Never silently
-substitute a general-purpose subagent.
+proof of isolation when the parent can write. If the native interface cannot provide every control
+above, use the packaged `scripts/run-codex-review.ts` wrapper as the standard Codex reviewer path,
+without asking for separate approval merely to select it. The wrapper requires Bun and an authenticated
+Codex CLI with access to the pinned profile and a functioning read-only sandbox. Check the actual
+runtime and honor host, repository and user restrictions and permission prompts; a workflow invocation
+does not override them. CLI authentication, account and usage limits may differ from the primary host.
+If this path is unavailable or fails, report the actual blocker; ask before using any other unapproved
+alternative. Do not silently weaken the required profile, isolation or reviewer identity. This package
+does not install a global Codex custom-agent configuration.
+
+For the wrapper path, run:
+
+```text
+bun <skill-root>/scripts/run-codex-review.ts --cwd <repository> --context-file <temporary-context> --pass <1-10>
+```
+
+Create the temporary context outside the repository, use an argument array or safely quoted shell
+arguments, wait for completion and parse the JSON envelope. Apply the core workflow's ledger, cleanup,
+result validation and pass rules.
 
 The reviewer must not fix its own findings. All validation, edits, tests, and loop decisions stay with
 the primary Codex agent.

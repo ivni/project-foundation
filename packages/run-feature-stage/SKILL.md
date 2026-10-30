@@ -34,9 +34,15 @@ or stage completion. Ask only for an ambiguity that cannot be resolved from evid
 stakeholder choice, a task boundary, or genuinely missing access. An unavailable mandatory check is
 a blocker with an exact cause; never turn it into a passing claim or silently waive it.
 
-Follow the project's git profile. This skill does not authorize push, pull/merge request creation,
-merge, tags, release, deployment, dependency installation or upgrades, or production mutations. Additional user
-authorization can permit an action, but do not infer it from the local commit or issue update.
+Follow the project's git profile. When a dependency security audit in this workflow identifies a
+vulnerability, update the affected project dependency and its manifest/lockfile as appropriate,
+install what the fix needs, make necessary compatibility changes, and rerun the audit and relevant
+checks without asking for another approval.
+Include a required compatible major version; report any remaining vulnerability or verification gap.
+Respect explicit read-only or narrower user/repository constraints and actual permission prompts.
+This skill does not authorize unrelated dependency installation or upgrades, push, pull/merge request
+creation, merge, tags, release, deployment, or production mutations. Additional user authorization
+can permit an action, but do not infer it from the local commit or issue update.
 
 ## 1. Restore and select
 

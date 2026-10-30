@@ -23,11 +23,12 @@ explicit approval with its scope/source. Native subagents inherit sandbox policy
 read-only does not provide the mandatory independent reviewer sandbox.
 
 Each worker invokes the actual `run-codex-review-loop` and its Codex adapter. Native review requires
-that adapter's pinned model/effort, fresh context and an actual read-only profile/override. If these
-are unavailable, use its external wrapper only with explicit user approval already present or
-obtained for that fallback; pass the approval evidence into the child. Parent and executor never
-replace independent review with each other's assessment. Native stage workers and CLI reviewers
-are separate lifecycles.
+that adapter's pinned model/effort, fresh context and an actual read-only profile/override. If the
+native interface cannot provide them, its packaged Codex CLI wrapper is the standard reviewer path;
+no separate approval is needed just to select it. Honor actual user, repository and host constraints
+and permission prompts. Pass this path and its runtime requirements into the child. Parent and
+executor never replace independent review with each other's assessment. Native stage workers and
+CLI reviewers are separate lifecycles.
 
 Preflight the watchdog command lifecycle too. On Linux use the bundled managed command supervisor
 and inspect its terminal receipt when stopping a native worker. On other systems require an actual

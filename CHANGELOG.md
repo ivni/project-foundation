@@ -7,6 +7,17 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.8.0] - 2026-10-30
+
+### Changed
+
+- Dependency vulnerabilities identified by a security audit during feature/phase execution or review
+  may be fixed through targeted dependency upgrades and required installation without a repeated
+  approval; the audit and relevant compatibility checks must be rerun.
+- Codex-hosted independent review uses the packaged Codex CLI wrapper as a standard path when native
+  delegation cannot provide the required controls, without requesting a separate fallback approval.
+  Runtime, authentication, sandbox and actual permission requirements remain in force.
+
 ## [3.7.0] - 2026-10-23
 
 ### Added
@@ -594,7 +605,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.7.0...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.8.0...HEAD
+[3.8.0]: https://github.com/ivni/project-foundation/compare/v3.7.0...v3.8.0
 [3.7.0]: https://github.com/ivni/project-foundation/compare/v3.6.0...v3.7.0
 [3.6.0]: https://github.com/ivni/project-foundation/compare/v3.5.0...v3.6.0
 [3.5.0]: https://github.com/ivni/project-foundation/compare/v3.4.0...v3.5.0

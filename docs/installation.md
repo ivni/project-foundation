@@ -81,12 +81,14 @@ start the next phase. Its instruction-driven lifecycle requires fresh native del
 already available compatible CLI process supervisor on Pi/Hermes. It bundles no process supervisor
 and cannot use the feature-specific helpers. See [phase orchestration](compatibility.md#phase-orchestration).
 
-`run-codex-review-loop` has additional runtime requirements when invoked from Claude Code, Pi,
-OpenCode, or Hermes: `bun` and an authenticated `codex` CLI with access to `gpt-6.1-sol` and `xhigh`
-reasoning. Codex-hosted use delegates to a native Codex subagent. The installer copies the wrapper
-and adapter instructions but does not install or authenticate the Codex CLI or install a global
-read-only Codex custom-agent profile. Without a native read-only reviewer override, the Codex adapter
-asks before using the external wrapper.
+`run-codex-review-loop` uses a native Codex subagent on the Codex host when the required fresh
+context, profile and read-only sandbox are available. Otherwise, and on Claude Code, Pi, OpenCode
+and Hermes, it uses the packaged Codex CLI wrapper. That standard path requires `bun`, an
+authenticated `codex` CLI with access to `gpt-6.1-sol` and `xhigh` reasoning, and a functioning
+read-only sandbox. It needs no separate approval merely to select the wrapper, but host permission
+prompts and user or repository restrictions still apply. CLI authentication, account and usage limits
+may differ from those of the primary host. The installer copies the wrapper and instructions but does
+not install or authenticate the CLI or install a global read-only Codex custom-agent profile.
 
 `run-claude-review-loop` requires Bun plus an authenticated Claude Code CLI with access to the
 `fable` model alias and `xhigh` effort when the packaged wrapper is used. The wrapper invokes a

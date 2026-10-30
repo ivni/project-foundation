@@ -41,8 +41,15 @@ Building or broadening a language parser, a general policy checker, or another p
 separate scope, not an automatic condition for closing a finding. Do not widen a check's promise beyond
 what it can establish. Existing checks that the fix relies on must still support their stated claims.
 
-A fix may add a focused test or assertion. Ask before expanding the agreed task through a new public
-interface, dependency, architecture, data model or migration, security policy, or production action.
+A fix may add a focused test or assertion. If a dependency security audit in the authorized task
+identifies a vulnerability, updating the affected project dependency and installing what is needed to
+apply and verify that fix are authorized without another user approval. Choose a fixed version, make
+necessary compatibility changes, update the project manifest/lockfile as appropriate, rerun the audit
+and relevant checks, and report remaining vulnerabilities or verification limits. This includes a
+major version when required and compatible; do not perform unrelated dependency upgrades. Respect
+explicit read-only instructions, narrower constraints, and actual host permission prompts. Ask before
+an otherwise unauthorized public behavior or architecture change, migration, security policy change,
+production action, or other task expansion that the fix requires.
 Preserve unrelated work. A lack of permission for a broad redesign is not permission for an unsafe
 local patch.
 

@@ -71,7 +71,7 @@ The `run-codex-review-loop` payload uses one workflow but not one delegation mec
 
 | Primary host | Reviewer runtime | Explicit-only enforcement |
 | --- | --- | --- |
-| Codex | Fresh native Codex subagent pinned to Sol/xhigh; a read-only custom agent or sandbox override is required | Instruction-level boundary in the payload |
+| Codex | Fresh native Codex subagent pinned to Sol/xhigh with a read-only custom agent or sandbox override; otherwise the packaged Codex CLI wrapper | Instruction-level boundary in the payload |
 | Claude Code | `codex exec` through the packaged Bun wrapper | Instruction-level boundary in the payload |
 | Pi | `codex exec` through the packaged Bun wrapper | Instruction-level boundary in the payload |
 | OpenCode | `codex exec` through the packaged Bun wrapper | Skill permission `ask` plus an instruction-level boundary |
@@ -89,8 +89,11 @@ access, while the prohibition on test and validation commands is reviewer-contra
 host retains all edits and test execution.
 
 The payload does not install a global Codex custom-agent profile. A Codex host whose delegation
-interface only inherits the writable parent sandbox must block before pass 1 and ask whether the user
-approves the external wrapper fallback.
+interface cannot provide the required native controls uses the packaged CLI wrapper as a standard
+path, without a separate approval just to select it. Runtime availability, authentication, actual
+host permissions and user/repository restrictions still apply; CLI account and usage limits may differ
+from the primary host. If the wrapper cannot provide the required controls, report the blocker and
+request approval before an alternative that is not already authorized.
 
 ## Claude Review Loop adapter boundary
 
@@ -172,7 +175,7 @@ All routes need project checks, local Git operations and authenticated access to
 
 | Host | Selected fresh-worker mechanism and completion | Independent Codex reviewer | S1 observation / validation dependency |
 | --- | --- | --- | --- |
-| Codex | Native spawn with no inherited turns (`fork_turns: "none"` on this Desktop surface); await terminal result before another spawn. Retain the handle for interruption; close completed agents when that host exposes a close operation. | Native pinned Sol/xhigh only when a real read-only override/profile is selectable; otherwise use the existing wrapper after the installed review adapter's required approval. | Three distinct sequential native agents read a disposable fixture; later agents received no first-prompt canary, and the third read the installed stage skill. CLI `0.162.1` completed the external read-only wrapper probe after approved fallback. Complete worker → review → commit → issue journey remains S2/S4 work. |
+| Codex | Native spawn with no inherited turns (`fork_turns: "none"` on this Desktop surface); await terminal result before another spawn. Retain the handle for interruption; close completed agents when that host exposes a close operation. | Native pinned Sol/xhigh only when all required controls are selectable; otherwise use the packaged CLI wrapper as a standard path. | Three distinct sequential native agents read a disposable fixture; later agents received no first-prompt canary, and the third read the installed stage skill. CLI `0.162.1` completed the external read-only wrapper probe after approved fallback. Complete worker → review → commit → issue journey remains S2/S4 work. |
 | Claude Code | A new non-fork delegation call per stage (Agent in current docs; Task in this CLI's reported tool inventory); never resume the previous agent or choose the conversation-fork type. Use an available full worker, with `model: inherit` when defining it; no permanent global agent file. Foreground result or background completion notification is the completion seam. | Worker launches the packaged Bun/Codex wrapper through permitted Bash. No nested reviewer Agent is necessary. | CLI `2.1.296` loaded the transient probe definition, but both bounded launches returned `is_error: true`, OAuth expired and refresh failed, before delegation. Authenticated execution is unverified (E-CLAUDE). |
 | Pi | Fresh same-host subprocess in the selected checkout: argument array `pi --mode json -p --no-session <brief>`, with effective model/thinking passed when needed. Wait for exit and parse terminal output. No delegation extension is required. | Worker runs the existing Bun/Codex wrapper through its permitted shell tool. | No `pi` executable on PATH (E-PI). Source supports the process mechanism; no local runtime result. |
 | OpenCode | New native child session through the installed delegation tool, with no prior session identifier; await its completed result. Inspect the actual tool schema: public docs call it Task, while the inspected upstream `dev` implementation uses `subagent` and `sessionID`. Do not pin a development API as a stable-runtime guarantee. | Worker launches the existing Bun/Codex wrapper through permitted shell access. | No `opencode` executable on PATH (E-OPENCODE). Tool/skill permission checks and actual child schema remain runtime preflight, not permission overrides. |
@@ -348,7 +351,7 @@ it does not disable auth, permissions, independent review or completion checks w
 
 | Host | Route and current primary source | Evidence and limit |
 | --- | --- | --- |
-| Codex | Fresh native executor with a minimal packet; [official subagents documentation](https://learn.chatgpt.com/docs/agent-configuration/subagents). Actual read-only reviewer override or the review skill's approved CLI fallback. | S2 observed three distinct native executors, three actual Codex CLI review passes, local checks/commits and issue readback through a controllable local forge seam. The seam was not a live forge. |
+| Codex | Fresh native executor with a minimal packet; [official subagents documentation](https://learn.chatgpt.com/docs/agent-configuration/subagents). Actual read-only reviewer override or the review skill's standard CLI path. | S2 observed three distinct native executors, three actual Codex CLI review passes, local checks/commits and issue readback through a controllable local forge seam. The seam was not a live forge. |
 | Claude Code | Native Agent with a compatible worker and fresh prompt; [subagents](https://code.claude.com/docs/en/sub-agents) documents context, model/effort, permissions and lifecycle. | Documentation and native-packet contracts; authenticated execution omitted by owner. Select the effective worker configuration, await its terminal result and use actual Codex CLI review. |
 | Pi | Fresh CLI `--mode json -p --no-session`; [argument parser](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/src/cli/args.ts) and [upstream process example](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/examples/extensions/subagent/index.ts). | Documentation and process doubles; authenticated execution omitted by owner. The bundled supervisor requires Linux. No delegation extension is installed. |
 | OpenCode | Classic `task` or V2 `subagent`; [classic agents](https://opencode.ai/docs/agents/), [V2 agents](https://opencode.ai/v2/docs/agents) and [delegation source](https://github.com/anomalyco/opencode/blob/dev/packages/core/src/tool/plugin/subagent.ts). | Documentation and native-packet contracts; authenticated execution omitted by owner. V2 uses `agents` and `permissions` action/resource/effect rules; classic `permission.task` is not its configuration schema. Actual tool/schema, worker permissions and cancellation still require preflight. |

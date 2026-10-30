@@ -21,6 +21,13 @@ Honor its exact phase/subphase, checkout/branch, constraints, approvals and chec
 another subphase. Persist the structured result and recovery evidence before returning. A new bounded
 review run needs the parent's diagnosed continuation packet; standalone bounded stops remain.
 
+When a dependency security audit in this workflow identifies a vulnerability, update the affected
+project dependency and its manifest/lockfile as appropriate, install what the fix needs, make
+necessary compatibility changes, and rerun the audit and relevant checks without another approval.
+This includes a required compatible major version. Report remaining vulnerabilities and verification
+gaps; honor explicit read-only requests, narrower constraints and actual permission prompts. This
+does not authorize unrelated dependency changes or an otherwise unauthorized expansion of scope.
+
 The contract this skill executes is not its own: [references/subphase-contract.md](references/subphase-contract.md)
 defines what a subphase is and when it is done, and the project's foundation skill ships the same copy.
 Read it before starting.

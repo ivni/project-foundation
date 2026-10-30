@@ -12,9 +12,11 @@ Never start the next phase automatically.
 
 Automatic discovery is not execution authority. A user invocation authorizes sequential subphase
 workers, independent review and new bounded review cycles within the agreed phase, local checks,
-commits and factual progress updates. It adds no push, PR/MR, merge, tag, release, deployment,
-external issue mutation, dependency installation, global configuration change or work after session
-closure. Honor narrower instructions and the recorded Git profile.
+commits and factual progress updates. A dependency security audit finding authorizes the affected
+project dependency upgrade and installation needed to fix and verify it, as specified in the phase
+workflow. It adds no unrelated dependency installation or upgrades, push, PR/MR, merge, tag, release,
+deployment, external issue mutation, global configuration change or work after session closure.
+Honor narrower instructions and the recorded Git profile.
 
 Read [references/phase-workflow.md](references/phase-workflow.md) for selection, durable state,
 packets, results and recovery, [references/subphase-contract.md](references/subphase-contract.md)

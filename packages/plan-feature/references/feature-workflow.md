@@ -44,10 +44,11 @@ A user invocation of `run-feature` authorizes the parent to launch fresh `run-fe
 sequentially and continue Codex review through explicitly identified bounded runs. Each worker
 consumes exactly one stage, including committed-result recovery, then returns to its parent. The
 standalone stage still stops after one stage; automatic discovery does not start either workflow.
-Delivery/install permissions are unchanged. Pass actual approval evidence into workers; do not
-invent reviewer fallback permission. The parent pins one selected identity for the run and verifies
-commit, acceptance/checks, independent review and live issue readback before dispatching the next
-worker. A changed active pointer does not retarget a run.
+Delivery/install permissions are unchanged. Pass actual constraints and approval evidence into
+workers; do not invent permission for alternatives outside a review adapter's standard paths. The
+parent pins one selected identity for the run and verifies commit, acceptance/checks, independent
+review and live issue readback before dispatching the next worker. A changed active pointer does not
+retarget a run.
 
 The parent owns a minimal `.agents/work/features/<feature-id>.orchestrator.json` sidecar (identity,
 run/attempt, active owner/action, result/review/question/cancellation pointers), not another plan.

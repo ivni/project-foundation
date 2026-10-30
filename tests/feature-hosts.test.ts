@@ -221,6 +221,8 @@ test("native packets pin identity/paths and omit conversation/model/permission/s
     expect(identity).toEqual(f.result(f.state, {}));
     expect(plan.prompt).toContain(f.request.stage_skill_root);
     expect(plan.prompt).toContain(f.request.review_skill_root);
+    expect(plan.prompt).toContain("Dependency security audit findings authorize affected project");
+    expect(plan.prompt).toContain("No unrelated dependency installation or upgrades");
     await expect(runProcess(plan)).rejects.toThrow("Native plans");
   }
   await f.save(".agents/work/active-feature.json", { schema: 1, state_path: "some-other-feature" });
