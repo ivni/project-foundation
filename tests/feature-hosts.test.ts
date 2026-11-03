@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
+import { checkoutLease } from "../packages/run-feature/scripts/checkout-lease.ts";
 import {
   prepareWorker,
   runProcess,
@@ -55,7 +56,18 @@ async function fixture() {
   };
   const call = (action: Parameters<typeof operate>[0]["action"], input: Record<string, unknown>) =>
     operate({ action, cwd, state_path: statePath, input });
-  await call("start", { feature_state_path: ".agents/work/features/fixture.json", issue });
+  const started = await call("start", {
+    feature_state_path: ".agents/work/features/fixture.json",
+    issue,
+  });
+  await checkoutLease({
+    action: "claim",
+    cwd,
+    state_path: statePath,
+    mode: "run-feature",
+    run_id: started.run_id,
+    owner: "test-parent",
+  });
   const state = await call("dispatch", { issue });
   const request: WorkerRequest = {
     host: "pi",
@@ -735,6 +747,10 @@ processTest(
     await writeFile(
       join(scripts, "orchestrator.ts"),
       await readFile(resolve("packages/run-feature/scripts/orchestrator.ts"), "utf8"),
+    );
+    await writeFile(
+      join(scripts, "checkout-lease.ts"),
+      await readFile(resolve("packages/run-feature/scripts/checkout-lease.ts"), "utf8"),
     );
     await writeFile(
       join(scripts, "watchdog.ts"),

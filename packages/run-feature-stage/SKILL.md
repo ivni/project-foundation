@@ -8,6 +8,10 @@ description: Complete one stage of an active feature issue, including autonomous
 Take exactly one stage of the active feature issue to done, then stop. A pinned fresh-worker packet
 from a user-started `run-feature` is delegated authority for that one stage. Return its result to the
 parent; the parent may dispatch the next fresh worker. Standalone invocation retains its boundary.
+Under a user-started `run-feature-direct`, execute this same one-stage contract in the current agent
+and return control to that workflow after closeout or an early stop. Its checkpoint pins the stage;
+it may continue only after the committed result and live issue are verified. This does not let a
+standalone invocation start another stage or bypass review, checks, or issue readback.
 For an orchestrated packet, read its watchdog reference and report operation boundaries and
 evidence-backed milestones using the pinned helpers. Run tests/shell checks through its command
 helper, inspect corrective instructions and preserve attempted diagnoses across recovery. A busy

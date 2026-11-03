@@ -7,6 +7,15 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.9.0] - 2026-11-03
+
+### Added
+
+- `run-feature-direct` and `run-phase-direct` execute successive stages in the current agent, with
+  independent CLI review, completion gates, and interruption recovery.
+- A checkout-wide writer lease coordinates all four phase and feature workflows; feature dispatch
+  verifies the reservation under the same guard.
+
 ## [3.8.2] - 2026-11-03
 
 ### Changed
@@ -626,7 +635,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.8.2...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.9.0...HEAD
+[3.9.0]: https://github.com/ivni/project-foundation/compare/v3.8.2...v3.9.0
 [3.8.2]: https://github.com/ivni/project-foundation/compare/v3.8.1...v3.8.2
 [3.8.1]: https://github.com/ivni/project-foundation/compare/v3.8.0...v3.8.1
 [3.8.0]: https://github.com/ivni/project-foundation/compare/v3.7.0...v3.8.0

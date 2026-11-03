@@ -2,6 +2,7 @@
 import { randomUUID } from "node:crypto";
 import { lstat, mkdir, readFile, realpath, rename, rm, stat, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
+import { withCheckoutLease } from "./checkout-lease.ts";
 import {
   assess,
   beginWatchdog,
@@ -360,6 +361,19 @@ async function ownedLedger(cwd: string, state: State, ref: unknown): Promise<Obj
   return ledger;
 }
 export async function operate(request: Request): Promise<State> {
+  if (request.action !== "dispatch") return operateLocked(request);
+  const cwd = await realpath(request.cwd);
+  const path = await safePath(cwd, request.state_path);
+  const runId = id((await read(path)).run_id);
+  return withCheckoutLease(
+    { action: "assert", cwd, mode: "run-feature", run_id: runId, state_path: request.state_path },
+    async () => {
+      if ((await read(path)).run_id !== runId) throw new Error("Orchestration owner changed");
+      return operateLocked(request);
+    },
+  );
+}
+async function operateLocked(request: Request): Promise<State> {
   const cwd = await realpath(request.cwd);
   if ((await realpath(git(cwd, "rev-parse", "--show-toplevel"))) !== cwd)
     throw new Error("Use exact checkout root");

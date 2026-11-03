@@ -15,11 +15,15 @@ durable project foundation:
   agent-owned verification, Codex review, and a local commit, then records progress and stops.
 - **Run Feature** orchestrates the remaining stages of one published feature with fresh workers,
   verifies each stage before continuing, and preserves recovery and review history.
+- **Run Feature Direct** executes feature stages in the current agent, preserving stage checks,
+  independent CLI review, commits, and issue progress.
 - **Run Subphase** takes exactly one subphase of a phase requirements slice to done — entry gate,
   agreed verification seams, vertical slices, verification evidence, an independent review, one
   commit — and then stops, because a subphase is sized to a single context window.
 - **Run Phase** orchestrates the remaining subphases of one prepared phase with a fresh worker for
   each one, verifies completion and preserves recovery/review history before continuing.
+- **Run Phase Direct** executes subphases in the current agent with the same completion gates and
+  independent CLI review.
 - **Codex Review Loop** explicitly launches an independent read-only Codex reviewer over the current
   task's uncommitted changes, then lets the primary agent validate findings, make bounded fixes, run
   checks, and re-review until clean or honestly blocked.
@@ -52,7 +56,7 @@ bunx @ivni/project-foundation
 ```
 
 Choose `Install / update`. The wizard reuses an existing installation's agents, scope, and method,
-or lets you choose different settings. On a first installation, all thirteen skills are preselected.
+or lets you choose different settings. On a first installation, all fifteen skills are preselected.
 For an existing installation, updates are preselected and absent skills are optional additions.
 You can update installed skills and add others in one run, with one complete preview before writing
 anything.
@@ -104,6 +108,9 @@ stage. Cancellation stops the active worker, waits for termination and retains r
 explicit cancellation requires explicit resume. It does not continue after the session closes.
 
 Install `run-codex-review-loop` alongside `run-feature-stage`, and `run-feature` for orchestration.
+For execution in the current agent, install `run-feature-direct` alongside `run-feature-stage` and
+`run-codex-review-loop`, then invoke `$run-feature-direct`. It uses an independent CLI reviewer and
+checkpoints recovery without implementation subagents.
 The feature skills use the issue platform selected by the destination or verified remote. GitLab, including self-managed instances
 and nested groups, uses `glab` or an available authenticated connector/API; GitHub uses its own
 integration. Other platforms use equivalent issue and upload operations without changing the workflow.
@@ -118,6 +125,10 @@ or use a bare invocation when the current phase is unambiguous in the agent cont
 `run-subphase` worker at a time, verifies checks, acceptance evidence, review and committed checklist
 progress, then continues through the remaining subphases. Standalone `$run-subphase` still does one
 subphase and stops.
+
+Alternatively install `run-phase-direct`, `run-subphase` and an independent review loop, then invoke
+`$run-phase-direct`. The current agent executes each subphase and uses the selected loop's independent
+CLI reviewer. Context exhaustion may require compaction or a later resumption from the checkpoint.
 
 Ordinary errors retry the same subphase; exhausted review cycles retain findings and resume in a new
 bounded run after diagnosis. A committed increment is reconciled instead of built again. Missing user
@@ -187,7 +198,7 @@ bun run check
 ```
 
 The public package is the repository root. The private workspaces under `packages/` separate the
-CLI source from the thirteen raw skill payloads. See [Development](docs/development.md) for the full
+CLI source from the fifteen raw skill payloads. See [Development](docs/development.md) for the full
 layout and verification workflow.
 
 ## License

@@ -1,6 +1,6 @@
 ---
 name: run-subphase
-description: Take exactly one phase subphase to done, then stop. Use only when invoked by name or delegated by a user-started run-phase.
+description: Take exactly one phase subphase to done, then stop. Use only when invoked by name or through a user-started phase workflow.
 ---
 
 # Run Subphase
@@ -14,6 +14,12 @@ of them in one window is degraded exactly where this standard demands the most r
 this skill does is name the next invocation. In standalone use, running it is the user's action.
 Under a user-started `run-phase`, the parent verifies completion and dispatches the next fresh worker.
 This child still consumes exactly one subphase, including recovery, and then stops.
+
+Under an explicitly user-started `run-phase-direct`, execute this one-subphase contract in the
+current agent. Its direct checkpoint pins the phase and subphase and replaces the worker packet;
+apply the recovery and metadata exclusions below to that checkpoint too. Return control to the
+direct workflow after closeout or an early stop; it alone decides whether to continue. This is not
+permission for a standalone invocation to start a second subphase or skip an entry or review gate.
 
 A pinned `run-phase` packet delegates authority for this subphase and its selected review loop.
 Read [references/phase-workflow.md](references/phase-workflow.md) when such a packet is present.
@@ -73,7 +79,7 @@ forbids — unknowns are resolved before build, not discovered during it.
   agreed to, and it will reach identifiers, tests, and commit messages before anyone notices.
 - The working tree is clean, or the user has declared what to exclude. The review in step 6 reads the
   uncommitted change set, so unrelated uncommitted work would silently enter its scope.
-  Under a user-started `run-phase`, inspect/list that workflow's own recovery metadata as the
+  Under a user-started `run-phase` or `run-phase-direct`, inspect/list that workflow's own recovery metadata as the
   administrative exception defined in `phase-workflow.md`; unrelated work still needs exclusion.
   A pinned recovery packet may also carry unfinished edits attributed to this same subphase by its
   checkpoint. Verify that attribution against the actual diff, retain those edits **in** the review

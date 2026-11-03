@@ -1,0 +1,7 @@
+interface:
+  display_name: "Run Feature Direct"
+  short_description: "Run feature stages in the current agent"
+  default_prompt: "Use $run-feature-direct to complete the remaining stages of the active feature in this agent."
+
+policy:
+  allow_implicit_invocation: true

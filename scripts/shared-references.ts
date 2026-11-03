@@ -128,6 +128,24 @@ export const SHARED_BLOCKS: SharedBlock[] = [
 
 export const SHARED_REFERENCES: SharedReference[] = [
   {
+    source: "shared/checkout-lease.md",
+    copies: [
+      "packages/run-feature/references/checkout-lease.md",
+      "packages/run-phase/references/checkout-lease.md",
+      "packages/run-feature-direct/references/checkout-lease.md",
+      "packages/run-phase-direct/references/checkout-lease.md",
+    ],
+  },
+  {
+    source: "shared/checkout-lease.ts",
+    copies: [
+      "packages/run-feature/scripts/checkout-lease.ts",
+      "packages/run-phase/scripts/checkout-lease.ts",
+      "packages/run-feature-direct/scripts/checkout-lease.ts",
+      "packages/run-phase-direct/scripts/checkout-lease.ts",
+    ],
+  },
+  {
     source: "shared/issue-publication.md",
     copies: [
       "packages/plan-feature/references/issue-publication.md",

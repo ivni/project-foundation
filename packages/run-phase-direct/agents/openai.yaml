@@ -1,0 +1,7 @@
+interface:
+  display_name: "Run Phase Direct"
+  short_description: "Run phase subphases in the current agent"
+  default_prompt: "Use $run-phase-direct to complete the remaining subphases of the prepared phase in this agent."
+
+policy:
+  allow_implicit_invocation: true

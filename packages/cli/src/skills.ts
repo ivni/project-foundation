@@ -28,6 +28,10 @@ export const SKILLS = {
     label: "Run Feature",
     summary: "Sequential fresh stage workers with verified progress and recovery",
   },
+  "run-feature-direct": {
+    label: "Run Feature Direct",
+    summary: "Execute feature stages in the current agent with independent review",
+  },
   "run-subphase": {
     label: "Run Subphase",
     summary: "Bounded execution of one subphase: build, verify, review, commit",
@@ -35,6 +39,10 @@ export const SKILLS = {
   "run-phase": {
     label: "Run Phase",
     summary: "Sequential fresh subphase workers with verified phase progress and recovery",
+  },
+  "run-phase-direct": {
+    label: "Run Phase Direct",
+    summary: "Execute phase subphases in the current agent with independent review",
   },
   "run-codex-review-loop": {
     label: "Codex Review Loop",

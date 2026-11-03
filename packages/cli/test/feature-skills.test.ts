@@ -85,6 +85,16 @@ const workflows = [
       "references/hosts.md",
     ],
   },
+  {
+    orchestrator: "run-feature-direct",
+    executor: "run-feature-stage",
+    requiredFiles: ["SKILL.md"],
+  },
+  {
+    orchestrator: "run-phase-direct",
+    executor: "run-subphase",
+    requiredFiles: ["SKILL.md"],
+  },
 ] as const;
 const matrix: ((typeof workflows)[number] & {
   agent: AgentId;

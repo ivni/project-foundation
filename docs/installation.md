@@ -55,7 +55,8 @@ been deliberately omitted or removed earlier. The wizard does not persist a full
 
 `bunx` runs the package without creating a permanent global CLI installation. The package contains
 the installer and exact payloads for `project-foundation`, `find-blind-spots`,
-`run-discovery-interview`, `plan-feature`, `run-feature-stage`, `run-feature`, `run-subphase`, `run-phase`, `run-codex-review-loop`,
+`run-discovery-interview`, `plan-feature`, `run-feature-stage`, `run-feature`, `run-feature-direct`,
+`run-subphase`, `run-phase`, `run-phase-direct`, `run-codex-review-loop`,
 `run-claude-review-loop`, `run-qwen-review-loop`, `analyze-tests`, and `teach`. The selected skill
 directories remain after `bunx` exits.
 
@@ -75,11 +76,21 @@ execution, documentation evidence and the non-Codex runtime checks omitted by th
 The workflow follows the repository's actual forge, including self-managed GitLab. `gh` is not a
 requirement for GitLab: use the available `glab`/connector/API with the verified host and project.
 
+Alternatively install `run-feature-direct` with `run-feature-stage` and `run-codex-review-loop` to
+run stages in the current agent. It requires the independent Codex CLI reviewer even on Codex;
+installing the skill does not install or authenticate that CLI.
+
 For prepared phase slices, install `run-phase`, `run-subphase` and an independent review loop.
 `run-phase` delegates the remaining subphases from one invocation; it does not create the slice or
 start the next phase. Its instruction-driven lifecycle requires fresh native delegation, or an
 already available compatible CLI process supervisor on Pi/Hermes. It bundles no process supervisor
 and cannot use the feature-specific helpers. See [phase orchestration](compatibility.md#phase-orchestration).
+
+Alternatively install `run-phase-direct`, `run-subphase`, and a supported independent review loop.
+The current agent executes subphases sequentially and uses the selected review loop's CLI path.
+Both direct workflows require sufficient context or checkpoint and resume after interruption.
+The four phase/feature workflows share a checkout writer lease. Update all installed copies together;
+older skill versions and external tools do not participate in that coordination.
 
 `run-codex-review-loop` uses a native Codex subagent on the Codex host when the required fresh
 context, profile and read-only sandbox are available. Otherwise, and on Claude Code, Pi, OpenCode

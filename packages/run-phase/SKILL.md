@@ -21,6 +21,8 @@ Honor narrower instructions and the recorded Git profile.
 Read [references/phase-workflow.md](references/phase-workflow.md) for selection, durable state,
 packets, results and recovery, [references/subphase-contract.md](references/subphase-contract.md)
 for completion, and [references/hosts.md](references/hosts.md) before dispatch.
+Read [references/checkout-lease.md](references/checkout-lease.md) and claim its checkout-wide lease
+before reservation or implementation; keep it across the run and release only after reconciliation.
 
 ## Restore and select
 

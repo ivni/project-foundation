@@ -39,7 +39,8 @@ external issue update or global configuration change is implied. Review loops ow
 
 ## Durable recovery metadata
 
-Before first dispatch create `.agents/work/phases/phase-<N>.orchestrator.json` (use a stable safe ID
+Before first dispatch claim the checkout lease described in `checkout-lease.md`, then create
+`.agents/work/phases/phase-<N>.orchestrator.json` (use a stable safe ID
 for nonnumeric phases). Keep these files out of implementation commits through the project's existing
 local-metadata policy; do not alter shared ignore policy silently. Use checkout-contained paths with
 no traversal or escaping symlinks. Persist atomically with sibling temporary file plus rename. Read
@@ -75,7 +76,9 @@ Record at least:
   answer with sufficiency. Preserve earlier attempt/results and review history.
 
 Only one parent owns a phase run. Before starting another run in the same checkout, inspect other
-phase/feature orchestration owners too: a different sidecar does not authorize a concurrent writer.
+phase/feature orchestration and direct-workflow owners too: a different sidecar does not authorize a
+concurrent writer. Inspect `.agents/work/phases/*.direct.json` and
+`.agents/work/features/*.direct.json`; reconcile their actual owners before dispatch.
 Reserve the attempt and record its starting HEAD before spawning; bind its real host handle as soon
 as available. A spawn/bind uncertainty requires inspecting actual host children before retrying.
 Never clear active ownership on a timer. On compaction/interrupt, read real host status; await a live

@@ -15,6 +15,10 @@ intact. Bun is required for this helper; never install it silently. Safe paths r
 escaping symlinks. Atomic sibling rename and a short exclusive directory lock serialize mutations.
 A leftover lock requires inspection of the owning helper process before removal; it never expires.
 An active child is separately reserved in the sidecar and must be awaited/stopped, regardless of age.
+After `start` and before `dispatch`, claim the common checkout lease using the returned `run_id`,
+`mode: "run-feature"`, this `state_path` and the actual parent owner handle, as described in
+[checkout-lease.md](checkout-lease.md). Dispatch validates that lease under its common guard; an
+older sidecar without a lease must be reconciled and claimed before continuing.
 
 ## Issue and state inputs
 

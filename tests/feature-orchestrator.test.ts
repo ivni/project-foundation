@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { checkoutLease } from "../packages/run-feature/scripts/checkout-lease.ts";
 import {
   type Issue,
   operate,
@@ -54,7 +55,15 @@ async function fixture() {
   };
   const call = (action: Request["action"], input: Record<string, unknown> = {}) =>
     operate({ action, cwd, state_path: statePath, input });
-  await call("start", { feature_state_path: featurePath, issue });
+  const started = await call("start", { feature_state_path: featurePath, issue });
+  await checkoutLease({
+    action: "claim",
+    cwd,
+    state_path: statePath,
+    mode: "run-feature",
+    run_id: started.run_id,
+    owner: "test-parent",
+  });
   const reserve = async () => {
     const s = await call("dispatch", { issue });
     return call("bind", { attempt_id: s.active?.attempt_id, handle: `worker-${s.attempt}` });
@@ -133,6 +142,32 @@ test("three dependent stages reserve distinct fresh attempts and require all com
   expect(handles.size).toBe(3);
   expect((await f.call("dispatch", { issue: f.issue })).status).toBe("implemented");
   expect(git(f.cwd, "rev-list", "--count", "HEAD")).toBe("4");
+});
+
+test("feature dispatch requires its own checkout lease", async () => {
+  const f = await fixture();
+  const state = JSON.parse(await readFile(join(f.cwd, statePath), "utf8")) as State;
+  const owner = {
+    cwd: f.cwd,
+    state_path: statePath,
+    mode: "run-feature" as const,
+    run_id: state.run_id,
+    owner: "test-parent",
+  };
+  await checkoutLease({ ...owner, action: "release" });
+  await expect(f.call("dispatch", { issue: f.issue })).rejects.toThrow();
+  await checkoutLease({
+    action: "claim",
+    cwd: f.cwd,
+    state_path: ".agents/work/phases/phase-1.direct.json",
+    mode: "run-phase-direct",
+    run_id: "other-run",
+    owner: "other-parent",
+  });
+  await expect(f.call("dispatch", { issue: f.issue })).rejects.toThrow("lease owner mismatch");
+  expect(
+    (JSON.parse(await readFile(join(f.cwd, statePath), "utf8")) as State).active,
+  ).toBeUndefined();
 });
 
 (process.platform === "linux" ? test : test.skip)(

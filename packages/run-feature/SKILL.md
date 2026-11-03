@@ -28,6 +28,8 @@ process lifecycle. Inspect actual runtime capabilities and effective permissions
 an implemented adapter is not proof that the current host is authenticated or accepted end to end.
 Read [references/watchdog.md](references/watchdog.md) for progress events, bounded waits,
 diagnosis, corrective instructions and terminal-owner replacement before starting workers.
+Read [references/checkout-lease.md](references/checkout-lease.md) and acquire its checkout-wide
+lease before dispatch; keep it across the run and release it only after terminal-owner reconciliation.
 
 ## Restore and dispatch
 
@@ -49,6 +51,8 @@ Inspect local changes and existing stage/review checkpoints. Preserve unrelated 
 worker's real host status; wait or stop and await it before replacement. A timer does not establish a
 stale owner. Run the protocol helper to reserve the selected stage, then spawn and bind the actual
 handle. Launch no second writer while one executor is active.
+Before reservation inspect phase and feature direct-workflow records under `.agents/work/phases/`
+and `.agents/work/features/`; reconcile their actual owners and never overlap an active writer.
 
 Send only the pinned packet described in the protocol, exact stage/review skill roots and constraints.
 The worker restores the live issue, discovery and repository itself; never inherit the implementation

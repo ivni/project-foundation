@@ -49,12 +49,20 @@
       "name": "@ivni/run-feature-skill",
       "version": "1.0.0",
     },
+    "packages/run-feature-direct": {
+      "name": "@ivni/run-feature-direct-skill",
+      "version": "1.0.0",
+    },
     "packages/run-feature-stage": {
       "name": "@ivni/run-feature-stage-skill",
       "version": "1.0.0",
     },
     "packages/run-phase": {
       "name": "@ivni/run-phase-skill",
+      "version": "1.0.0",
+    },
+    "packages/run-phase-direct": {
+      "name": "@ivni/run-phase-direct-skill",
       "version": "1.0.0",
     },
     "packages/run-qwen-review-loop": {
@@ -107,9 +115,13 @@
 
     "@ivni/run-discovery-interview-skill": ["@ivni/run-discovery-interview-skill@workspace:packages/run-discovery-interview"],
 
+    "@ivni/run-feature-direct-skill": ["@ivni/run-feature-direct-skill@workspace:packages/run-feature-direct"],
+
     "@ivni/run-feature-skill": ["@ivni/run-feature-skill@workspace:packages/run-feature"],
 
     "@ivni/run-feature-stage-skill": ["@ivni/run-feature-stage-skill@workspace:packages/run-feature-stage"],
+
+    "@ivni/run-phase-direct-skill": ["@ivni/run-phase-direct-skill@workspace:packages/run-phase-direct"],
 
     "@ivni/run-phase-skill": ["@ivni/run-phase-skill@workspace:packages/run-phase"],
 
