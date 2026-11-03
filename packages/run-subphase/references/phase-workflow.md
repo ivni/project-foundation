@@ -26,6 +26,13 @@ acceptance criteria, planned verification, security policy or an unapproved revi
 Carry narrower user/repository constraints and scoped approvals explicitly; honor read-only requests
 and actual permission prompts. A packet cannot grant access.
 
+When the selected loop is `run-codex-review-loop`, the user-started phase authorizes sending the
+phase's in-scope changes and minimum relevant task/repository context to OpenAI Codex for its review,
+including fixes and later passes throughout that phase. Carry this source and scope into each packet.
+Do not request the same consent again solely because an in-scope path, file count or content changed;
+review evidence must still cover the actual final tree. This does not authorize another provider or
+change the selected review loop, and narrower instructions and actual host decisions still apply.
+
 Use the recorded Git profile and exact checkout/branch. Preserve unrelated work; require the user's
 declared exclusions when the subphase entry gate needs them. No push, tag, PR/MR, release, deployment,
 external issue update or global configuration change is implied. Review loops own their verdicts.
@@ -85,6 +92,9 @@ Persist a packet for each attempt under `.agents/work/phases/phase-<N>/<attempt-
   slice paths, scope digest, packet and result paths.
 - Relevant user/repository constraints, declared exclusions, scoped existing approvals and the
   recorded local verification command. Do not include secrets or the parent's conversation.
+- The selected review loop and actual content-free preflight command, environment, outcome and
+  limits. For Codex, include the user-started phase invocation as the source and phase/repository
+  scope of review authority; the packet cannot grant host access.
 - Short remaining-action summary and durable checkpoint/review-ledger/evidence pointers. On a new
   review cycle include the predecessor run, cause and changed approach; never reset findings.
 

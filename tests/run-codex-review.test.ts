@@ -77,6 +77,25 @@ describe("run-codex-review-loop registry", () => {
     expect(SKILLS["run-codex-review-loop"].label).toBe("Codex Review Loop");
   });
 
+  test("every host can discover the shared CLI sandbox preflight", async () => {
+    const references = join(process.cwd(), "packages/run-codex-review-loop/references");
+    const preflight = await Bun.file(join(references, "cli-preflight.md")).text();
+    expect(preflight).toContain("codex sandbox --permission-profile :read-only -- /bin/true");
+    for (const host of ["codex", "claude-code", "pi", "opencode", "hermes"]) {
+      const adapter = await Bun.file(join(references, `${host}.md`)).text();
+      expect(adapter).toContain("](cli-preflight.md)");
+    }
+  });
+
+  test("Codex adapter describes the actual implicit invocation setting", async () => {
+    const root = join(process.cwd(), "packages/run-codex-review-loop");
+    const metadata = await Bun.file(join(root, "agents/openai.yaml")).text();
+    const adapter = await Bun.file(join(root, "references/codex.md")).text();
+    expect(metadata).toContain("allow_implicit_invocation: true");
+    expect(adapter).toContain("policy.allow_implicit_invocation: true");
+    expect(adapter).toContain("rather than a host-enforced prohibition");
+  });
+
   test("declares an explicit type for the structured output schema version", async () => {
     const schema = await Bun.file(
       join(process.cwd(), "packages/run-codex-review-loop/assets/review-result.schema.json"),

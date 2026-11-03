@@ -7,6 +7,18 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.8.2] - 2026-11-03
+
+### Changed
+
+- Feature and phase orchestration carry scoped Codex review authority through workers and repeated
+  passes, without treating file-count changes as a new consent request. Host permission decisions and
+  review of the final substantive tree remain required.
+- Review capability and isolation are preflighted before implementation. All Codex CLI host
+  adapters share the same content-free Linux sandbox probe and permission guidance; the probe does
+  not establish model access or guarantee approval of the subsequent review.
+- Review guidance distinguishes read-only filesystem access from restrictions on reading secrets.
+
 ## [3.8.1] - 2026-10-30
 
 ### Changed
@@ -614,7 +626,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.8.1...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.8.2...HEAD
+[3.8.2]: https://github.com/ivni/project-foundation/compare/v3.8.1...v3.8.2
 [3.8.1]: https://github.com/ivni/project-foundation/compare/v3.8.0...v3.8.1
 [3.8.0]: https://github.com/ivni/project-foundation/compare/v3.7.0...v3.8.0
 [3.7.0]: https://github.com/ivni/project-foundation/compare/v3.6.0...v3.7.0

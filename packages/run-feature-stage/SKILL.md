@@ -27,6 +27,10 @@ A request to execute this workflow authorizes local implementation within the is
 available project checks, invocation of `run-codex-review-loop` with its independent reviewer and
 bounded fixes, a local stage commit, and progress updates to this issue. Automatic skill discovery
 alone does not authorize execution. Honor narrower user instructions, including no-commit requests.
+The invocation authorizes sending this stage's in-scope changes and minimum relevant task/repository
+context to OpenAI Codex, including fixes and further passes. A path or file-count change within that
+scope does not alone require renewed consent. It does require review of the actual final tree. Carry
+the original authority into permission requests and honor any host denial and narrower restriction.
 
 The primary agent owns verification. Run the changed behavior at a real seam, inspect the results,
 and fix safe in-scope failures. A request that the user "try it and check everything" is not evidence
@@ -68,6 +72,10 @@ Check the selected stage's scope, acceptance criteria, methods, prerequisites, a
 unknowns. Verify issue-read and update access and the availability of `run-codex-review-loop` and
 its required runtime before implementation. If missing, preserve useful reconnaissance and stop
 with the concrete capability blocker; do not substitute self-review or install tooling silently.
+Inspect the review host adapter and perform its content-free isolation preflight in the intended
+review environment before implementation, unless a current parent preflight applies unchanged.
+Preserve its result and limitation; it is not proof of authentication, model access or permission
+for the eventual review. Diagnose a failure through supported authorized paths before stopping.
 
 Inspect staged, unstaged, and untracked changes. Reuse clearly attributable unfinished stage work.
 Preserve unrelated user work and exclude it by explicit paths when the boundary is safe; if changes

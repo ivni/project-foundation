@@ -11,6 +11,8 @@ that semantic invocation can never occur.
 
 ## Launch the reviewer
 
+Before using the wrapper, follow the shared [CLI preflight and permission rules](cli-preflight.md).
+
 Do not use an OpenCode native agent configured with an OpenAI model. Launch the actual Codex CLI
 through the shared Bun wrapper:
 

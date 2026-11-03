@@ -64,7 +64,10 @@ the actual forge read and inspect the real content; the helper is not an authent
 Provide: delegation authorized by the current user-started `run-feature`; pinned `schema: 1`, feature/
 repository/issue/base/checkout, `run_id`, `attempt_id`, selected `stage_id`, exact stage and review skill
 paths, sidecar/feature-record paths, result destination, existing review/checkpoint pointers, narrower
-user/repository constraints and explicit fallback approvals. Include an answer if one was verified.
+user/repository constraints and explicit fallback approvals. Include the original user invocation as
+the source and feature/repository scope of Codex review authority, and the actual preflight command,
+environment, outcome and limits. Do not describe the packet itself as a host permission grant.
+Include an answer if one was verified.
 Include the absolute watchdog reference/helper paths and failure/recovery pointers for telemetry
 and correction, including native workers. Supervise while awaiting, not just after worker exit.
 Do not copy earlier implementation conversation, stage lists, full logs or suspected reviewer findings.

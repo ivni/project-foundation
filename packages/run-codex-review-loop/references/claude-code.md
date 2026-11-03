@@ -12,6 +12,8 @@ restores a host-enforced boundary where one is wanted.
 
 ## Launch the reviewer
 
+Before using the wrapper, follow the shared [CLI preflight and permission rules](cli-preflight.md).
+
 Do not use a Claude subagent, including one configured with an OpenAI-compatible model. Launch the
 actual Codex CLI through the shared Bun wrapper:
 

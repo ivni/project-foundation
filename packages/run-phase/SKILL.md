@@ -42,6 +42,15 @@ engineering problems inside the agreed scope; a missing stakeholder decision, in
 unapproved fallback or required scope change needs its concrete user answer. Never tick an open
 blocker or invent acceptance criteria to pass a gate.
 
+Resolve the review loop using `run-subphase`'s selection rules and any explicit user choice before
+implementation; do not silently change the chosen provider. Inspect its actual host adapter and
+preflight its runtime and isolation in the worker's intended environment without sending repository
+content. For the Linux Codex CLI path, use the review skill's shared CLI preflight. Record the selected loop,
+command/environment, result and limitation in the sidecar and worker packet. Diagnose failure via
+supported, authorized paths; if the required path remains unavailable, stop before implementation
+with the concrete blocker. A passing probe does not establish authentication, model access, future
+permission or review success. Repeat it when the relevant environment changes.
+
 ## Dispatch, await and verify
 
 Persist a reservation before spawning, bind the actual child handle immediately and keep one writer

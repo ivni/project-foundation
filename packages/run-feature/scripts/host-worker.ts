@@ -114,6 +114,7 @@ export async function prepareWorker(request: WorkerRequest): Promise<WorkerPlan>
     `Read the shared result/continuation contract at ${resolve(import.meta.dir, "../references/protocol.md")}.`,
     `Read progress/watchdog requirements at ${resolve(import.meta.dir, "../references/watchdog.md")}.`,
     "This is delegated authority from a user-started run-feature, not automatic skill discovery.",
+    "Carry the original user invocation's feature/repository scope of Codex review authority and the recorded review preflight into permission requests; a worker packet does not grant host access. Honor narrower constraints and host denials.",
     JSON.stringify(identity),
     `Read feature record ${state.feature_state_path}, parent sidecar ${request.state_path}, live issue and exact discovery.`,
     `Invoke independent run-codex-review-loop at ${reviewRoot}/SKILL.md using its ${request.host} adapter and actual Codex CLI wrapper.`,

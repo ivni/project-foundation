@@ -50,6 +50,14 @@ parent pins one selected identity for the run and verifies commit, acceptance/ch
 review and live issue readback before dispatching the next worker. A changed active pointer does not
 retarget a run.
 
+Within that feature and checkout, the invocation also authorizes sending its stage changes and the
+minimum relevant task/repository context to OpenAI Codex for independent review, including in-scope
+fixes and later passes. The recipient and purpose are part of this authority; another provider or
+unrelated content is not. Do not ask again solely because an in-scope path, file count or content
+changed. This does not make an earlier review valid for later edits: assess the actual final tree.
+Preserve the source and scope of this authority and narrower constraints in each worker packet; a
+packet conveys user authority, not a grant of host access. Honor an actual permission denial.
+
 The parent owns a minimal `.agents/work/features/<feature-id>.orchestrator.json` sidecar (identity,
 run/attempt, active owner/action, result/review/question/cancellation pointers), not another plan.
 The executor owns the existing feature record. Serialize owners and inspect/wait/stop an active

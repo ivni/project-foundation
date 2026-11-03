@@ -11,6 +11,8 @@ and the explicit-only boundary is instruction-level: the description and the inv
 
 ## Launch the reviewer
 
+Before using the wrapper, follow the shared [CLI preflight and permission rules](cli-preflight.md).
+
 Do not use a Pi-native subagent or model alias as the reviewer. Launch the actual Codex CLI through
 the shared Bun wrapper:
 

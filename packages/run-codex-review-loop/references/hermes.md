@@ -10,6 +10,8 @@ and direct invocation convention are semantic safeguards, not a technical imposs
 
 ## Launch the reviewer
 
+Before using the wrapper, follow the shared [CLI preflight and permission rules](cli-preflight.md).
+
 Do not use Hermes `delegate_task` as the reviewer. A delegated Hermes child remains a Hermes runtime.
 Launch the actual Codex CLI through the shared Bun wrapper, either directly with the shell tool or
 through Hermes's Codex CLI integration when that integration can execute this exact command:

@@ -199,6 +199,9 @@ processTest(
 
 test("native packets pin identity/paths and omit conversation/model/permission/session overrides", async () => {
   const f = await fixture();
+  f.request.constraints =
+    "User invoked run-feature for fixture; Codex review within this repository only. " +
+    "Preflight: sandbox probe in worker environment failed; permission pending. No unrelated content.";
   for (const [host, tool] of [
     ["claude-code", "Agent"],
     ["claude-code", "Task"],
@@ -221,6 +224,8 @@ test("native packets pin identity/paths and omit conversation/model/permission/s
     expect(identity).toEqual(f.result(f.state, {}));
     expect(plan.prompt).toContain(f.request.stage_skill_root);
     expect(plan.prompt).toContain(f.request.review_skill_root);
+    expect(plan.prompt).toContain(f.request.constraints);
+    expect(plan.prompt).toContain("a worker packet does not grant host access");
     expect(plan.prompt).toContain("Dependency security audit findings authorize affected project");
     expect(plan.prompt).toContain("No unrelated dependency installation or upgrades");
     await expect(runProcess(plan)).rejects.toThrow("Native plans");

@@ -4,9 +4,10 @@ Use this adapter only when Codex is the primary implementing agent.
 
 ## Invocation containment
 
-`agents/openai.yaml` sets `policy.allow_implicit_invocation: false`. The skill should therefore be
-offered for explicit selection but not selected automatically. The restrictive `SKILL.md`
-description remains a second semantic boundary.
+`agents/openai.yaml` sets `policy.allow_implicit_invocation: true`, so the host does not enforce an
+explicit-only invocation boundary. The restrictive `SKILL.md` description and authority rules
+require explicit user invocation or delegation through a user-started workflow; they are semantic
+instructions rather than a host-enforced prohibition.
 
 ## Launch the reviewer
 
@@ -36,22 +37,7 @@ If this path is unavailable or fails, report the actual blocker; ask before usin
 alternative. Do not silently weaken the required profile, isolation or reviewer identity. This package
 does not install a global Codex custom-agent configuration.
 
-On Linux, before sending a context packet to the CLI reviewer, probe the same Codex executable in
-the intended execution environment with `codex sandbox --permission-profile :read-only -- /bin/true`.
-This probe contains no repository content and does not consume a review pass. A successful probe is
-not proof that authentication, model access, or the full review will work. If the CLI does not support
-the probe, report that the capability is unverified rather than treating it as a successful check.
-Diagnose a failed probe before attempting a review. For example, the nested Linux sandbox can fail
-when the outer sandbox masks its daemon socket directory; changing `CODEX_HOME` alone does not fix
-that conflict. Do not change socket permissions or weaken isolation to force the probe to pass.
-
-If a supported host permission request is needed, make the exact command reviewable and identify the
-original explicit skill invocation as the source of authorization to send task changes and necessary
-context to Codex. State which process runs outside the outer sandbox, what it reads or writes, the
-reviewer's separate read-only boundary, and the destination. Do not imply the entire launcher is
-read-only. Exclude credentials and unrelated private data from the review packet. The host may still
-deny the request. Honor that decision; never route around a rejection, and ask only for the specific
-missing authorization or decision the host requires after completing permitted work.
+For the wrapper path, follow the shared [CLI preflight and permission rules](cli-preflight.md).
 
 For the wrapper path, run:
 

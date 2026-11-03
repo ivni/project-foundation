@@ -13,7 +13,10 @@ Request: `{host, cwd, state_path, stage_skill_root, review_skill_root, configura
 native?}`. `host` is `claude-code`, `pi`, `opencode` or `hermes`; `cwd` is the exact checkout root,
 skill roots are absolute verified installed roots, and `state_path` is the fixed relative sidecar.
 `constraints` contains the relevant user/repository boundaries and scoped approval evidence, never
-credentials or prior conversation. `configuration` is `{source, equivalent: true, values}`: the
+credentials or prior conversation. Include the user invocation's Codex review authority with its
+feature/repository scope and the actual review preflight command, environment, outcome and limits
+in `constraints`; the helper transports this evidence but does not validate it or grant permission.
+`configuration` is `{source, equivalent: true, values}`: the
 parent must inspect actual effective host settings and put the evidence reference in `source`.
 The boolean records that preflight decision; the helper does not attest permissions or apply policy.
 Never assert equivalence merely because CLI defaults seem likely to match. Native `values` is `{}`;

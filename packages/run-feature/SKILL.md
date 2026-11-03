@@ -37,6 +37,14 @@ issue and available stage skill, independent Codex review, checks and authentica
 path. An existing sidecar pins selection across parent compaction and active-pointer changes. Do not
 reset it to switch features. A closed issue or intentional task change requires reconciliation.
 
+Before dispatching implementation, inspect the selected Codex review adapter and preflight its
+actual runtime and isolation in the environment the worker will use. On the Linux CLI path, run the
+review skill's shared CLI preflight; record the command, environment, result and limitation in the
+run checkpoint and worker packet. Diagnose failure and use only a supported, authorized permission
+request or adapter path. If the required path is unavailable, retain reconnaissance and stop before
+implementation with the concrete capability or permission blocker. A successful probe does not prove
+authentication, model access, future permission or review success; recheck when the environment changes.
+
 Inspect local changes and existing stage/review checkpoints. Preserve unrelated work. Read an active
 worker's real host status; wait or stop and await it before replacement. A timer does not establish a
 stale owner. Run the protocol helper to reserve the selected stage, then spawn and bind the actual
@@ -44,7 +52,8 @@ handle. Launch no second writer while one executor is active.
 
 Send only the pinned packet described in the protocol, exact stage/review skill roots and constraints.
 The worker restores the live issue, discovery and repository itself; never inherit the implementation
-conversation. Pass the actual prior review ledger and explicitly granted fallback approvals. Never
+conversation. Pass the user invocation's Codex review authority, the preflight outcome, actual prior
+review ledger and explicitly granted fallback approvals. Never
 invent an approval because a parent approved a different action.
 
 ## Await, verify and continue

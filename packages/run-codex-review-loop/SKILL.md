@@ -56,6 +56,10 @@ clean, permits ignoring convergence, changes reviewer selection or approves an u
 For this skill, an explicit invocation authorizes sending the task changes and the minimum relevant
 repository context to the Codex reviewer. Respect narrower user or repository restrictions and actual
 host permission decisions; this authority does not authorize another provider or unrelated content.
+The same Codex authority follows a user-started `run-feature` for its feature or `run-phase` when
+Codex is the selected loop for its phase. It covers in-scope fixes and later passes; changed path
+counts alone do not require renewed user consent. A fresh review is still required for substantive
+edits. Carry the original invocation and its scope through delegation and permission requests.
 
 The bounded stops still end each run. After a completed `BLOCKED` pass, a standalone caller may
 diagnose a demonstrable runtime or environment failure and start at most one new identified run
