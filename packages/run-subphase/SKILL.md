@@ -22,7 +22,8 @@ direct workflow after closeout or an early stop; it alone decides whether to con
 permission for a standalone invocation to start a second subphase or skip an entry or review gate.
 
 A pinned `run-phase` packet delegates authority for this subphase and its selected review loop.
-Read [references/phase-workflow.md](references/phase-workflow.md) when such a packet is present.
+Read [references/phase-workflow.md](references/phase-workflow.md) for cleanup and recovery in every
+execution, and for the packet and result protocol when such a packet is present.
 Honor its exact phase/subphase, checkout/branch, constraints, approvals and checkpoint; do not select
 another subphase. Persist the structured result and recovery evidence before returning. A new bounded
 review run needs the parent's diagnosed continuation packet; standalone bounded stops remain.
@@ -54,7 +55,8 @@ project keeps its artifacts elsewhere, take the paths from the agent contract ra
 ## 1. Select the subphase
 
 Take the lowest-numbered unticked subphase, or the one the user named. Under orchestration restore
-the reserved subphase/checkpoint first. Never reorder silently.
+the reserved subphase/checkpoint first. Reconcile a cleanup-pending record before selecting another
+subphase, even if its checklist entry is ticked. Never reorder silently.
 
 If its implementation is already committed, inspect that SHA and reconcile evidence/checklist/status
 instead of rebuilding or duplicating its commit. Refresh evidence affected by descendant changes.
@@ -174,7 +176,10 @@ tag — a tag may trigger a release, and releases are not part of a subphase.
 ## 8. Close out and stop
 
 Verify the commit contains checklist/traceability/status closeout. Under orchestration persist the
-result and checkpoint from the phase workflow; the parent decides whether to advance. Then report,
+result and evidence for the parent's verification; do not remove material the parent still needs.
+The parent performs the phase workflow's cleanup after observing this worker stop. In standalone or
+direct execution, perform and verify that cleanup before reporting the subphase fully closed; preserve
+a cleanup-pending record for recovery. Then report,
 in five lines:
 
 1. what was built, by requirement ID;

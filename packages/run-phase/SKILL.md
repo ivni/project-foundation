@@ -74,9 +74,11 @@ For `subphase-complete`, independently check:
   commit and current file, and the agent status is accurate. No substantive uncommitted task edit
   remains; unrelated work stays excluded. Scope or verification changes require reconciliation.
 
-A child's success sentence, exit zero or ticked checkbox alone is insufficient. Persist verified
-completion and clear the checkpoint only after all gates pass; then read the current checklist and
-dispatch the next subphase. Never advance on malformed, stale or unsupported results.
+A child's success sentence, exit zero or ticked checkbox alone is insufficient. After verifying the
+result, perform and verify the subphase cleanup in the phase workflow. Persist cleanup-pending state
+before clearing the checkpoint, and reconcile it on restart even when the checklist is already
+ticked. Only after cleanup and all other gates pass, record completion, read the current checklist
+and dispatch the next subphase. Never advance on malformed, stale or unsupported results.
 
 ## Recover and finish
 
@@ -103,6 +105,8 @@ closure only if every criterion is evidenced. If CI, runtime acceptance or anoth
 pending, report subphases implemented with that gate pending; do not mark the phase closed, fabricate
 evidence or perform an unauthorized delivery action. A substantive closure fix needs a fresh scoped
 executor and independent review, not an unreviewed parent edit. Stop at this phase boundary.
+Complete the phase-wide temporary-material cleanup in the phase workflow before reporting the run
+finished, including when external delivery gates remain pending.
 
 Report brief subphase progress and a self-contained result with completed/remaining subphases,
 checks, review, commits, phase status and any exact question. Keep state and evidence for resumption.

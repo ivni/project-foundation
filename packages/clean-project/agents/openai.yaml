@@ -1,0 +1,7 @@
+interface:
+  display_name: "Clean Project"
+  short_description: "Clean obsolete and temporary project files"
+  default_prompt: "Use $clean-project to remove obsolete completed-work materials and temporary project files safely."
+
+policy:
+  allow_implicit_invocation: true

@@ -7,6 +7,18 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.10.0] - 2026-11-04
+
+### Added
+
+- `clean-project` identifies and removes obsolete completed-work materials and disposable project
+  files while retaining current documentation, active work and necessary recovery data.
+
+### Changed
+
+- Phase and feature workflows clean up temporary materials after each verified increment and at the
+  end of the run. Cleanup preserves active recovery evidence and safely reconciles result pointers.
+
 ## [3.9.0] - 2026-11-03
 
 ### Added
@@ -635,7 +647,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.9.0...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.10.0...HEAD
+[3.10.0]: https://github.com/ivni/project-foundation/compare/v3.9.0...v3.10.0
 [3.9.0]: https://github.com/ivni/project-foundation/compare/v3.8.2...v3.9.0
 [3.8.2]: https://github.com/ivni/project-foundation/compare/v3.8.1...v3.8.2
 [3.8.1]: https://github.com/ivni/project-foundation/compare/v3.8.0...v3.8.1

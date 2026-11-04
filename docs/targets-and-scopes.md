@@ -4,7 +4,7 @@ Every installed skill lives in an immediate child directory under one of the roo
 packaged child names are `project-foundation`, `find-blind-spots`, `run-discovery-interview`,
 `plan-feature`, `run-feature-stage`, `run-feature`, `run-feature-direct`, `run-subphase`, `run-phase`,
 `run-phase-direct`, `run-codex-review-loop`, `run-claude-review-loop`,
-`run-qwen-review-loop`, `analyze-tests`, and `teach`.
+`run-qwen-review-loop`, `analyze-tests`, `clean-project`, and `teach`.
 
 | Agent | User root | Project root | Shared discovery |
 | --- | --- | --- | --- |

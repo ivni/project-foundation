@@ -57,7 +57,7 @@ been deliberately omitted or removed earlier. The wizard does not persist a full
 the installer and exact payloads for `project-foundation`, `find-blind-spots`,
 `run-discovery-interview`, `plan-feature`, `run-feature-stage`, `run-feature`, `run-feature-direct`,
 `run-subphase`, `run-phase`, `run-phase-direct`, `run-codex-review-loop`,
-`run-claude-review-loop`, `run-qwen-review-loop`, `analyze-tests`, and `teach`. The selected skill
+`run-claude-review-loop`, `run-qwen-review-loop`, `analyze-tests`, `clean-project`, and `teach`. The selected skill
 directories remain after `bunx` exits.
 
 For the small-feature workflow, install `plan-feature`, `run-feature-stage`, and

@@ -60,6 +60,10 @@ export const SKILLS = {
     label: "Analyze Tests",
     summary: "Test value, parallelism, and runtime proposals; apply only on request",
   },
+  "clean-project": {
+    label: "Clean Project",
+    summary: "Remove obsolete completed-work materials and temporary project files",
+  },
   teach: {
     label: "Teach",
     summary: "Stateful learning workspace for teaching a topic over many sessions",

@@ -20,6 +20,29 @@ After `start` and before `dispatch`, claim the common checkout lease using the r
 [checkout-lease.md](checkout-lease.md). Dispatch validates that lease under its common guard; an
 older sidecar without a lease must be reconciled and claimed before continuing.
 
+## Retiring completed result pointers
+
+The helper has no action to clear `last_result`. After successful completion settlement, the parent
+may make this narrowly scoped administrative mutation itself to enable the feature workflow's cleanup:
+
+1. Keep the checkout lease and an atomic cleanup-pending record naming the feature, stage, commit,
+   result path and remaining work. Verify completion and the live issue before proceeding. Wait for
+   the worker and its descendants to stop; never retire evidence for an unfinished or cancelled run.
+2. Acquire the same exclusive directory lock used by the helper: `<sidecar-path>.lock`. Never remove
+   an existing lock without inspecting its owner. Under the lock, reread and validate the sidecar's
+   feature, checkout and run identity, confirm no active owner and that `last_result` is the exact
+   completed result path in the cleanup record. Preserve all other fields. If any condition differs,
+   release the lock and reconcile rather than guessing.
+3. Remove only `last_result`, write the modified sidecar atomically via a sibling temporary file and
+   rename, and release the lock. Then remove completed temporary files under the cleanup rules and
+   verify removal. Do not remove a file still referenced by live recovery state or needed by an
+   unfinished stage. Clear the cleanup-pending record only after cleanup succeeds.
+
+On interruption, inspect the pending record and sidecar under the same lease and lock: if the exact
+pointer still exists, repeat the retirement; if it is already absent, continue the remaining cleanup;
+if it points elsewhere, reconcile before touching either result. Do not settle again, duplicate the
+commit or issue update, or delete the pending record until cleanup is verified.
+
 ## Issue and state inputs
 
 Normalize a just-fetched issue as `{repository, issue_url, body, open, stages}`. Keep the original
@@ -111,7 +134,8 @@ Checks evidence: `{tree, passed: true, commands: [...], log: projectRelativePath
 `{tree, verdict: "CLEAN", run_id, passes, ledger: projectRelativePath}`. `tree` is the staged tree from
 `git write-tree` after all authored changes are staged; it must equal the resulting commit tree.
 Stage only agreed paths. Capture check/review applicability before commit; staging is not proof that
-checks or review happened. Save actual command logs and reviewer envelopes referenced by the ledger.
+checks or review happened. Save actual command logs and reviewer envelopes referenced by the ledger
+until completion is independently verified, then apply the feature workflow's cleanup rules.
 For a deferred finding, preserve its fingerprint and attach `deferral` with
 `outside_blocking_areas: true`, a concrete `reason`, `record_ref` and `readback_verified: true` after
 actual verification. For a local register also attach the exact relevant `entry` text, including

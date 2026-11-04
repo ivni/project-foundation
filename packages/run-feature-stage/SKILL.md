@@ -60,9 +60,12 @@ can permit an action, but do not infer it from the local commit or issue update.
 2. Verify the issue matches this repository and the selected feature marker. Check the recorded
    base commit and completed stage commits against the current checkout; resolve ordinary drift
    through inspection. Stop if predecessor work is absent or its equivalence cannot be established.
-3. Reconcile any `committed-awaiting-issue` checkpoint as this invocation's one stage. Verify and
-   publish its missing result, clear the completed checkpoint, report the outcome, and stop whether
-   recovery succeeds or remains blocked. Do not select another stage in this invocation or repeat
+3. Reconcile a cleanup-pending record before selecting another stage, without duplicating the commit
+   or issue update. Reconcile any `committed-awaiting-issue` checkpoint as this invocation's one
+   stage. Verify and publish its missing result, retain cleanup-pending state and clear the completed
+   checkpoint. Finish cleanup before reporting success in standalone or direct execution; under
+   orchestration return the result and evidence for the parent to finish cleanup. Report and stop
+   whether recovery succeeds or remains blocked. Do not select another stage in this invocation or repeat
    a stage whose verified commit exists merely because the remote checkbox update failed.
 4. Resume the recorded unfinished stage; otherwise select the earliest unfinished stage in issue
    order. An explicit stage selection takes precedence only when its prerequisites are satisfied.
@@ -141,9 +144,12 @@ than asking the user to create a separate register. Do not create unrelated debt
 3. Refetch the issue and merge the intended checkbox/status updates into the latest content,
    preserving other authors' changes. Publish one concise stage result with commit SHA, acceptance
    evidence, check results, review outcome, and permitted deferrals. Read back the persisted result.
-4. Only after the verified progress update, set local status to `implemented` if all stages are
-   done, or `ready` otherwise. Clear `stage_id` and the completed checkpoint; the issue owns the
-   completed-stage list. Keep the active pointer and report delivery gates separately.
+4. After the verified progress update, persist the feature workflow's cleanup-pending record before
+   clearing `stage_id` and the completed checkpoint. Set local status to `implemented` if all stages
+   are done, or `ready` otherwise; the issue owns the completed-stage list. In standalone or direct
+   execution, perform and verify cleanup before reporting the stage fully closed. Under orchestration,
+   retain evidence for the parent, which completes cleanup after this worker stops. Keep the active
+   pointer and report delivery gates separately.
 
 If issue publication fails after commit, retain the SHA and pending update in the checkpoint. Report
 "committed locally; issue update pending", stop, and reconcile on the next invocation. Do not amend,

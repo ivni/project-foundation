@@ -54,10 +54,11 @@ Resume an unfinished stage, including a committed result awaiting issue update, 
 first unfinished stage in the freshly read issue. Run one `run-feature-stage` in this agent. At its
 return, verify the commit, tested state, independent review and dispositions, acceptance evidence,
 issue result and checkboxes against a fresh issue read. Reconcile an already committed stage without
-reimplementing or duplicating the commit. Only after all gates pass and the checkpoint is cleared may
-you select the next stage. Do not skip a blocked predecessor. Re-read current scope and progress at
-each boundary. The final stage verifies the feature-wide journey; report implemented and delivery
-gates without closing the issue.
+reimplementing or duplicating the commit. Reconcile any cleanup-pending record before selecting a
+stage. Only after all gates, including verified cleanup, pass and the checkpoint is cleared may you
+select the next stage. Do not skip a blocked predecessor. Re-read current scope and progress at
+each boundary. The final stage verifies the feature-wide journey; complete feature-wide cleanup per
+the feature workflow even if delivery gates remain pending, and report them without closing the issue.
 
 ## Recovery and stopping
 

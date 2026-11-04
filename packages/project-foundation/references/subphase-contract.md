@@ -36,6 +36,8 @@ A subphase is done only when **all** of the following hold:
 - Docs updated in the same change (same-change rule).
 - `checklist.md` ticked; the agent-contract status line updated if the completion is externally
   meaningful.
+- Temporary materials attributable to the subphase cleaned up after verification, with necessary
+  evidence and recovery records preserved, as specified by the phase workflow.
 
 ## Proportionate verification and test maintenance
 

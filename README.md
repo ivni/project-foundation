@@ -35,6 +35,8 @@ durable project foundation:
 - **Analyze Tests** reports which tests can be removed or consolidated, what can run in parallel,
   and what else can be faster. It starts with analysis and applies selected proposals only after a
   separate command. It can use existing results and safe local measurements.
+- **Clean Project** removes obsolete completed-work records and temporary project files while
+  preserving current documentation, active work, and data needed for recovery.
 - **Project Foundation** turns the resulting product and UX contract into agent-led technical
   synthesis, architecture, delivery process, and a canonical artifact set.
 
@@ -56,7 +58,7 @@ bunx @ivni/project-foundation
 ```
 
 Choose `Install / update`. The wizard reuses an existing installation's agents, scope, and method,
-or lets you choose different settings. On a first installation, all fifteen skills are preselected.
+or lets you choose different settings. On a first installation, all sixteen skills are preselected.
 For an existing installation, updates are preselected and absent skills are optional additions.
 You can update installed skills and add others in one run, with one complete preview before writing
 anything.
@@ -153,6 +155,13 @@ Then select proposals in a separate message, for example: `$analyze-tests apply 
 The skill checks that the report still matches the code, applies only the selected scope, and verifies
 correctness and performance separately. It does not commit or publish automatically.
 
+## Project cleanup
+
+Ask `$clean-project` to clean a project after completed work. It inventories candidates and removes
+safe obsolete plans and temporary files, preserving current documentation, active work and necessary
+recovery state. It reconciles still-useful information and references before removing old documents.
+Ask for an audit only if you want recommendations without changes.
+
 ## Supported environments
 
 | Agent | User scope | Project scope |
@@ -198,7 +207,7 @@ bun run check
 ```
 
 The public package is the repository root. The private workspaces under `packages/` separate the
-CLI source from the fifteen raw skill payloads. See [Development](docs/development.md) for the full
+CLI source from the sixteen raw skill payloads. See [Development](docs/development.md) for the full
 layout and verification workflow.
 
 ## License

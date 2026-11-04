@@ -76,9 +76,13 @@ For `stage-complete`, inspect acceptance/check logs and independent review/ledge
 reviewed code must match the commit, every blocking finding must have a permitted disposition, and
 issue result plus checkboxes must identify that same SHA. Reconcile substantive contract changes.
 The helper checks identity, ancestry, tree evidence, unique stage commit and cleared checkpoint;
-its success does not replace this semantic verification. Only then select the next unfinished stage.
+its success does not replace this semantic verification. Before `settle` clears the stage identity,
+persist the cleanup-pending record specified by the feature workflow. After verification and terminal
+settlement, perform and verify cleanup; reconcile a pending record before any subsequent dispatch,
+including on restart. Only then select the next unfinished stage.
 After the last stage verify feature-wide acceptance and report `implemented` with delivery gates;
-do not close the issue automatically.
+do not close the issue automatically. Complete the feature-wide temporary-material cleanup in the
+feature workflow before reporting the run finished, even when delivery gates remain pending.
 
 For other outcomes investigate the cause and side effects before dispatch:
 

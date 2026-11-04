@@ -73,7 +73,8 @@ Record at least:
 - `checkpoint`: remaining action, owned changed paths, last tested/reviewed state, `review_ledger`,
   predecessor review run/changed approach, and `recovery_commit` when committed but not closed out.
 - Last verified completion references; any stop request, diagnosis, question/sources checked and
-  answer with sufficiency. Preserve earlier attempt/results and review history.
+  answer with sufficiency. Preserve earlier attempts, results and review history while needed for
+  verification or recovery; after verified closeout retire their pointers and clean up as below.
 
 Only one parent owns a phase run. Before starting another run in the same checkout, inspect other
 phase/feature orchestration and direct-workflow owners too: a different sidecar does not authorize a
@@ -120,8 +121,8 @@ closeout). Outcomes:
 | `needs-user-input` | `question`, missing fact, `sources_checked`, side effects and remaining action; research first, then stop for the precise answer |
 | `interrupted` | remaining action and known side effects; reconcile before resuming |
 
-Evidence references point to actual saved logs/observations, not fresh claims synthesized from a
-success message. Checks name the recorded full command, result and tested state; acceptance maps
+Until completion is independently verified, evidence references point to actual saved logs/observations,
+not fresh claims synthesized from a success message. Checks name the recorded full command, result and tested state; acceptance maps
 each linked requirement to its planned seam and observed result. Review evidence identifies the
 actual independent runtime, loop, run/pass/verdict, scope/snapshot and permitted dispositions.
 Record substantive tree/snapshot identity plus any inspected administrative delta, so evidence
@@ -142,8 +143,39 @@ or result from another identity, missing evidence, stale scope or unchanged comp
 not completion. Missing/malformed output is diagnosed from preserved output and side effects, never
 treated as success or an automatic stakeholder blocker.
 
-Only after verification may the parent clear the checkpoint, record completion and choose the next
-unticked subphase from the current checklist. Respect suffixed sibling order (`N.3`, `N.3a`, `N.4`).
+After verification, complete the subphase's temporary-material cleanup before choosing another
+subphase or reporting it fully closed. Before clearing a checkpoint, persist an atomic, durable
+cleanup-pending record at `.agents/work/phases/phase-<N>.cleanup.json` (using the same safe phase ID
+as the sidecar) identifying the phase/subphase, completion commits, evidence pointers and remaining
+cleanup. On interruption or restart reconcile this record first, even if the checklist is
+already ticked: finish cleanup without rebuilding or recommitting the increment. Clear the record
+only after inspecting the result. Keep it and retry safe failures; report a concrete access or safety
+blocker if cleanup cannot be completed.
+
+Inventory all temporary materials attributable to this subphase and its attempts: reports, raw
+logs, review outputs, archives, screenshots, videos, test data, scratch files, packets and disposable
+environments. Stop and await their owners. After the parent has inspected the actual evidence and
+recorded the factual command, result, tested state, review outcome and acceptance in the existing
+checklist or other canonical records, remove the temporary materials. Do not create a separate report
+or archive to retain them. Missing evidence cannot be replaced by a fabricated summary.
+
+During an unfinished phase retain only temporary material still needed for an active owner, pending
+verification/recovery or a concrete later subphase; remove it when that need ends. Reconcile workflow
+references and state before deleting their targets; never leave a live recovery pointer dangling.
+Preserve tracked files, intended deliverables, user data, unrelated work, shared resources and items
+whose ownership cannot be established. Check paths and symlinks; do not follow a link outside the
+intended boundary. Verify removal and the canonical records; the cleanup-pending record is temporary
+too and is removed after successful cleanup.
+
+At the end of the phase, repeat the inventory across all its subphases and attempts and remove every
+remaining phase-owned temporary artifact, including any previously needed for later work. Finish
+verification and reconcile terminal owners and workflow references first. No temporary reports,
+archives, logs, screenshots or videos are retained merely as evidence of completed work. If safe
+removal is blocked or ownership remains uncertain, preserve the item, report the exact path and reason,
+and do not claim that cleanup is complete.
+
+Only after verification and cleanup may the parent record completion and choose the next unticked
+subphase from the current checklist. Respect suffixed sibling order (`N.3`, `N.3a`, `N.4`).
 A size split must follow the subphase contract and preserve scope/requirement ownership. Reconcile
 other substantive plan drift explicitly; do not change criteria merely to accept an implementation.
 

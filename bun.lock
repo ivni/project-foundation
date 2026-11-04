@@ -17,6 +17,10 @@
       "name": "@ivni/analyze-tests-skill",
       "version": "1.0.0",
     },
+    "packages/clean-project": {
+      "name": "@ivni/clean-project-skill",
+      "version": "1.0.0",
+    },
     "packages/cli": {
       "name": "@ivni/project-foundation-cli",
       "version": "1.9.0",
@@ -100,6 +104,8 @@
     "@clack/core": ["@clack/core@1.4.3", "", { "dependencies": { "fast-wrap-ansi": "^0.2.0", "sisteransi": "^1.0.5" } }, "sha512-/kr3UWNtdJfxZtPgDqUOmG2pvwlmcLGheex5yiZKdwbzZJxhV+HMNR9QNmyY5cGwTNV6LrR7Jtp+KjhUAP1qBQ=="],
 
     "@ivni/analyze-tests-skill": ["@ivni/analyze-tests-skill@workspace:packages/analyze-tests"],
+
+    "@ivni/clean-project-skill": ["@ivni/clean-project-skill@workspace:packages/clean-project"],
 
     "@ivni/find-blind-spots-skill": ["@ivni/find-blind-spots-skill@workspace:packages/find-blind-spots"],
 

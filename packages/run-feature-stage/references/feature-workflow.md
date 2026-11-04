@@ -159,12 +159,14 @@ If a commit exists but its issue update failed, use its SHA and recorded tested/
 publish the missing result first. If the evidence is missing or code changed, re-establish the
 necessary verification/review without duplicating the commit. After compaction or interruption,
 inspect the real diff and repository history; checkpoints and ticks are evidence pointers, not proof.
-Reconciliation of a committed stage consumes the invocation's one stage: report and stop after it,
-including when the remote update succeeds. Once verified, clear its `stage_id` and checkpoint and
-set status to `ready` or, if all stages are complete, `implemented`. Publication recovery through
+Reconciliation of a committed stage consumes the invocation's one stage: report and stop after its
+cleanup, including when the remote update succeeds. Once verified, persist cleanup-pending state
+before clearing its `stage_id` and checkpoint, then set status to `ready` or, if all stages are
+complete, `implemented`. Under orchestration the parent completes cleanup after the worker stops.
+Publication recovery through
 `plan-feature` similarly clears its pending checkpoint only after the full publication is verified.
 
-Preserve review state in a durable local work record when the review loop uses temporary context.
+Preserve review state in a durable local work record while the review or its recovery is unfinished.
 Keep finding dispositions, run identity, pass count, and relevant evidence sufficient to resume the
 same review. Publish only a concise outcome in the issue. Do not add review histories to product docs.
 
@@ -184,6 +186,46 @@ A stage is done only when:
   fixes are verified, and permitted deferrals have their required durable record.
 - Necessary documentation changed with the implementation, the stage commit exists, and issue
   progress/evidence were published and read back successfully.
+- Temporary materials attributable to the completed stage have been cleaned up and the retained
+  evidence verified as described below.
+
+### Cleanup at the stage boundary
+
+After the commit, issue readback and independent verification, finish cleanup before selecting the
+next stage or reporting this one fully closed. Before clearing completion state, persist an atomic,
+durable cleanup-pending record at `.agents/work/features/<feature-id>.cleanup.json` identifying the
+feature/stage, commit, evidence pointers and remaining cleanup. The orchestration helper's `settle`
+clears its stage identity, so preserve that record
+separately before settling and reconcile it before any later dispatch, including after restart. If
+progress was already published, finish cleanup without duplicating the commit or issue update. Clear
+the record only after inspecting the outcome. Keep it and retry safe failures; report a concrete
+access or safety blocker if cleanup cannot be completed.
+
+Inventory all temporary materials attributable to this stage and its attempts: reports, raw logs,
+review outputs, archives, screenshots, videos, test data, scratch files, packets and disposable
+environments. Stop and await their owners. After the parent has inspected the actual evidence and
+the factual command, result, tested state, review outcome and acceptance are recorded in the existing
+issue or other canonical records, remove the temporary materials. Do not create a separate report or
+archive to retain them. Missing evidence cannot be replaced by a fabricated summary.
+
+During an unfinished feature retain only temporary material still needed for an active owner, pending
+verification/recovery or a concrete later stage; remove it when that need ends. Reconcile workflow
+references and state before deleting their targets; never leave a live recovery pointer dangling.
+In `run-feature`, retain the result and its evidence through `settle`, then retire `last_result`
+before removing the referenced files, using the serialized retirement procedure in the orchestrator
+protocol. In every mode reconcile other references under that mode's ownership and serialization
+rules. Retain only the minimal machine state actually needed to resume.
+Preserve tracked files, intended deliverables, user data, unrelated work, shared resources and items
+whose ownership cannot be established. Check paths and symlinks; do not follow a link outside the
+intended boundary. Verify removal and the canonical records; the cleanup-pending record is temporary
+too and is removed after successful cleanup.
+
+At the end of the feature, repeat the inventory across all its stages and attempts and remove every
+remaining feature-owned temporary artifact, including any previously needed for later work. Finish
+verification and reconcile terminal owners and workflow references first. No temporary reports,
+archives, logs, screenshots or videos are retained merely as evidence of completed work. If safe
+removal is blocked or ownership remains uncertain, preserve the item, report the exact path and reason,
+and do not claim that cleanup is complete.
 
 Each stage must fit implementation, verification, review, and commit in one fresh context. On an
 interruption or unexpected size, persist an honest checkpoint rather than treating compaction as

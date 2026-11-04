@@ -57,10 +57,12 @@ self-review or change the selected provider silently.
 Run one `run-subphase` in this agent. At its return inspect the completion commit and current branch,
 required checks, tested state, acceptance and traceability evidence, independent review and permitted
 deferrals, checklist and status. Reconcile an existing committed increment without implementing it
-again. Only after all gates pass and the checkpoint is cleared, reread the slice and select the next
-subphase. Honor scope or verification changes and retain split siblings in recorded order. After the
-last subphase verify the full phase definition of done; report pending delivery gates honestly and do
-not start another phase or perform unauthorized delivery actions.
+again. Reconcile any cleanup-pending record before selecting a subphase. Only after all gates, including
+verified cleanup, pass and the checkpoint is cleared, reread the slice and select the next subphase.
+Honor scope or verification changes and retain split siblings in recorded order. After the
+last subphase verify the full phase definition of done and complete phase-wide cleanup per the phase
+workflow, even if delivery gates remain pending; report those gates honestly and do not start another
+phase or perform unauthorized delivery actions.
 
 ## Recovery and stopping
 
