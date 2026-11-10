@@ -80,7 +80,9 @@ its success does not replace this semantic verification. Before `settle` clears 
 persist the cleanup-pending record specified by the feature workflow. After verification and terminal
 settlement, perform and verify cleanup; reconcile a pending record before any subsequent dispatch,
 including on restart. Only then select the next unfinished stage.
-After the last stage verify feature-wide acceptance and report `implemented` with delivery gates;
+After the last stage verify feature-wide test cleanup under the feature workflow; further test edits
+need a scoped executor, applicable checks, independent review and commit, not an administrative
+post-commit deletion. Verify feature-wide acceptance and report `implemented` with delivery gates;
 do not close the issue automatically. Complete the feature-wide temporary-material cleanup in the
 feature workflow before reporting the run finished, even when delivery gates remain pending.
 

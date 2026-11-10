@@ -17,18 +17,18 @@ Use proportionate evidence:
 - When execution is unavailable, distinguish code evidence from unverified runtime claims. Explain
   the gap and escalate or defer under the blocking rules if the fix cannot be established reliably.
 
-Reuse or adapt existing tests before adding one for a concrete gap in regression protection. A
-temporary diagnostic does not automatically need to become a permanent test. Maintain tests affected
-by the fix: remove obsolete expectations when their contract has changed, and consolidate duplicates
-only when a retained check detects the same failure under the relevant conditions. Preserve unique
-boundaries, error paths, and regression cases; different test levels may protect different failures.
-Prefer observable outcomes, while retaining internal checks that enforce a real contract such as
-operation ordering. Do not delete or weaken tests merely because they fail, are flaky, slow, or hard
-to update; a green suite after deletion does not establish redundancy. If protection is unclear,
-retain it. Briefly explain removals and retained protection in the existing fix record and run
-applicable checks. During the loop, change tests only as needed to fix a validated defect; optional
-cleanup, even in affected tests, remains advisory work under **Classify what blocks**. Test count and
-coverage growth are not goals; required project gates and coverage thresholds remain in force.
+Reuse/adapt tests before adding one for a concrete gap. Diagnostics need not become permanent tests.
+Maintain affected tests: remove retired expectations, equivalent duplicates and spent one-time probes.
+Unique low-value tests need no replacement when cost outweighs their supported low-significance risk
+and the tradeoff is in scope. Historical regression status gives no immunity. Different test levels
+and internal assertions may protect real contracts, such as ordering. Keep strong protection for
+consequential failures, including permission bypass and data loss; reducing it needs an explicit
+stakeholder risk decision. Failure, flakiness, slowness or update cost alone does not justify deletion;
+a green suite after deletion does not prove redundancy. Investigate unclear protection. Explain
+removals, retained protection and residual risk in the existing fix record; check and review the final
+changed state. During the loop, change tests only to fix a validated defect; optional cleanup remains
+advisory under **Classify what blocks**. Test count and coverage growth are not goals; required project
+gates and coverage thresholds remain in force.
 
 Search for related instances when the root cause gives a concrete reason to expect them. Inspect
 relevant callers or occurrences, and fix only demonstrated defects within scope. Summarize affected

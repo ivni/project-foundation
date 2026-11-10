@@ -5,8 +5,8 @@
 ```text
 .
 ├── packages/
-│   ├── analyze-tests/           Test-suite analysis and separately authorized improvements
-│   ├── clean-project/           Obsolete and temporary project material cleanup
+│   ├── analyze-tests/           Test value, DB/E2E settings and separately authorized improvements
+│   ├── clean-project/           Obsolete materials, temporary files and unnecessary test cleanup
 │   ├── cli/                     Private workspace with TypeScript source and tests
 │   ├── find-blind-spots/        Publishable read-only analysis skill payload
 │   ├── plan-feature/            Publishable discovery-to-issue planning payload

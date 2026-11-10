@@ -101,6 +101,11 @@ Build the coherent increment the stage promises. Reuse or adapt existing checks;
 for a concrete uncovered behavior or regression risk. Maintain affected tests without weakening
 protection merely to make them pass. Apply the shared contract's proportionate evidence rules.
 
+Before final checks and review, clean up tests introduced or affected by this stage under the feature
+workflow's test-maintenance rules. Remove unnecessary tests and helpers/fixtures with no remaining
+consumers; summarize removals, retained protection and residual risk. No whole-suite audit is required.
+Include this cleanup in the tested, reviewed and committed change, not the later temporary-file cleanup.
+
 Run required project checks and the planned acceptance methods yourself. Verify relevant failure
 paths and interactions with earlier stages, and update documentation only where it changes a
 reader's decisions or actions. Record commands/results and the tested code state, not just "works".

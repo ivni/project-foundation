@@ -73,6 +73,10 @@ established per [gates.md](gates.md).
   and runtime evidence. Resolve every mismatch by correcting the wrong layer; do not
   rewrite intent merely to match an incorrect implementation (walk them; do not assume).
 - Debt & risk register reviewed — new entries added, stale entries closed.
+- Tests introduced or affected across the phase reviewed for ongoing value under the
+  [subphase contract](subphase-contract.md#proportionate-verification-and-test-maintenance).
+  Remove unnecessary tests and unused test helpers/fixtures before final checks, review and commit;
+  do not treat source changes as post-verification temporary-file cleanup or require a whole-suite audit.
 - Agent-contract status line rewritten: phase closed, next phase named.
 
 ## Spike convention

@@ -1,13 +1,14 @@
 ---
 name: analyze-tests
-description: Analyze a test suite for safe removal or consolidation, parallel execution, and other performance improvements. Report evidence and proposals first; apply selected proposals only on a separate explicit command. Use for test-suite audits and test-runtime optimization, not ordinary feature implementation or a single failing test.
+description: Analyze a test suite for aggressive removal of low-value tests, consolidation, database and E2E configuration improvements, parallel execution, and other performance improvements, with explicit protection tradeoffs. Report evidence and proposals first; apply selected proposals only on a separate explicit command. Use for test-suite audits and test-runtime optimization, not ordinary feature implementation or a single failing test.
 ---
 
 # Analyze Tests
 
-Assess what protection a suite provides and what its execution costs. Return actionable proposals in
-three areas: removal or consolidation, parallelism, and other speed improvements. Use the user's
-language. This skill works without Project Foundation artifacts or any particular test framework.
+Reduce test execution and maintenance costs while keeping protection proportionate to meaningful
+product risks. Actively seek low-value tests to remove, not just exact duplicates. Prioritize the
+largest costs across removal or consolidation, parallelism, and other speed improvements. Use the
+user's language. This skill works without Project Foundation artifacts or any particular test framework.
 
 ## Modes and authority
 
@@ -53,27 +54,84 @@ setup, queueing, service startup, retries, teardown, and artifact merging where 
 Without timing evidence, give a ranked hypothesis and measurement plan, not invented seconds or
 speedup percentages. A single run is an observation, not a stable performance estimate.
 
+## Database and E2E configuration
+
+Always establish whether tests use a database and an E2E runner. Inspect their actual configuration,
+setup code, scripts, container/service definitions and CI overrides; do not infer effective settings
+from a config file alone. Report significant local/CI differences, where values come from, and which
+runtime values remain unknown. Redact credentials, tokens and connection strings. If either component
+is absent or outside the requested scope, say so rather than inventing settings or requiring new tools.
+
+For a test database, examine the engine/version and relevant differences from the supported runtime,
+service startup and reuse, storage/resources, connection pools and connection limits, worker-specific
+databases/schemas, migrations/schema creation, seeds/fixtures, and reset strategy (rollback, truncate,
+recreate). Identify repeated setup, oversized data, slow resets, contention and connection exhaustion
+risks. Relate runner/job concurrency to total connections and database capacity. Assess test-only
+engine settings when evidence suggests a bottleneck; do not prescribe generic tuning values or change
+production/shared database settings. Do not silently replace the engine or relax constraints,
+transaction semantics, persistence or durability that the tested behavior relies on.
+
+For E2E, examine browser/device/project matrices and overlapping runs, headless/headed mode, workers,
+shards, serial groups, retries, test/assertion/action/navigation/global timeouts, fixed waits, global
+setup/teardown, auth/session reuse, data isolation, and application build/startup/reuse/readiness.
+Check the target environment and external dependencies without contacting live/shared targets merely
+to inspect configuration. Review trace, screenshot, video and coverage capture/retention overhead.
+Distinguish configured maximum timeouts from time actually spent waiting; lowering a timeout alone
+does not accelerate successful tests that already finish earlier. Reuse must preserve state isolation,
+and diagnostics reductions must leave useful failure evidence.
+
+Connect proposed settings changes to measured cost or a concrete mechanism, and state effective
+before/after values, test-only scope, correctness tradeoffs and bounded validation. Separate inventory,
+measured bottlenecks and tuning hypotheses. Analyze mode does not authorize config edits, service
+reconfiguration, new infrastructure or benchmarks with modified settings.
+
 ## 1. What can be removed or consolidated
 
-For each candidate, identify the requirement, failure mode, relevant inputs and state, and assertions.
-Recommend removal only when the requirement or supported path has actually been retired, or a named
-retained check detects the same failure under the relevant conditions. Compare its environments,
-triggers, frequency, and blocking status too: a nightly check is not equivalent to a required PR check.
-Later or non-blocking detection is a policy tradeoff requiring explicit selection of that tradeoff,
-not safe duplicate removal. Preserve unique boundaries, error paths, historical regression cases,
-and security or data-integrity protection.
+Every retained test should justify its execution and maintenance cost through the future failures it
+helps detect. For each candidate or coherent group, identify the requirement, failure mode, relevant
+inputs/state, assertions, consequence of a missed failure, and cost. Distinguish:
+
+- removal without material loss of protection: a retired requirement/path, a disposable acceptance
+  probe whose purpose has ended, or a named retained check detecting the same failure;
+- deliberate reduction of protection: a test, including a unique one, whose execution or maintenance
+  cost is disproportionate to the low significance of the risk it covers. Name the failure that could
+  now escape, why that risk is acceptable, and what protection remains. Do not demand a replacement
+  solely because the test is unique. Selection of this proposal authorizes its stated tradeoff.
+
+Compare environments, triggers, frequency, and blocking status when claiming equivalent protection:
+a nightly check is not equivalent to a required PR check. Later or non-blocking detection is a policy
+tradeoff, not safe duplicate removal. Security, permissions, data loss/corruption, irreversible actions,
+and similarly consequential failures need strong retained protection or an explicit stakeholder risk
+decision; do not classify their only protection as low-value based on execution cost alone.
+
+Historical regression tests have no special immunity. Distinguish one-time acceptance evidence,
+ongoing regression protection, and temporary transition checks. Reassess after release or the end of
+a transition, but neither release, age, nor a history of green runs establishes obsolescence. A
+migration check remains useful while supported upgrades, fresh installs, or recovery still need it.
+
+Prioritize expensive E2E groups. Retain end-to-end checks for consequential user journeys and failures
+of real component connections. Move business-rule variants, validation, and calculations to cheaper
+levels when they can detect the relevant failures there; remove low-value variants where justified.
+For each retained expensive E2E group, explain what system-level failure needs the whole chain.
+Do not impose an E2E count or percentage, or replace real integration protection with mocks silently.
 
 Similar names, overlapping coverage, and tests at different levels do not establish redundancy. A
 unit test and an integration test can protect different failures of the same behavior. Internal
 assertions may enforce a real contract such as operation ordering, query count, or resource limits.
-Tests that merely mirror incidental implementation details are candidates for replacement with
-behavior checks; identify the protection the replacement must retain.
+Tests that merely mirror incidental implementation details are candidates for deletion or replacement
+with behavior checks, according to the significance of the protection they provide.
+
+Group candidates that share a deletion rationale instead of producing a dossier per test. Inspect
+representative cases and check for exceptions, especially unique boundaries or consequential error
+paths. List exact group members; mark unreviewed members as investigation rather than ready deletions.
+Sampling is not evidence that every member is redundant or low-risk.
 
 A test is not unnecessary merely because it fails, is flaky, slow, old, or hard to update. A green run
-after deletion does not prove safety. When protection is unclear, recommend retaining it pending a
-specific investigation. Distinguish deletion, consolidation, and moving a test to a slower lane; a
-lane move changes feedback timing and may require a policy decision. Do not lower required coverage
-thresholds, disable assertions, skip failures, or add retries to manufacture an improvement.
+after deletion does not prove safety. When protection or consequences are unclear, name a bounded
+investigation rather than guessing that the risk is low. Distinguish deletion, consolidation, and
+moving a test to a slower lane; a lane move changes feedback timing and may require a policy decision.
+Do not lower required coverage thresholds, disable assertions, skip failures, or add retries to
+manufacture an improvement.
 
 ## 2. What can run in parallel
 
@@ -110,15 +168,24 @@ Do not move production behavior solely to make tests cheap without identifying t
 
 ## Report
 
-Return a concise report with all three areas present; say when no justified proposal was found.
-Start with scope, inspected evidence, baseline or its absence, and major limitations. Give proposals
-stable IDs (`T-01`, `T-02`, ...); preserve IDs when updating the same report. Each proposal needs:
+Start with the largest observed costs and the strongest concrete decisions: remove, consolidate,
+move to a cheaper level, change frequency, accelerate setup/execution, or retain. State scope,
+inspected evidence, baseline or its absence, and major limitations. Rank by expected impact and
+confidence, not by section order or test count. Distinguish time to required feedback, runner/CPU
+cost, and maintenance cost; fewer tests need not make CI faster. Briefly account for all three areas,
+including when no justified proposal was found. Give proposals stable IDs (`T-01`, `T-02`, ...);
+preserve IDs when updating the same report. Each proposal or coherent group needs:
 
 - category, priority, and concrete file/test/job references;
-- evidence and confidence: measured, inferred, or needs investigation;
+- evidence: measured, inferred, or needs investigation; confidence and its basis separately;
 - proposed change and expected benefit, with units and assumptions when quantified;
-- protection retained, risks, prerequisites, and dependencies on other proposal IDs;
+- protection retained, any deliberately lost protection and residual risk, prerequisites, and
+  dependencies on other proposal IDs;
 - a bounded validation plan and a way to undo the change.
+
+Include a concise inventory and assessment of database and E2E settings, including absence or scope
+limits, significant local/CI differences, and the highest-impact configuration recommendations.
+Do not manufacture a tuning proposal when existing settings are appropriate or evidence is missing.
 
 Group overlapping proposals so benefits are not double-counted. Rank by expected feedback benefit,
 maintenance reduction, effort, and risk; do not invent numeric scores. Separate ready recommendations

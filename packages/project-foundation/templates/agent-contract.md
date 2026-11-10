@@ -73,9 +73,14 @@ agent-contract check, e.g. bash scripts/qa.sh}}
 ## Test maintenance
 
 - Reuse or adapt existing tests; add a test for a concrete gap in behavior or regression protection.
-- Review affected tests. Remove retired expectations or consolidate duplicates only when retained
-  checks preserve the same protection, including relevant boundaries and failure paths. Explain
-  removals briefly in the change summary. A failing or flaky test is not by itself obsolete.
+- At phase/subphase or feature/stage completion, clean up tests introduced or affected by that work
+  before final checks, independent review and commit. Remove retired expectations, equivalent
+  duplicates, completed one-time probes without ongoing value, and justified low-value tests; remove
+  helpers/fixtures only when no consumer remains. Unique or historical regression tests have no immunity.
+- A low-value test may be removed without replacement when its cost is disproportionate to its
+  low-significance risk. Explain retained protection and residual risk in the change summary. Reducing
+  consequential protection (e.g. permissions, data loss) needs an explicit stakeholder risk decision.
+  Release, age, or a failing/flaky test alone does not justify removal; investigate unclear protection.
 - Prefer behavior assertions; implementation details belong in tests when they enforce a real contract.
   No whole-suite cleanup or test-count target is required. Required gates and coverage thresholds remain.
 

@@ -1,12 +1,12 @@
 ---
 name: clean-project
-description: Clean a project's obsolete completed-work materials and disposable files while preserving current documentation, active work, and recoverable data. Use when asked to clean up a project; respect audit-only requests.
+description: Clean a project's obsolete completed-work materials, disposable files, and unnecessary tests while preserving useful protection, current documentation, active work, and recoverable data. Use when asked to clean up a project; respect audit-only requests.
 ---
 
 # Clean Project
 
-Remove obsolete project-local materials and temporary files when their purpose has ended. Keep the
-working code, current documentation and everything needed to operate, develop and recover the
+Remove obsolete project-local materials, unnecessary tests, and temporary files when their purpose
+has ended. Keep the working code, current documentation and everything needed to operate, develop and recover the
 project. Work in the user's language. This skill works with or without Project Foundation artifacts.
 
 An explicit request to clean the project authorizes safe local cleanup and the documentation/link
@@ -36,6 +36,8 @@ Identify candidates by actual purpose and current references, not by age, name, 
 - Current requirements, product behavior, ADRs, operations/runbooks, security guidance, migrations,
   test fixtures and live configuration remain when they still describe or support the project, even
   when created during a completed phase. Determine usefulness from content and consumers.
+- Tests introduced or affected by completed work, and helpers/fixtures they used, are cleanup
+  candidates too. Apply the test-maintenance rules below; source tests are not disposable test output.
 
 For a candidate with durable information still needed, first move or reconcile that information in
 the existing canonical documentation, then update live links, indexes and workflow instructions.
@@ -52,6 +54,32 @@ selects it. Check recoverability of tracked files and any needed untracked data,
 a Git repository. Never create a backup archive merely to make deletion look safe.
 
 ## Clean and verify
+
+### Test maintenance
+
+Within the requested cleanup boundary, review tests attributable to or affected by completed work.
+Remove retired expectations, equivalent duplicates, completed one-time probes without ongoing value,
+and tests whose execution or maintenance cost is disproportionate to their low-significance risk.
+A unique low-value test may be removed without replacement when that tradeoff is supported within
+the authorized cleanup; name the missed failure and residual risk. Historical regression status gives
+no immunity. Release, age, green history, or a failing/flaky test alone does not justify deletion.
+Keep migration checks still needed for supported upgrades, installs, or recovery.
+
+Prioritize expensive affected E2E. Keep consequential user journeys and real integration protection;
+propose moving business-rule variants to cheaper checks when needed rather than silently losing that
+protection. Group shared rationales, check exceptions, and identify exact deletions in the inventory.
+Remove helpers/fixtures only after checking that no retained test or other consumer needs them.
+Preserve strong protection for consequential failures such as permission bypass or data loss;
+reducing it requires an explicit stakeholder risk decision. Investigate unclear protection rather
+than assuming low risk. Do not weaken required gates or coverage thresholds, or hide test failures.
+
+Routine cleanup does not require a whole-suite audit or a separate `analyze-tests` report/approval.
+State retained protection and residual risk in the cleanup summary. Test-source changes require
+applicable checks and any project-required independent review before commit/completion; never delete
+tests after verification and keep claiming the earlier checked state. Broader test restructuring or
+new infrastructure is a separate proposal, not implied by a request to remove project debris.
+
+### Temporary materials and final verification
 
 Stop and await any task-owned process using disposable resources before removal; do not stop an
 unrelated or active user process. Recheck exact paths, ownership, type and current state immediately

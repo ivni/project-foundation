@@ -57,7 +57,9 @@ issue result and checkboxes against a fresh issue read. Reconcile an already com
 reimplementing or duplicating the commit. Reconcile any cleanup-pending record before selecting a
 stage. Only after all gates, including verified cleanup, pass and the checkpoint is cleared may you
 select the next stage. Do not skip a blocked predecessor. Re-read current scope and progress at
-each boundary. The final stage verifies the feature-wide journey; complete feature-wide cleanup per
+each boundary. The final stage verifies the feature-wide journey and test cleanup under the feature
+workflow. Include test edits in applicable checks, independent review and commit before closeout;
+do not delete tests as post-commit temporary cleanup. Complete feature-wide cleanup per
 the feature workflow even if delivery gates remain pending, and report them without closing the issue.
 
 ## Recovery and stopping

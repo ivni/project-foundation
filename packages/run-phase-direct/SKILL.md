@@ -60,7 +60,9 @@ deferrals, checklist and status. Reconcile an existing committed increment witho
 again. Reconcile any cleanup-pending record before selecting a subphase. Only after all gates, including
 verified cleanup, pass and the checkpoint is cleared, reread the slice and select the next subphase.
 Honor scope or verification changes and retain split siblings in recorded order. After the
-last subphase verify the full phase definition of done and complete phase-wide cleanup per the phase
+last subphase verify phase-wide test cleanup under the subphase contract, then the full phase
+definition of done. Test edits belong before applicable checks, independent review and commit;
+do not treat them as post-commit temporary cleanup. Complete phase-wide cleanup per the phase
 workflow, even if delivery gates remain pending; report those gates honestly and do not start another
 phase or perform unauthorized delivery actions.
 

@@ -16,16 +16,25 @@ Do not ask for the same authorization again when the report, selection, and scop
    comparisons, preserve command, runtime, machine/resources, worker count, workload, and cache state
    except for the variable being changed. Use a small justified number of runs, report variability,
    and stop extra measurements when they will not change the conclusion. Mark unavailable baselines.
-4. Make bounded, reviewable changes. Before deleting a test, verify its retired requirement or the
-   retained check that detects the same failure under the relevant conditions, including environments,
-   triggers, frequency, and blocking status. A loss of timely or blocking protection needs an explicitly
-   selected policy tradeoff. If the requirement remains supported and this is its only protection,
-   replace that protection first; a retired requirement needs no replacement test. Do not remove
-   failures or weaken assertions to obtain a green or faster run.
+4. Make bounded, reviewable changes. Before deleting a test or coherent group, verify the selected
+   rationale: retired requirement/path, completed one-time purpose without ongoing protection value,
+   equivalent retained protection, or an explicitly selected reduction of low-value protection with
+   named residual risk. A unique test needs no replacement when its stated protection tradeoff was
+   selected; historical regression status does not prevent removal. Check exact group membership and
+   exceptions rather than treating a sample as approval for unreviewed deletions. For equivalence,
+   compare environments, triggers, frequency, and blocking status. A loss of timely/blocking protection
+   or protection against consequential failures needs the selected policy/risk decision; do not infer
+   it from a general speed goal. Preserve required gates and coverage thresholds. Do not remove a
+   test merely to hide a failure or weaken assertions to obtain a green or faster run. Include related
+   helpers/fixtures only after verifying that retained tests and other consumers no longer use them.
 5. Validate correctness and performance separately. Run affected checks and required repository gates.
    For parallelism, check discovery, unique resource names, cleanup, failure propagation, and combined
    results; use bounded repeat or order variation where shared-state risk warrants it. For caching or
-   fixture reuse, check invalidation and state reset. Do not claim an unrun remote CI path is verified.
+   fixture reuse, check invalidation and state reset. For database/E2E configuration changes, verify
+   the effective settings in the selected test environment, state/connection isolation, relevant
+   database semantics, test discovery/matrix, readiness and useful failure diagnostics. Keep tuning
+   confined to disposable test resources; do not apply it to production/shared services. Do not claim
+   an unrun remote CI path is verified.
 6. Compare like-for-like results and account for changes to test count or tested scope. If correctness
    regresses, repair within the selected scope or undo only your own failed change. If a change selected
    for speed demonstrably worsens the target metric, improve it within scope or undo it; retain that

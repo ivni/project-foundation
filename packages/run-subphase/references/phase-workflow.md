@@ -143,6 +143,13 @@ or result from another identity, missing evidence, stale scope or unchanged comp
 not completion. Missing/malformed output is diagnosed from preserved output and side effects, never
 treated as success or an automatic stakeholder blocker.
 
+Before final checks, independent review and commit, the executor cleans up tests introduced or
+affected by the subphase under the subphase contract. This includes unnecessary tests and unused
+helpers/fixtures, with removals and residual risk summarized in the existing change record. Source
+edits are not part of the post-commit disposable-material cleanup below. If test cleanup is found
+missing after verification, return it to a scoped executor for applicable checks, review and commit;
+do not delete tracked tests as an administrative closeout action.
+
 After verification, complete the subphase's temporary-material cleanup before choosing another
 subphase or reporting it fully closed. Before clearing a checkpoint, persist an atomic, durable
 cleanup-pending record at `.agents/work/phases/phase-<N>.cleanup.json` (using the same safe phase ID
@@ -187,6 +194,11 @@ Explicit cancellation requires explicit resume. Interruption is not completion o
 A sufficient blocker answer resumes the same subphase after reconciliation without another command.
 Do not blindly retry denied actions or uncertain external writes. Ordinary failures and review
 budgets do not by themselves require user input; keep a diagnosed, permitted path forward.
+
+At phase completion, also review tests introduced or affected across its subphases for obsolete,
+duplicate, completed one-time, or justified low-value checks under the subphase contract. This is a
+bounded phase cleanup, not a whole-suite audit. Include any further source changes in a scoped
+executor's checks, independent review and commit before declaring the phase complete.
 
 When all subphases are verified, inspect the phase's actual definition of done, including requirement
 coverage, blockers/register, document/runtime consistency and any required CI. `implemented` and

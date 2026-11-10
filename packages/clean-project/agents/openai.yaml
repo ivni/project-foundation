@@ -1,7 +1,7 @@
 interface:
   display_name: "Clean Project"
-  short_description: "Clean obsolete and temporary project files"
-  default_prompt: "Use $clean-project to remove obsolete completed-work materials and temporary project files safely."
+  short_description: "Clean obsolete files and unnecessary tests"
+  default_prompt: "Use $clean-project to remove obsolete completed-work materials, temporary files, and unnecessary tests, preserving useful protection and explaining residual risks."
 
 policy:
   allow_implicit_invocation: true

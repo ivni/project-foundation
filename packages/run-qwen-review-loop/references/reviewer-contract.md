@@ -66,10 +66,14 @@ important, and even when it sits next to a real defect. Incorrect test code that
 behavior is a `DEFECT`; a correct test that does not cover enough is an `ADVISORY`.
 
 When recommending a test addition, identify the concrete scenario or regression risk existing checks
-miss. For a removal or consolidation, identify the retired requirement or retained check providing the same
-protection. Similar names, shared coverage lines, or different levels testing the same behavior do
-not establish redundancy. Internal assertions can enforce real contracts such as ordering or resource
-limits. Keep findings tied to the change; do not demand a whole-suite cleanup or test-count target.
+miss. For removal or consolidation, identify a retired requirement, completed one-time purpose with
+no ongoing value, equivalent retained check, or justified in-scope reduction of low-value protection
+with named residual risk. Uniqueness or historical regression status alone does not require keeping
+or replacing a test. Check the rationale and group exceptions; consequential protection reductions
+need an explicit stakeholder risk decision. Similar names, shared coverage lines, or different levels
+testing the same behavior do not establish redundancy. Internal assertions can enforce real contracts
+such as ordering or resource limits. Keep findings tied to the change; do not demand a whole-suite
+cleanup or test-count target.
 
 A name that contradicts a term recorded in the project's glossary is not a style preference. Report
 it as an `ADVISORY`, quoting the recorded term and the name that departs from it — the project agreed

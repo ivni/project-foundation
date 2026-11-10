@@ -100,7 +100,10 @@ reconcile effects on resume. On explicit cancellation persist the stop request, 
 owned worker, inspect effects and retain recovery evidence. A late success cannot advance a cancelled
 run. Explicit cancellation requires explicit resume.
 
-After the final subphase, check the phase's full definition of done. Record factual administrative
+After the final subphase, check phase-wide test cleanup under the phase workflow, including tests
+that became unnecessary across subphases. Any test-source edits need a scoped executor, applicable
+checks, independent review and commit; do not make them as post-commit temporary cleanup.
+Check the phase's full definition of done. Record factual administrative
 closure only if every criterion is evidenced. If CI, runtime acceptance or another delivery gate is
 pending, report subphases implemented with that gate pending; do not mark the phase closed, fabricate
 evidence or perform an unauthorized delivery action. A substantive closure fix needs a fresh scoped

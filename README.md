@@ -150,6 +150,9 @@ Ask `$analyze-tests` to analyze the repository's tests. The report includes evid
 protection, expected benefit, risks, and validation plans under numbered proposals. By default it
 reads code and existing results and may run bounded safe local measurements without changing tests
 or configuration. Request static-only analysis when no commands with side effects should run.
+It also inventories test database and E2E settings, significant local/CI differences, and configuration
+costs such as database resets, connection limits, browser matrices, workers and diagnostic capture.
+Tuning proposals distinguish measured bottlenecks from hypotheses and preserve relevant test semantics.
 
 Then select proposals in a separate message, for example: `$analyze-tests apply T-02 and T-05`.
 The skill checks that the report still matches the code, applies only the selected scope, and verifies
@@ -160,6 +163,10 @@ correctness and performance separately. It does not commit or publish automatica
 Ask `$clean-project` to clean a project after completed work. It inventories candidates and removes
 safe obsolete plans and temporary files, preserving current documentation, active work and necessary
 recovery state. It reconciles still-useful information and references before removing old documents.
+Within the cleanup boundary it also removes unnecessary tests and unused test helpers/fixtures,
+including justified low-value unique tests, with retained protection and residual risk explained.
+Test-source changes go through applicable checks and required review; consequential protection remains
+unless an explicit stakeholder risk decision permits its reduction.
 Ask for an audit only if you want recommendations without changes.
 
 ## Supported environments

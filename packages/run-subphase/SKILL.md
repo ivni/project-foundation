@@ -120,6 +120,11 @@ the traceability table rather than creating a second implementation description.
 
 ## 5. Verify
 
+Before final verification, clean up tests introduced or affected by this subphase under the subphase
+contract: remove obsolete, redundant, completed one-time, and justified low-value checks, plus helpers
+or fixtures with no remaining consumers. Briefly record removals and residual risk; do not expand this
+into a whole-suite audit. Include these source changes in the checks, independent review and commit.
+
 Run the project's single local verification entry point. The agent contract records it; do not assemble
 your own command list, and do not stop at the subset that happens to be fast.
 

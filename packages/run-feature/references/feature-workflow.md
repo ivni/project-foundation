@@ -182,12 +182,37 @@ A stage is done only when:
   add focused coverage for concrete gaps. Reversible low-risk changes may use a direct probe when
   no material regression risk is left unprotected. Permissions, concurrency, migrations, and
   recovery need relevant failure-state evidence. Never disable required gates to finish a stage.
+- Tests introduced or affected by the stage cleaned up under the rules below before final checks,
+  independent review and commit; unnecessary tests and unused helpers/fixtures removed.
 - `run-codex-review-loop` completed with a terminal outcome that permits the commit, all required
   fixes are verified, and permitted deferrals have their required durable record.
 - Necessary documentation changed with the implementation, the stage commit exists, and issue
   progress/evidence were published and read back successfully.
 - Temporary materials attributable to the completed stage have been cleaned up and the retained
   evidence verified as described below.
+
+### Test maintenance before verification
+
+Clean up tests introduced or affected by each stage and, at feature completion, across its stages.
+Remove retired expectations, equivalent duplicates, completed one-time probes with no ongoing value,
+and tests whose execution or maintenance cost is disproportionate to their low-significance risk.
+A unique test needs no replacement when that low-risk tradeoff is justified within the task and
+explained. Historical regression status gives no immunity; release, age, or repeated green runs alone
+do not justify deletion. Keep migration checks needed for supported upgrades, installs, or recovery.
+
+Prioritize expensive affected E2E: retain consequential user journeys and real integration protection;
+move business-rule variants to cheaper levels or remove low-value variants where justified. Different
+test levels and internal assertions may protect real contracts. Group shared rationales, inspect
+exceptions, and remove helpers/fixtures only after checking remaining consumers. Preserve strong
+protection for consequential failures such as permission bypass or data loss/corruption; reducing it
+requires an explicit stakeholder risk decision. Investigate unclear protection, and do not delete a
+test merely because it fails, is flaky, slow, or hard to update.
+
+Record removals, retained protection and residual risk in the existing change summary. This bounded
+cleanup is part of the authorized stage, not a mandatory whole-suite audit or a separate invocation of
+`analyze-tests`. Required gates and coverage thresholds remain. Include test changes in final checks,
+independent review and commit; if discovered after those gates, repeat applicable checks and review
+on the changed state before committing. Post-commit temporary cleanup cannot delete tracked tests.
 
 ### Cleanup at the stage boundary
 
