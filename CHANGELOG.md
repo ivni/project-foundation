@@ -7,6 +7,22 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.11.0] - 2026-11-10
+
+### Added
+
+- `analyze-tests` inventories test database and E2E settings, their effective values and local/CI
+  differences, and proposes configuration improvements with explicit correctness tradeoffs.
+
+### Changed
+
+- Test analysis prioritizes expensive E2E and low-value tests, including unique and historical
+  regression checks, with explicit retained protection and residual risks. Related candidates can
+  share one rationale, and reports rank decisions by impact and confidence.
+- Phase, subphase, feature and stage completion includes cleanup of unnecessary affected tests and
+  unused test helpers/fixtures before final checks, independent review and commit. `clean-project`
+  includes this bounded test cleanup, with consistent application and reviewer rules across the suite.
+
 ## [3.10.0] - 2026-11-04
 
 ### Added
@@ -647,7 +663,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.10.0...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.11.0...HEAD
+[3.11.0]: https://github.com/ivni/project-foundation/compare/v3.10.0...v3.11.0
 [3.10.0]: https://github.com/ivni/project-foundation/compare/v3.9.0...v3.10.0
 [3.9.0]: https://github.com/ivni/project-foundation/compare/v3.8.2...v3.9.0
 [3.8.2]: https://github.com/ivni/project-foundation/compare/v3.8.1...v3.8.2
