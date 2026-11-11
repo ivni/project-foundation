@@ -128,6 +128,18 @@ export const SHARED_BLOCKS: SharedBlock[] = [
 
 export const SHARED_REFERENCES: SharedReference[] = [
   {
+    source: "shared/ui-verification.md",
+    copies: [
+      "packages/project-foundation/references/ui-verification.md",
+      "packages/run-discovery-interview/references/ui-verification.md",
+      "packages/plan-feature/references/ui-verification.md",
+      "packages/run-feature-stage/references/ui-verification.md",
+      "packages/run-feature/references/ui-verification.md",
+      "packages/run-subphase/references/ui-verification.md",
+      "packages/run-phase/references/ui-verification.md",
+    ],
+  },
+  {
     source: "shared/checkout-lease.md",
     copies: [
       "packages/run-feature/references/checkout-lease.md",

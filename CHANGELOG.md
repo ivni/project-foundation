@@ -7,6 +7,15 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.11.1] - 2026-11-11
+
+### Changed
+
+- UI acceptance uses observable criteria and focused re-review of fixes and affected interactions,
+  while preserving required project gates and independent reviewer roles.
+- Discovery, planning, phase and feature workflows share guidance for reusable UI verification
+  environments and evidence, with explicit tested-state identity and refresh rules after changes.
+
 ## [3.11.0] - 2026-11-10
 
 ### Added
@@ -663,7 +672,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.11.0...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.11.1...HEAD
+[3.11.1]: https://github.com/ivni/project-foundation/compare/v3.11.0...v3.11.1
 [3.11.0]: https://github.com/ivni/project-foundation/compare/v3.10.0...v3.11.0
 [3.10.0]: https://github.com/ivni/project-foundation/compare/v3.9.0...v3.10.0
 [3.9.0]: https://github.com/ivni/project-foundation/compare/v3.8.2...v3.9.0

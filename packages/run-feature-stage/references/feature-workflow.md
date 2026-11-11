@@ -172,6 +172,9 @@ same review. Publish only a concise outcome in the issue. Do not add review hist
 
 ## Stage completion and agent-owned verification
 
+For UI work, read [UI acceptance and review](ui-verification.md) when planning acceptance or preparing
+verification: observable criteria, focused re-review and reusable evidence, without weakening project gates.
+
 A stage is done only when:
 
 - Its promised outcome and all acceptance criteria are implemented or, for a spike, its question is

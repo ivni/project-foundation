@@ -146,6 +146,10 @@ closes it against the phase definition of done. It does not build subphases. `ru
 subphase to done and creates no slice artifacts. Both work from the same subphase contract, so neither
 holds a private definition of "done".
 
+For UI acceptance criteria or a UI phase's definition of done, read
+[references/ui-verification.md](references/ui-verification.md). Use observable criteria, focused
+re-review and reusable evidence while preserving the project's required reviewers and gates.
+
 ## Mode: Bootstrap (greenfield)
 
 1. **Intake.** Read the brief. If there is none, ask the user for a free-form brain dump

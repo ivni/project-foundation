@@ -132,6 +132,10 @@ Treat the gates as sufficiency tests, not checklists. Do not manufacture irrelev
 is sufficient when its critical rules are explicit and every remaining uncertainty has a correct
 route, owner or source, interim default, and answer-by point or revisit trigger.
 
+When agreeing UI quality or review criteria, read
+[references/ui-verification.md](references/ui-verification.md). Record observable acceptance in this
+discovery; its execution guidance does not authorize mockup creation or runtime checks during the interview.
+
 Do not ask about framework, database, schema, component, API shape, infrastructure, or naming in the
 product track. Ask about their observable consequence only when the participant must choose it. For
 example, ask whether a missing value means “not applicable,” “not known yet,” or “optional”; let

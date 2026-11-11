@@ -44,6 +44,9 @@ A subphase is done only when **all** of the following hold:
 
 ## Proportionate verification and test maintenance
 
+For UI work, read [UI acceptance and review](ui-verification.md) when defining acceptance or preparing
+verification: observable criteria, focused re-review and reusable evidence, without weakening project gates.
+
 Reuse or adapt existing tests before adding new ones. Checks must observe the changed contract and
 detect its violation; matching coverage lines or a green run alone does not establish this. Preserve
 automated regression protection for substantive repeatable behavior. For reversible, low-risk changes,
