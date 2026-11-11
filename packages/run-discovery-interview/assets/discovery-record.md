@@ -70,6 +70,22 @@ not enter a product-track queue.
 |---|---|---|---|---|---|
 | 1 | UNK-001 | {{one stakeholder-owned decision}} | {{authority and basis}} | {{product, UX, business, or constraint dependency}} | open |
 
+## Practices and ideas
+
+Keep external observations separate from proposed adaptations. Only ideas accepted in a linked
+decision belong to the agreed contract; proposed ideas are optional, not implementation scope.
+
+- **Research coverage / limitations:** {{what was checked, why it was relevant, or why external research was unavailable or omitted}}
+
+### IDEA-001 — {{practice or idea}}
+
+- **Source evidence:** {{source links, dates checked, and supported observations; or original unvalidated hypothesis}}
+- **Adaptation for this task:** {{who encounters it, when, what they see or do, and the resulting benefit}}
+- **Fit and trade-offs:** {{relevant constraints, added effort, downside, and when it would not fit}}
+- **Assumptions / validation:** {{what is inferred and how to check its value; ASM/UNK IDs where relevant}}
+- **Disposition:** proposed / accepted / rejected / deferred
+- **Decision / rationale / revisit trigger:** {{DEC ID for acceptance or rejection; reason or trigger for deferral; none if still proposed}}
+
 ## Decisions
 
 ### DEC-001 — {{decision title}}
@@ -161,6 +177,7 @@ Complete only when the user ends discovery.
 - **Value and outcome:** {{concise product-value summary}}
 - **Functional and UX contract:** {{concise behavior summary}}
 - **Decisions closed:** {{DEC IDs}}
+- **Adopted practices and ideas:** {{IDEA IDs linked to DEC IDs and sources; unaccepted ideas remain optional}}
 - **Terms settled:** {{terms and the synonyms they replace, for promotion to the glossary}}
 - **Needs validation:** {{DEC/ASM/UNK IDs and validation paths}}
 - **Deferred with defaults:** {{IDs, defaults, triggers}}

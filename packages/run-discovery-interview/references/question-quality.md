@@ -128,6 +128,11 @@ Which option should we adopt? You may modify one option or delegate to the recom
 Use a table only when it makes comparison easier and remains readable in the current interface.
 Never hide trade-offs in a collapsed control.
 
+When research supplies a useful practice or idea, add a brief source-backed observation and concrete
+adaptation beside the option it informs. Show the user how it would work in this task and its
+trade-off. Follow [practices-and-ideas.md](practices-and-ideas.md); keep the same single decision and
+recommendation rather than adding a separate inspiration questionnaire.
+
 ## Interpret the answer
 
 Translate the response into a testable product, UX, business, or domain rule without inventing an

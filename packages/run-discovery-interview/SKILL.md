@@ -8,6 +8,8 @@ description: Discovery interview that closes stakeholder decisions before implem
 Reach explicit agreement about why and what to build, how it should behave, and which constraints
 shape it before implementation starts. Treat the interview as a sequence of stakeholder decision
 closures, not a questionnaire or an architecture review.
+Bring relevant international practices and useful ideas into the interview, translated into concrete
+ways to improve the subject under discussion.
 
 ## Keep decision ownership explicit
 
@@ -88,6 +90,24 @@ Only stakeholder decisions enter the product-track question queue. In an explici
 implementation decisions may enter the queue only when the participant owns them and no research,
 safe default, or later spike can resolve them better.
 
+## Research practices and propose useful adaptations
+
+After the subject and initial constraints are known, read
+[references/practices-and-ideas.md](references/practices-and-ideas.md) and perform a focused,
+read-only search for relevant international practices and promising ideas. Do this proactively;
+the participant need not ask for inspiration separately. Revisit research when an answer materially
+changes the audience, journey, constraints, or decision being considered, not on every turn.
+
+Present useful findings alongside the decision they inform: explain how the idea would work in this
+product, who benefits, and its cost or trade-off. Separate source observations from your proposed
+adaptation. Keep exactly one decision question and one recommendation per turn; route unrelated
+ideas to later decisions instead of adding extra questions. Do not force a suggestion when none
+improves the current decision.
+
+Keep sources, adaptations, and their disposition in the single discovery record. A proposed idea is
+not an agreed requirement. Research must not reopen settled decisions without relevant new evidence,
+expand scope silently, or delay a sufficient handoff for an exhaustive market survey.
+
 ## Sharpen the language as it lands
 
 The project's words are part of what discovery agrees on. When the participant reaches for a term:
@@ -152,6 +172,9 @@ Every decision turn must contain:
    advantages and disadvantages in the current context.
 3. **Exactly one recommendation** labeled clearly. State the recommended option, why it best fits the
    known evidence, its assumptions, and the observable fact that would change it.
+   When external research informs the options, include a concise, sourced explanation of the useful
+   practice and its concrete adaptation; retain viable alternatives rather than treating popularity
+   as proof that one option is right.
 4. **One question only** asking the user to choose, modify, reject, or delegate to the recommendation.
    Allow a custom answer without using it as a substitute for researched options.
 
@@ -227,6 +250,8 @@ answer-by point. For `deferred-with-default`, record the default and an observab
   `Blocked by` entries the answer has freed.
 - Record any term the answer settled, with the synonyms it replaces.
 - Record derived engineering implications separately from stakeholder decisions.
+- Update researched ideas and their disposition, linking accepted ideas to the actual `DEC-NNN`;
+  keep unaccepted suggestions separate from the agreed contract.
 - Append a chronological session-log entry; do not erase superseded decisions.
 - Update the resume point with the single current stakeholder decision and why it is next.
 - Never wait until the end of the interview to batch-record answers.
@@ -260,6 +285,8 @@ When the user finishes:
 2. Return a concise summary of product value, functionality, UX and business decisions, assumptions,
    routed unknowns, engineering implications, deferred items, settled terms with the synonyms they
    replace, anything ruled out of scope, residual risks, and the record path.
+   Include adopted adaptations and relevant validation needs; unaccepted ideas remain optional and
+   must not become implementation scope during handoff.
 3. State clearly that no implementation or canonical-document changes were made.
 4. Suggest the next workflow, normally requirements or PRD synthesis followed by agent-led technical
    synthesis in `project-foundation`, an ADR, or a bounded validation spike. Do not start it without

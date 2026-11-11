@@ -7,6 +7,20 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.12.0] - 2026-11-11
+
+### Added
+
+- `run-discovery-interview` proactively researches relevant international practices and useful ideas,
+  then proposes concrete adaptations for the current task with sources, benefits, and trade-offs.
+- Discovery records preserve research evidence and idea dispositions, linking accepted adaptations
+  to stakeholder decisions while keeping unaccepted suggestions outside implementation scope.
+
+### Changed
+
+- Discovery integrates researched ideas into the current decision without adding extra questions,
+  and distinguishes verified observations from original proposals or unvalidated hypotheses.
+
 ## [3.11.1] - 2026-11-11
 
 ### Changed
@@ -672,7 +686,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.11.1...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.12.0...HEAD
+[3.12.0]: https://github.com/ivni/project-foundation/compare/v3.11.1...v3.12.0
 [3.11.1]: https://github.com/ivni/project-foundation/compare/v3.11.0...v3.11.1
 [3.11.0]: https://github.com/ivni/project-foundation/compare/v3.10.0...v3.11.0
 [3.10.0]: https://github.com/ivni/project-foundation/compare/v3.9.0...v3.10.0

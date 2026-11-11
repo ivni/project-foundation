@@ -8,7 +8,8 @@ durable project foundation:
   validation method.
 - **Discovery Interview** defaults to a non-technical product-owner track for product value,
   functionality, domain rules, UX, and business constraints. It asks one stakeholder-owned decision
-  at a time while writing only one scratch discovery record.
+  at a time while writing only one scratch discovery record. It researches relevant international
+  practices and suggests concrete adaptations with sources, benefits, and trade-offs.
 - **Plan Feature** turns completed discovery for a small feature into an implementation issue with
   ordered stages, acceptance checks, and an attached discovery snapshot.
 - **Run Feature Stage** restores the active issue after compaction, completes one stage with
