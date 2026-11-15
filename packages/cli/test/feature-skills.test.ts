@@ -62,6 +62,26 @@ test.each([
 
 const workflows = [
   {
+    orchestrator: "run-feature-models",
+    executor: "run-feature-stage",
+    requiredFiles: [
+      "scripts/model-routing.ts",
+      "scripts/checkout-lease.ts",
+      "references/model-workflow.md",
+      "references/feature-workflow.md",
+    ],
+  },
+  {
+    orchestrator: "run-phase-models",
+    executor: "run-subphase",
+    requiredFiles: [
+      "scripts/model-routing.ts",
+      "scripts/checkout-lease.ts",
+      "references/model-workflow.md",
+      "references/subphase-contract.md",
+    ],
+  },
+  {
     orchestrator: "run-feature",
     executor: "run-feature-stage",
     requiredFiles: [

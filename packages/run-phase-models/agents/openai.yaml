@@ -1,0 +1,7 @@
+interface:
+  display_name: "Run Phase Models"
+  short_description: "Select model and effort by task demand, cost and speed"
+  default_prompt: "Use $run-phase-models to execute the remaining work with task-based model and effort selection and independent review."
+
+policy:
+  allow_implicit_invocation: true

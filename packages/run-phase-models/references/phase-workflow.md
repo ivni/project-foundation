@@ -1,0 +1,213 @@
+<!-- Canonical source. Do not edit the generated copies under packages/*/references/. -->
+# Phase orchestration contract
+
+`run-phase` orchestrates one prepared phase; every fresh `run-subphase` invocation consumes one
+subphase, including recovery. Standalone `run-subphase` still stops after that unit. The parent
+delegates implementation and independently verifies results. The requirements slice, not a local
+orchestration record, remains the source of scope, ordering, acceptance and progress.
+The separate `run-phase-models` variant keeps these entry/completion requirements but uses bounded
+native role jobs and parent-owned verification/closeout. Its own model-workflow reference governs
+`.models.json` checkpoint fields, reservations and selected approved review-loop candidates; the
+whole-subphase worker packet and `.orchestrator.json` state below belong to `run-phase` only.
+
+## Selection and authority
+
+Resolve one phase from the explicit user selection, an unfinished sidecar, or an unambiguous current
+phase recorded in the agent contract. Conflicts require reconciliation; missing selection requires
+the phase name. The parent may read `docs/stages.md` when needed for selection/closure, but never
+starts another phase. Slice paths come from the agent contract, conventionally `docs/phase-N/` with
+`scope.md`, `checklist.md` and `blockers.md`. `N.0` must already be ticked.
+
+A pinned packet from a user-started `run-phase` is delegated authority for `run-subphase` and its
+chosen installed independent review loop. It permits new bounded review runs after the parent
+diagnoses the previous stop. Preserve findings, rejected evidence, fixes, deferrals, tested states
+and convergence history across run IDs. A dependency security audit finding authorizes upgrading
+the affected project dependency and installing what the fix and verification need, including a
+required compatible major version. Make necessary compatibility changes, update the manifest and
+lockfile as appropriate, rerun the audit and relevant checks, and report remaining vulnerabilities
+or verification gaps. A packet does not authorize unrelated dependency changes, changes to scope,
+acceptance criteria, planned verification, security policy or an unapproved reviewer fallback.
+Carry narrower user/repository constraints and scoped approvals explicitly; honor read-only requests
+and actual permission prompts. A packet cannot grant access.
+
+When the selected loop is `run-codex-review-loop`, the user-started phase authorizes sending the
+phase's in-scope changes and minimum relevant task/repository context to OpenAI Codex for its review,
+including fixes and later passes throughout that phase. Carry this source and scope into each packet.
+Do not request the same consent again solely because an in-scope path, file count or content changed;
+review evidence must still cover the actual final tree. This does not authorize another provider or
+change the selected review loop, and narrower instructions and actual host decisions still apply.
+
+Use the recorded Git profile and exact checkout/branch. Preserve unrelated work; require the user's
+declared exclusions when the subphase entry gate needs them. No push, tag, PR/MR, release, deployment,
+external issue update or global configuration change is implied. Review loops own their verdicts.
+
+## Durable recovery metadata
+
+Before first dispatch claim the checkout lease described in `checkout-lease.md`, then create
+`.agents/work/phases/phase-<N>.orchestrator.json` (use a stable safe ID
+for nonnumeric phases). Keep these files out of implementation commits through the project's existing
+local-metadata policy; do not alter shared ignore policy silently. Use checkout-contained paths with
+no traversal or escaping symlinks. Persist atomically with sibling temporary file plus rename. Read
+an existing sidecar instead of resetting it. Serialize parent mutations with an exclusive short-lived
+lock; inspect the owning process before removing a leftover lock, never age it out.
+
+Known files owned by this workflow may remain untracked/dirty when no ignore policy covers them.
+Inspect and explicitly list those exact paths as administrative workflow metadata at the subphase
+entry gate and in review. A user-started phase run authorizes its own metadata writes/exclusion;
+it does not authorize excluding unrelated user work, authored requirements, code or tests. Do not
+require the user to reapprove the orchestrator's own records on every worker handoff.
+
+On a retry, retained in-scope implementation/tests/docs are unfinished work of the same subphase,
+not unrelated dirt to exclude. Verify their checkpoint attribution against the actual diff and keep
+all of them inside checks/review scope. The delegated recovery packet authorizes resuming them
+without a clean-tree reset or another user approval. If task/unrelated boundaries are uncertain,
+preserve everything and ask for the specific scope clarification; never label code as metadata.
+
+Record at least:
+
+- `schema: 1`, unique `run_id`, canonical `checkout`, `branch`, original `base_commit`, `phase_id`,
+  resolved `slice_paths`, exact `subphase_skill_root` and chosen `review_skill_root`.
+- `scope_sha256` of the original scope bytes, recorded verification command and an ordered snapshot
+  of subphase IDs/requirement mappings for detecting substantive plan drift. This snapshot is a
+  comparison aid, never a second plan; reread the actual slice before dispatch and after completion.
+- `status`: `ready`, `dispatching`, `running`, `awaiting-input`, `interrupted`, `cancelled`,
+  `implemented` (subphases done with phase gates pending), or `complete` (full phase DoD evidenced).
+- Current `subphase_id`, monotonically increasing `attempt`, unique `attempt_id`, `starting_head`,
+  actual `worker_handle` (initially null), and durable per-attempt packet/result/evidence paths.
+- `checkpoint`: remaining action, owned changed paths, last tested/reviewed state, `review_ledger`,
+  predecessor review run/changed approach, and `recovery_commit` when committed but not closed out.
+- Last verified completion references; any stop request, diagnosis, question/sources checked and
+  answer with sufficiency. Preserve earlier attempts, results and review history while needed for
+  verification or recovery; after verified closeout retire their pointers and clean up as below.
+
+Only one parent owns a phase run. Before starting another run in the same checkout, inspect other
+phase/feature orchestration and direct-workflow owners too: a different sidecar does not authorize a
+concurrent writer. Inspect `.agents/work/phases/*.direct.json` and
+`.agents/work/features/*.direct.json`; reconcile their actual owners before dispatch.
+Reserve the attempt and record its starting HEAD before spawning; bind its real host handle as soon
+as available. A spawn/bind uncertainty requires inspecting actual host children before retrying.
+Never clear active ownership on a timer. On compaction/interrupt, read real host status; await a live
+worker, or cancel and observe termination before dispatching a replacement. An idle UI is not proof
+of terminal status. Pin any committed checkpoint before retry; inspect Git/checklist/review effects
+even if the worker failed to save its final result.
+
+## Minimal fresh-worker packet
+
+Persist a packet for each attempt under `.agents/work/phases/phase-<N>/<attempt-id>/`. Send only:
+
+- Instruction to invoke the exact installed `run-subphase`, chosen review skill and their roots.
+- Sidecar path, run/attempt identity, exact checkout/branch/base/starting HEAD, phase/subphase IDs,
+  slice paths, scope digest, packet and result paths.
+- Relevant user/repository constraints, declared exclusions, scoped existing approvals and the
+  recorded local verification command. Do not include secrets or the parent's conversation.
+- The selected review loop and actual content-free preflight command, environment, outcome and
+  limits. For Codex, include the user-started phase invocation as the source and phase/repository
+  scope of review authority; the packet cannot grant host access.
+- Short remaining-action summary and durable checkpoint/review-ledger/evidence pointers. On a new
+  review cycle include the predecessor run, cause and changed approach; never reset findings.
+
+The worker rereads repository instructions, slice, glossary, ADRs and live state itself. It resumes
+the reserved subphase even after a partial commit; it cannot select another or start its successor.
+Only the parent writes the sidecar. The worker writes its own checkpoint/evidence/result and normal
+in-scope project artifacts. Persist recovery information before ending a worker.
+
+## Structured result and parent verification
+
+Each worker persists a JSON object with `schema: 1`, `run_id`, `attempt_id`, `checkout`, `branch`,
+`phase_id`, `subphase_id`, `outcome`, short `summary` and `checkpoint_ref` (null only after verified
+closeout). Outcomes:
+
+| Outcome | Required evidence / next action |
+| --- | --- |
+| `subphase-complete` | `commits`, `checks_ref`, `acceptance_ref`, `review_ref`, `review_ledger`, `checklist_ref`; parent verifies every completion gate before selecting the next subphase |
+| `retryable-error` | `diagnosis`, side effects/changed paths, remaining action; investigate and retry the same subphase with a fresh attempt |
+| `review-exhausted` | `diagnosis`, terminal review run/verdict, full `review_ledger`, proposed changed approach; parent diagnoses and authorizes a new bounded run of the same subphase |
+| `needs-user-input` | `question`, missing fact, `sources_checked`, side effects and remaining action; research first, then stop for the precise answer |
+| `interrupted` | remaining action and known side effects; reconcile before resuming |
+
+Until completion is independently verified, evidence references point to actual saved logs/observations,
+not fresh claims synthesized from a success message. Checks name the recorded full command, result and tested state; acceptance maps
+each linked requirement to its planned seam and observed result. Review evidence identifies the
+actual independent runtime, loop, run/pass/verdict, scope/snapshot and permitted dispositions.
+Record substantive tree/snapshot identity plus any inspected administrative delta, so evidence
+obtained before a later code edit cannot be reused. A valid `CLEAN (N deferred)` requires the actual
+permitted deferrals in the committed register; never discard that suffix or manufacture `CLEAN`.
+
+The parent checks actual terminal status first and then independently reads Git, evidence, review
+ledger, checklist/traceability/status and any changed blockers. Verify completion commits exist,
+descend from the attempt's starting state (or match pinned recovery), are on the selected branch,
+and contain the subphase's substantive and administrative changes. A recovery commit predating the
+current attempt is reused, not duplicated; inspect descendants and refresh affected evidence.
+If a recovered implementation commit lacks only factual checklist/status closeout, an inspected
+administrative follow-up commit may record it. Keep the original implementation SHA as
+`recovery_commit`, list both commits in the result and verify their combined evidence; never claim
+the original commit contained the later closeout. Substantive changes require fresh checks/review.
+Inspect the final diff for substantive unreviewed edits and unrelated included work. A checkpoint
+or result from another identity, missing evidence, stale scope or unchanged completion commit is
+not completion. Missing/malformed output is diagnosed from preserved output and side effects, never
+treated as success or an automatic stakeholder blocker.
+
+Before final checks, independent review and commit, the executor cleans up tests introduced or
+affected by the subphase under the subphase contract. This includes unnecessary tests and unused
+helpers/fixtures, with removals and residual risk summarized in the existing change record. Source
+edits are not part of the post-commit disposable-material cleanup below. If test cleanup is found
+missing after verification, return it to a scoped executor for applicable checks, review and commit;
+do not delete tracked tests as an administrative closeout action.
+
+After verification, complete the subphase's temporary-material cleanup before choosing another
+subphase or reporting it fully closed. Before clearing a checkpoint, persist an atomic, durable
+cleanup-pending record at `.agents/work/phases/phase-<N>.cleanup.json` (using the same safe phase ID
+as the sidecar) identifying the phase/subphase, completion commits, evidence pointers and remaining
+cleanup. On interruption or restart reconcile this record first, even if the checklist is
+already ticked: finish cleanup without rebuilding or recommitting the increment. Clear the record
+only after inspecting the result. Keep it and retry safe failures; report a concrete access or safety
+blocker if cleanup cannot be completed.
+
+Inventory all temporary materials attributable to this subphase and its attempts: reports, raw
+logs, review outputs, archives, screenshots, videos, test data, scratch files, packets and disposable
+environments. Stop and await their owners. After the parent has inspected the actual evidence and
+recorded the factual command, result, tested state, review outcome and acceptance in the existing
+checklist or other canonical records, remove the temporary materials. Do not create a separate report
+or archive to retain them. Missing evidence cannot be replaced by a fabricated summary.
+
+During an unfinished phase retain only temporary material still needed for an active owner, pending
+verification/recovery or a concrete later subphase; remove it when that need ends. Reconcile workflow
+references and state before deleting their targets; never leave a live recovery pointer dangling.
+Preserve tracked files, intended deliverables, user data, unrelated work, shared resources and items
+whose ownership cannot be established. Check paths and symlinks; do not follow a link outside the
+intended boundary. Verify removal and the canonical records; the cleanup-pending record is temporary
+too and is removed after successful cleanup.
+
+At the end of the phase, repeat the inventory across all its subphases and attempts and remove every
+remaining phase-owned temporary artifact, including any previously needed for later work. Finish
+verification and reconcile terminal owners and workflow references first. No temporary reports,
+archives, logs, screenshots or videos are retained merely as evidence of completed work. If safe
+removal is blocked or ownership remains uncertain, preserve the item, report the exact path and reason,
+and do not claim that cleanup is complete.
+
+Only after verification and cleanup may the parent record completion and choose the next unticked
+subphase from the current checklist. Respect suffixed sibling order (`N.3`, `N.3a`, `N.4`).
+A size split must follow the subphase contract and preserve scope/requirement ownership. Reconcile
+other substantive plan drift explicitly; do not change criteria merely to accept an implementation.
+
+## Stop, resume and phase boundary
+
+Persist cancellation before stopping the child; await it and any owned reviewer/shell descendants,
+inspect side effects, then release ownership. A late completion never overrides cancellation.
+Explicit cancellation requires explicit resume. Interruption is not completion or a user decision.
+A sufficient blocker answer resumes the same subphase after reconciliation without another command.
+Do not blindly retry denied actions or uncertain external writes. Ordinary failures and review
+budgets do not by themselves require user input; keep a diagnosed, permitted path forward.
+
+At phase completion, also review tests introduced or affected across its subphases for obsolete,
+duplicate, completed one-time, or justified low-value checks under the subphase contract. This is a
+bounded phase cleanup, not a whole-suite audit. Include any further source changes in a scoped
+executor's checks, independent review and commit before declaring the phase complete.
+
+When all subphases are verified, inspect the phase's actual definition of done, including requirement
+coverage, blockers/register, document/runtime consistency and any required CI. `implemented` and
+phase `complete` are separate claims. A pending external gate stays pending; do not close the phase
+or push/deploy to satisfy it without authorization. Factual checklist/status closure is administrative
+and may follow inspected review evidence; substantive fixes require another fresh scoped executor,
+checks and review. Record that executor with its own attempt and explicit remaining closure scope;
+it cannot broaden the requirements or begin the next phase. Stop after this phase.

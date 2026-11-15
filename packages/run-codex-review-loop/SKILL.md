@@ -16,6 +16,8 @@ the defects it reports. A clean review and passing tests are separate claims.
 - Start only when the user explicitly invokes or names `run-codex-review-loop`, or when
 <!-- /host:skill-id -->
   `run-subphase` or `run-feature-stage` invokes it as the review step of work the user started.
+  An explicitly user-started `run-feature-models` or `run-phase-models` may also invoke the loop
+  selected in its approved model profile, within that profile's repository/task authority.
   Do not infer consent from a general request for code review, implementation, testing, cleanup,
   or completion.
 - Invocation authorizes read-only repository research, reviewer delegation, safe local fixes inside
@@ -36,23 +38,18 @@ the defects it reports. A clean review and passing tests are separate claims.
 
 ## Review continuation under orchestration
 
-A pinned packet from a user-started `run-phase` delegates this loop through `run-subphase`.
-A user-started `run-feature` delegates the Codex loop through `run-feature-stage`; it does not change
-that workflow's required reviewer. At a terminal exhausted/disputed/non-converged run, preserve its
-verdict, limitations, ledger, fixes and tested states and return the cause to the orchestrator.
-The parent may authorize a new identified run after diagnosis, carrying all task-wide history and
-unresolved blocking findings. Its new packet supplies that authority, predecessor run and changed
-approach; start at pass 1 of the new run, never pass 11 in the old run. A missing scope/permission/
-access fact still needs the specific user answer. Other safe engineering errors are diagnosed and
-retried; review requirements remain. This exception applies only to a user-started orchestration.
-Explicit user-started `run-phase-direct` and `run-feature-direct` provide the same scoped continuation
-authority through `run-subphase` and `run-feature-stage`, respectively. The current agent records the
-diagnosis, prior run, changed approach and ledger in its direct checkpoint before starting the next
-bounded run. These direct workflows prohibit native reviewer subagents: use the selected loop's
-packaged independent CLI reviewer and honor its preflight and isolation rules; do not substitute
-self-review or another provider. The same scope and user authorization remain in force.
-Standalone calls keep every bounded stop below. A new run identity never makes an unresolved finding
-clean, permits ignoring convergence, changes reviewer selection or approves an unavailable fallback.
+User-started `run-phase` delegates through `run-subphase`; `run-feature` delegates the required Codex loop through `run-feature-stage`.
+At an exhausted/disputed/non-converged run, preserve verdict, limitations, ledger, fixes and tested states and return the cause to the parent.
+After diagnosis the parent may authorize a new identified run with the prior run, changed approach and all unresolved findings; start at pass 1, never pass 11.
+Missing scope/permission/access requires its specific answer. Diagnose other safe errors; keep every review requirement and honor host denials.
+User-started `run-phase-direct` and `run-feature-direct` provide the same authority through their executors and record diagnosis/history in the direct checkpoint.
+Direct workflows require the selected loop's packaged independent CLI reviewer, its preflight and isolation; no native reviewer, self-review or provider substitution.
+Standalone calls keep their bounded stops. A new run identity never makes a finding clean, establishes convergence or grants an unavailable fallback.
+
+For user-started `run-feature-models` and `run-phase-models`, the approved profile selects an installed loop; its pinned model/effort, isolation and verdict rules remain.
+The parent owns checks/closeout and delegates product fixes to fresh native `fix` workers, awaits termination, inspects changes and reruns checks before resuming the same ledger.
+These variants have the same diagnosed continuation authority. A different approved loop after reviewer unavailability requires a terminal prior run and every earlier finding/history.
+Changing reviewers cannot erase an unresolved verdict or bypass a host rejection. All original scope and authorization constraints remain in force.
 
 <!-- /shared:orchestration-continuation -->
 

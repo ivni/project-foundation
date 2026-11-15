@@ -1,0 +1,7 @@
+interface:
+  display_name: "Run Feature Models"
+  short_description: "Select model and effort by task demand, cost and speed"
+  default_prompt: "Use $run-feature-models to execute the remaining work with task-based model and effort selection and independent review."
+
+policy:
+  allow_implicit_invocation: true

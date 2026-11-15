@@ -1,10 +1,10 @@
 <!-- Canonical source. Do not edit the generated copies under packages/*/references/. -->
 # Checkout writer lease
 
-All four updated workflows use `scripts/checkout-lease.ts` from their own installed payload. Each
+All six orchestration workflows use `scripts/checkout-lease.ts` from their own installed payload. Each
 copy implements the same checkout-wide protocol. It reserves one canonical checkout across phases,
 features and direct execution, not merely one sidecar. Installation does not upgrade other existing
-skill installations; update all four before relying on mutual exclusion. Standalone skills, old skill
+skill installations; update all six before relying on mutual exclusion. Standalone skills, old skill
 versions and external tools do not participate. Inspect and stop any such writer separately.
 
 Call the helper using Bun and a private JSON request file; do not interpolate task text into a shell

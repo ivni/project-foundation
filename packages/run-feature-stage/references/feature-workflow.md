@@ -4,6 +4,11 @@
 `plan-feature` prepares an issue from completed discovery. `run-feature-stage` executes one stage.
 `run-feature` orchestrates fresh one-stage executors for a user-started multi-stage run.
 They share this contract so a fresh session can work from persisted evidence instead of chat memory.
+The separate `run-feature-models` variant consumes the same selection and completion contract, with
+parent-owned bounded native role jobs and an approved installed review loop as its explicit overrides.
+Its parent maintains the existing feature record plus a `.models.json` checkpoint; role workers do
+not own issue updates or commits. The delegated whole-stage protocol below applies to `run-feature`,
+not those partial role jobs. The models variant's own shared model workflow governs that lifecycle.
 
 ## Authority and storage
 
@@ -187,8 +192,9 @@ A stage is done only when:
   recovery need relevant failure-state evidence. Never disable required gates to finish a stage.
 - Tests introduced or affected by the stage cleaned up under the rules below before final checks,
   independent review and commit; unnecessary tests and unused helpers/fixtures removed.
-- `run-codex-review-loop` completed with a terminal outcome that permits the commit, all required
-  fixes are verified, and permitted deferrals have their required durable record.
+- `run-codex-review-loop` (or the approved installed loop under `run-feature-models`) completed with
+  a terminal outcome that permits the commit, all required fixes are verified, and permitted
+  deferrals have their required durable record.
 - Necessary documentation changed with the implementation, the stage commit exists, and issue
   progress/evidence were published and read back successfully.
 - Temporary materials attributable to the completed stage have been cleaned up and the retained

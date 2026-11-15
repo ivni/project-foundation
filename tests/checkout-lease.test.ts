@@ -33,7 +33,14 @@ function request(cwd: string, mode: LeaseRequest["mode"], runId = mode): LeaseRe
 
 test("concurrent claims by all workflow modes produce exactly one checkout owner", async () => {
   const cwd = await fixture();
-  const modes = ["run-feature", "run-feature-direct", "run-phase", "run-phase-direct"] as const;
+  const modes = [
+    "run-feature",
+    "run-feature-direct",
+    "run-phase",
+    "run-phase-direct",
+    "run-feature-models",
+    "run-phase-models",
+  ] as const;
   const requests = modes.map((mode) => request(cwd, mode));
   const results = await Promise.allSettled(requests.map((req) => checkoutLease(req)));
   expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(1);
@@ -61,7 +68,14 @@ test("concurrent claims by all workflow modes produce exactly one checkout owner
 
 test("separate helper processes cannot claim the same checkout", async () => {
   const cwd = await fixture();
-  const modes = ["run-feature", "run-feature-direct", "run-phase", "run-phase-direct"] as const;
+  const modes = [
+    "run-feature",
+    "run-feature-direct",
+    "run-phase",
+    "run-phase-direct",
+    "run-feature-models",
+    "run-phase-models",
+  ] as const;
   const files = await Promise.all(
     modes.map(async (mode, index) => {
       const path = join(cwd, `request-${index}.json`);

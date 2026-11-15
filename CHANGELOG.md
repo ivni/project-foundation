@@ -7,6 +7,18 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.13.0] - 2026-11-15
+
+### Added
+
+- Separate `run-feature-models` and `run-phase-models` workflows with native build, fix,
+  investigation, UI and architecture-advisor roles, task-based model/effort selection/fallback and
+  existing independent review loops.
+- Explicit complexity, uncertainty and risk assessment before each job; choose an adequate
+  model/effort pair by relative quota cost then latency, with supported-effort and review-profile
+  guards. The main chat remains the orchestrator; no model-rating history is used.
+- Shared checkout ownership for the new workflows and installer/runtime-boundary coverage.
+
 ## [3.12.0] - 2026-11-11
 
 ### Added
@@ -686,7 +698,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.12.0...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.13.0...HEAD
+[3.13.0]: https://github.com/ivni/project-foundation/compare/v3.12.0...v3.13.0
 [3.12.0]: https://github.com/ivni/project-foundation/compare/v3.11.1...v3.12.0
 [3.11.1]: https://github.com/ivni/project-foundation/compare/v3.11.0...v3.11.1
 [3.11.0]: https://github.com/ivni/project-foundation/compare/v3.10.0...v3.11.0

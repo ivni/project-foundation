@@ -15,9 +15,11 @@
 │   ├── run-codex-review-loop/   Publishable independent review-loop payload
 │   ├── run-discovery-interview/ Publishable interview skill payload
 │   ├── run-feature/             Publishable sequential feature orchestration payload
+│   ├── run-feature-models/      Task-based model/effort selection and feature closeout
 │   ├── run-feature-direct/      Current-agent feature execution payload
 │   ├── run-feature-stage/       Publishable issue-stage execution payload
 │   ├── run-phase/               Publishable sequential phase orchestration payload
+│   ├── run-phase-models/        Task-based model/effort selection and phase closeout
 │   ├── run-phase-direct/        Current-agent phase execution payload
 │   ├── run-qwen-review-loop/    Publishable Qwen review-loop payload
 │   ├── run-subphase/            Publishable bounded subphase-execution payload
@@ -52,7 +54,7 @@ bun run check
 ```
 
 `verify:skills` checks frontmatter, invocation policy, UI metadata, size, placeholders, local
-resource links, and shared-reference drift for all sixteen payloads. `verify:docs` checks public
+resource links, and shared-reference drift for all eighteen payloads. `verify:docs` checks public
 Markdown structure, local links, changelog state, and package metadata.
 `verify:package` inspects the exact file manifest produced by npm, the tool used for publishing.
 `bun run check` runs it as part of the release-level local verification command.
@@ -148,3 +150,16 @@ install/update/removal while preserving the independent subphase executor.
 - Support `NO_COLOR`, keyboard-only use, cancellation, narrow terminals, and ASCII fallbacks.
 - Use motion only as terminal feedback supplied by the prompt primitive, never as decoration.
 - Keep every visible string concise and avoid decorative punctuation.
+
+## Native model variants
+
+`shared/model-routing.ts` validates schema-2 role catalogs and task assessments, intersects approved
+model/effort pairs with observed host capabilities, enforces the highest complexity/uncertainty/risk
+floor for both capability and effort, then orders adequate pairs by relative cost and latency.
+The helper is read-only: it does not grade models, maintain history, discover capabilities, grant
+consent, launch agents or certify the parent's task/estimate judgments.
+`shared/model-workflow.md` owns the native role-job lifecycle; each variant bundles generated copies
+and uses the checkout lease under its own mode and `.models.json` checkpoint. The main chat remains
+the orchestrator. It consumes the existing executor completion contract while delegating product
+edits and retaining verification, review and closeout. Existing orchestrator helpers are not used
+for partial role jobs. Schema-1 profiles must be explicitly reconfigured, not assigned invented costs.

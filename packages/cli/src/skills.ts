@@ -28,6 +28,10 @@ export const SKILLS = {
     label: "Run Feature",
     summary: "Sequential fresh stage workers with verified progress and recovery",
   },
+  "run-feature-models": {
+    label: "Run Feature Models",
+    summary: "Choose native model and effort by task demand, cost and speed",
+  },
   "run-feature-direct": {
     label: "Run Feature Direct",
     summary: "Execute feature stages in the current agent with independent review",
@@ -39,6 +43,10 @@ export const SKILLS = {
   "run-phase": {
     label: "Run Phase",
     summary: "Sequential fresh subphase workers with verified phase progress and recovery",
+  },
+  "run-phase-models": {
+    label: "Run Phase Models",
+    summary: "Phase jobs with task-based native model and effort selection",
   },
   "run-phase-direct": {
     label: "Run Phase Direct",

@@ -16,6 +16,8 @@ durable project foundation:
   agent-owned verification, Codex review, and a local commit, then records progress and stops.
 - **Run Feature** orchestrates the remaining stages of one published feature with fresh workers,
   verifies each stage before continuing, and preserves recovery and review history.
+- **Run Feature Models** executes feature stages using native models selected by role from an approved
+  catalog, with task-based effort selection, relative cost/speed and independent review.
 - **Run Feature Direct** executes feature stages in the current agent, preserving stage checks,
   independent CLI review, commits, and issue progress.
 - **Run Subphase** takes exactly one subphase of a phase requirements slice to done — entry gate,
@@ -23,6 +25,8 @@ durable project foundation:
   commit — and then stops, because a subphase is sized to a single context window.
 - **Run Phase** orchestrates the remaining subphases of one prepared phase with a fresh worker for
   each one, verifies completion and preserves recovery/review history before continuing.
+- **Run Phase Models** applies the same task-based native model and effort selection to one
+  prepared phase, preserving sequential subphases and independent review.
 - **Run Phase Direct** executes subphases in the current agent with the same completion gates and
   independent CLI review.
 - **Codex Review Loop** explicitly launches an independent read-only Codex reviewer over the current
@@ -59,7 +63,7 @@ bunx @ivni/project-foundation
 ```
 
 Choose `Install / update`. The wizard reuses an existing installation's agents, scope, and method,
-or lets you choose different settings. On a first installation, all sixteen skills are preselected.
+or lets you choose different settings. On a first installation, all eighteen skills are preselected.
 For an existing installation, updates are preselected and absent skills are optional additions.
 You can update installed skills and add others in one run, with one complete preview before writing
 anything.
@@ -145,6 +149,38 @@ use native workers when available. Pi/Hermes require an existing compatible proc
 `run-phase` does not bundle one. See [phase orchestration compatibility](docs/compatibility.md#phase-orchestration)
 for validation limits.
 
+## Model-based execution
+
+Use `$run-feature-models` with `run-feature-stage`, or `$run-phase-models` with `run-subphase`, plus
+at least one installed independent review loop. These are separate optional variants; existing
+workflows retain their defaults. The main chat remains the orchestrator on the model you selected.
+It coordinates native build, fix, investigate, UI and architecture-advisor jobs and owns verification,
+review and closeout. Stages remain sequential.
+
+At first use, approve a catalog of models and supported efforts with capability and relative
+resource estimates. Before each job the parent assesses complexity, uncertainty and risk separately.
+The highest of those four-level assessments sets the minimum model capability and reasoning effort.
+The helper then chooses the lowest relative-cost adequate model+effort pair, using expected latency
+as the next priority. Equal estimates prefer the lowest sufficient effort, then approved order.
+For example, one model can use low effort for a simple local edit and high effort for a risky fix.
+Missing adequate pairs stop selection rather than reducing the task's requirements.
+
+Cost means relative application quota/resource use (low/medium/high), not invented API dollars.
+Latency is an explicit estimate, not a measured guarantee. Each model/effort entry records its basis;
+unknown estimates are clarified when the catalog is configured. No model ratings are accumulated or
+used. The profile lives in `${XDG_CONFIG_HOME:-$HOME/.config}/project-foundation/model-profile.json`.
+Explicit approved project/run choices can override it. Schema-1 rating profiles require explicit
+schema-2 reconfiguration; old evidence is preserved without influencing future choices.
+
+Implementation jobs use only models/efforts actually exposed by the current application's native
+subagents. Review uses an approved installed Codex, Claude or Qwen loop, keeping its pinned model,
+effort and isolation; its existing CLI fallback remains available. Availability fallback preserves
+the quality floor and runs only after the old job is confirmed stopped.
+
+A host without native model selection and observable worker cancellation stops before implementation.
+Installation support does not prove that a particular application's runtime provides those controls.
+See [compatibility](docs/compatibility.md#native-model-role-variants) for the validation boundary.
+
 ## Test-suite analysis
 
 Ask `$analyze-tests` to analyze the repository's tests. The report includes evidence, retained
@@ -215,7 +251,7 @@ bun run check
 ```
 
 The public package is the repository root. The private workspaces under `packages/` separate the
-CLI source from the sixteen raw skill payloads. See [Development](docs/development.md) for the full
+CLI source from the eighteen raw skill payloads. See [Development](docs/development.md) for the full
 layout and verification workflow.
 
 ## License

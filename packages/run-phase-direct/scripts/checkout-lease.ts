@@ -3,7 +3,13 @@ import { randomUUID } from "node:crypto";
 import { mkdir, readFile, realpath, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 
-type Mode = "run-feature" | "run-phase" | "run-feature-direct" | "run-phase-direct";
+type Mode =
+  | "run-feature"
+  | "run-phase"
+  | "run-feature-direct"
+  | "run-phase-direct"
+  | "run-feature-models"
+  | "run-phase-models";
 export interface LeaseRequest {
   action: "claim" | "assert" | "release";
   cwd: string;
@@ -28,7 +34,14 @@ function validateId(value: unknown): string {
 }
 function validateMode(value: unknown): Mode {
   if (
-    !["run-feature", "run-phase", "run-feature-direct", "run-phase-direct"].includes(String(value))
+    ![
+      "run-feature",
+      "run-phase",
+      "run-feature-direct",
+      "run-phase-direct",
+      "run-feature-models",
+      "run-phase-models",
+    ].includes(String(value))
   )
     throw new Error("Invalid checkout lease mode");
   return value as Mode;

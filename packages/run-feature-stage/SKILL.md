@@ -25,6 +25,12 @@ Read [references/issue-publication.md](references/issue-publication.md) before i
 or recovery. Use the forge and host selected for this feature, including self-managed GitLab;
 `gh` and GitHub-specific fields are not requirements of this workflow.
 
+Under a user-started `run-feature-models` or `run-phase-models` as applicable, the parent uses this
+entry/verification/completion contract and owns closeout while native role workers implement bounded
+jobs. The selected models workflow explicitly replaces full-stage worker ownership and default
+reviewer selection; its approved installed review loop keeps all review requirements. It is not a
+standalone permission to delegate differently or select another reviewer.
+
 ## Authority and responsibility
 
 A request to execute this workflow authorizes local implementation within the issue's agreed scope,

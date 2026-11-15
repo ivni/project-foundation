@@ -5,6 +5,10 @@
 subphase, including recovery. Standalone `run-subphase` still stops after that unit. The parent
 delegates implementation and independently verifies results. The requirements slice, not a local
 orchestration record, remains the source of scope, ordering, acceptance and progress.
+The separate `run-phase-models` variant keeps these entry/completion requirements but uses bounded
+native role jobs and parent-owned verification/closeout. Its own model-workflow reference governs
+`.models.json` checkpoint fields, reservations and selected approved review-loop candidates; the
+whole-subphase worker packet and `.orchestrator.json` state below belong to `run-phase` only.
 
 ## Selection and authority
 

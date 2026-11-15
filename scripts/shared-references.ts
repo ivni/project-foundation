@@ -128,6 +128,20 @@ export const SHARED_BLOCKS: SharedBlock[] = [
 
 export const SHARED_REFERENCES: SharedReference[] = [
   {
+    source: "shared/model-routing.ts",
+    copies: [
+      "packages/run-feature-models/scripts/model-routing.ts",
+      "packages/run-phase-models/scripts/model-routing.ts",
+    ],
+  },
+  {
+    source: "shared/model-workflow.md",
+    copies: [
+      "packages/run-feature-models/references/model-workflow.md",
+      "packages/run-phase-models/references/model-workflow.md",
+    ],
+  },
+  {
     source: "shared/ui-verification.md",
     copies: [
       "packages/project-foundation/references/ui-verification.md",
@@ -135,15 +149,19 @@ export const SHARED_REFERENCES: SharedReference[] = [
       "packages/plan-feature/references/ui-verification.md",
       "packages/run-feature-stage/references/ui-verification.md",
       "packages/run-feature/references/ui-verification.md",
+      "packages/run-feature-models/references/ui-verification.md",
       "packages/run-subphase/references/ui-verification.md",
       "packages/run-phase/references/ui-verification.md",
+      "packages/run-phase-models/references/ui-verification.md",
     ],
   },
   {
     source: "shared/checkout-lease.md",
     copies: [
       "packages/run-feature/references/checkout-lease.md",
+      "packages/run-feature-models/references/checkout-lease.md",
       "packages/run-phase/references/checkout-lease.md",
+      "packages/run-phase-models/references/checkout-lease.md",
       "packages/run-feature-direct/references/checkout-lease.md",
       "packages/run-phase-direct/references/checkout-lease.md",
     ],
@@ -152,7 +170,9 @@ export const SHARED_REFERENCES: SharedReference[] = [
     source: "shared/checkout-lease.ts",
     copies: [
       "packages/run-feature/scripts/checkout-lease.ts",
+      "packages/run-feature-models/scripts/checkout-lease.ts",
       "packages/run-phase/scripts/checkout-lease.ts",
+      "packages/run-phase-models/scripts/checkout-lease.ts",
       "packages/run-feature-direct/scripts/checkout-lease.ts",
       "packages/run-phase-direct/scripts/checkout-lease.ts",
     ],
@@ -163,6 +183,7 @@ export const SHARED_REFERENCES: SharedReference[] = [
       "packages/plan-feature/references/issue-publication.md",
       "packages/run-feature-stage/references/issue-publication.md",
       "packages/run-feature/references/issue-publication.md",
+      "packages/run-feature-models/references/issue-publication.md",
     ],
   },
   {
@@ -171,6 +192,7 @@ export const SHARED_REFERENCES: SharedReference[] = [
       "packages/plan-feature/references/feature-workflow.md",
       "packages/run-feature-stage/references/feature-workflow.md",
       "packages/run-feature/references/feature-workflow.md",
+      "packages/run-feature-models/references/feature-workflow.md",
     ],
   },
   {
@@ -194,6 +216,7 @@ export const SHARED_REFERENCES: SharedReference[] = [
     source: "shared/phase-workflow.md",
     copies: [
       "packages/run-phase/references/phase-workflow.md",
+      "packages/run-phase-models/references/phase-workflow.md",
       "packages/run-subphase/references/phase-workflow.md",
     ],
   },
@@ -203,6 +226,7 @@ export const SHARED_REFERENCES: SharedReference[] = [
       "packages/project-foundation/references/subphase-contract.md",
       "packages/run-subphase/references/subphase-contract.md",
       "packages/run-phase/references/subphase-contract.md",
+      "packages/run-phase-models/references/subphase-contract.md",
     ],
   },
 ];

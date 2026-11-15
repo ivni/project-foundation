@@ -39,6 +39,12 @@ The contract this skill executes is not its own: [references/subphase-contract.m
 defines what a subphase is and when it is done, and the project's foundation skill ships the same copy.
 Read it before starting.
 
+Under a user-started `run-feature-models` or `run-phase-models` as applicable, the parent uses this
+entry/verification/completion contract and owns closeout while native role workers implement bounded
+jobs. The selected models workflow explicitly replaces full-stage worker ownership and default
+reviewer selection; its approved installed review loop keeps all review requirements. It is not a
+standalone permission to delegate differently or select another reviewer.
+
 ## What this reads
 
 - `docs/phase-N/checklist.md` — the subphase list and the requirement traceability table.

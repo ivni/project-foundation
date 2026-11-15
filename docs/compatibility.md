@@ -401,3 +401,23 @@ and independent simulated handoff decisions. It does not establish authenticated
 execution or cancellation on any host. The earlier feature-orchestration runtime/acceptance evidence
 above is evidence for that workflow only. Use the installed runtime's actual capability checks and
 the selected review loop's host adapter before running a phase.
+
+## Native model role variants
+
+`run-feature-models` and `run-phase-models` require the current application's observed native
+fresh-agent lifecycle, explicit model/effort selection, messaging and terminal/cancellation evidence.
+Their native adapter is deliberately capability-driven: installed agent names do not imply those
+controls. Codex Desktop exposes fresh-context/model/effort fields in this task's live
+`collaboration.spawn_agent` schema; inspect the actual schema again on each target environment.
+Other applications are supported only when the same controls can be verified at invocation.
+There is no external implementation-CLI fallback or claim of unattended execution.
+
+Reviewer compatibility remains the installed review loop's documented pinned model and isolation
+contract. Its existing CLI path is allowed; this feature adds no new reviewer CLI options. Source:
+[Codex subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents), plus the current
+application's actual tool schema (checked 2026-11-12). Documentation is not authentication evidence.
+
+Local validation covers task-demand floors, explicit effort selection, cost/latency ordering,
+exact runtime/effort availability, fallback boundaries and isolated installer lifecycle tests. These do not prove
+live model availability, billing, cancellation or complete real feature/phase execution on every
+host. A new host/runtime must pass the workflow's capability and review preflight before edits.
