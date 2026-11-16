@@ -20,5 +20,5 @@ bun <skill-root>/scripts/run-claude-review.ts --cwd <repository> --context-file 
 
 Create the context file outside the repository and pass paths as separate process arguments. Wait for
 the wrapper's JSON envelope and use the core workflow for finding validation, fixes, tests, and later
-passes. Stop for approval if Bun, Claude authentication, `fable/xhigh`, or the enforced read-only and
+passes. Stop for approval if Bun, Claude authentication, `opus/xhigh`, or the enforced read-only and
 test-free tool boundary is unavailable.

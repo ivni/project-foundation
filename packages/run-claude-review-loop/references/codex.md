@@ -21,7 +21,7 @@ Create `<temporary-context>` outside the repository. Pass command arguments as a
 trusted absolute paths; never interpolate repository content into the command. Wait for the single
 JSON envelope on stdout and apply the core ledger and fix rules.
 
-The wrapper pins `fable` and `xhigh`, enables safe mode and plan permissions, disables session
+The wrapper pins `opus` and `xhigh`, enables safe mode and plan permissions, disables session
 persistence, and exposes only `Read`, `Grep`, and `Glob`. If Bun, Claude Code CLI authentication, the
 exact profile, or those controls are unavailable, stop and ask before fallback.
 

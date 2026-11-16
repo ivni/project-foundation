@@ -77,10 +77,10 @@ claude --version
 claude --help
 ```
 
-The wrapper requires `fable`, `xhigh`, safe mode, plan permissions, and the `Read,Grep,Glob` tool
+The wrapper requires `opus`, `xhigh`, safe mode, plan permissions, and the `Read,Grep,Glob` tool
 allowlist. It never changes profile or runtime automatically. An `authentication_required` error,
 including an expired OAuth token, requires the user to authenticate Claude Code before retrying. A
-`model_unavailable` error requires access to the exact Fable profile or explicit approval for a
+`model_unavailable` error requires access to the exact Opus profile or explicit approval for a
 fallback.
 
 An `invalid_output` error means Claude Code omitted or violated `structured_output`, the JSON schema,

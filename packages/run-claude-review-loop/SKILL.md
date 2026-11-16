@@ -67,17 +67,18 @@ Identify the primary agent host and read exactly one adapter before launching th
 - [Hermes](references/hermes.md)
 
 <!-- host:adapter -->
-Claude Code may use a fresh native Claude subagent only when it can prove the exact `fable` model,
+Claude Code may use a fresh native Claude subagent only when it can prove the exact `opus` model,
 `xhigh` effort, fresh context, read-only permissions, and a no-test tool allowlist. Every other host
 must launch the actual Claude Code CLI through `scripts/run-claude-review.ts`; a host-native subagent
 using another runtime is not a substitute.
 
-Require `fable` with `xhigh` effort.
+Require `opus` with `xhigh` effort.
+Use the alias without pinning a version; accept the resolved Opus version reported in `modelUsage`.
 
-The external wrapper performs one small no-tool, plain-text Fable/xhigh profile probe before each
+The external wrapper performs one small no-tool, plain-text Opus/xhigh profile probe before each
 review invocation. It uses API quota but does not count as a review pass. This exposes model
 substitution and organization effort-clamp warnings that JSON mode suppresses; the subsequent review
-must also report non-empty Fable-only `modelUsage`. Do not skip the probe silently.
+must also report non-empty Opus-only `modelUsage`. Do not skip the probe silently.
 
 The external wrapper removes every model-invocable shell and mutation tool. Claude Code safe mode
 disables ordinary hooks, but organization-managed policy hooks can still run outside that tool
@@ -456,7 +457,7 @@ for detail; do not copy the report into permanent project rules. Report:
   that the user supplied or narrowed them;
 <!-- host:report-runtime -->
 - the verified reviewer runtime and CLI version, requested model and effort arguments, any
-  CLI-reported model data, and any approved fallback; the wrapper rejects a reported non-Fable
+  CLI-reported model data, and any approved fallback; the wrapper rejects a reported non-Opus
   model, but do not claim server-side profile attestation when model data is absent;
 - that the external wrapper enforced read-only, test-free inspection on Claude's built-in-tool
   surface, the managed-hook or OS-isolation status, or the exact native-host enforcement used;

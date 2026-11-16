@@ -14,7 +14,7 @@ restores a host-enforced boundary where one is wanted.
 
 A fresh Claude Code custom subagent may be used only if the host can verify all of these controls:
 
-- model `fable` and effort `xhigh`, with no environment or settings override;
+- model `opus` and effort `xhigh`, with no environment or settings override;
 - fresh context containing the canonical contract, output schema, and neutral context packet;
 - `Read`, `Grep`, and `Glob` as the complete tool allowlist;
 - permission mode `plan`;
@@ -35,7 +35,7 @@ bun <skill-root>/scripts/run-claude-review.ts --cwd <repository> --context-file 
 
 Create the context file outside the repository and pass paths without shell interpolation. The
 wrapper provides the strict tool boundary and fresh stateless invocation. If authentication, Bun,
-`fable`, `xhigh`, or the required controls are unavailable, report the exact blocker and ask before
+`opus`, `xhigh`, or the required controls are unavailable, report the exact blocker and ask before
 any fallback.
 
 The wrapper's allowlist governs model tools, not organization-managed policy hooks. Establish that

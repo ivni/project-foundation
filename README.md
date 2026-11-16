@@ -32,7 +32,7 @@ durable project foundation:
 - **Codex Review Loop** explicitly launches an independent read-only Codex reviewer over the current
   task's uncommitted changes, then lets the primary agent validate findings, make bounded fixes, run
   checks, and re-review until clean or honestly blocked.
-- **Claude Review Loop** runs the same bounded workflow through an actual Claude Fable/xhigh reviewer
+- **Claude Review Loop** runs the same bounded workflow through an actual Claude Opus/xhigh reviewer
   with only read-only file inspection tools; the primary agent remains responsible for all tests.
 - **Qwen Review Loop** runs the same bounded workflow through an actual Qwen Code CLI reviewer pinned
   to `qwen3.8-max` with `xhigh` reasoning in the read-only plan approval mode; the primary agent

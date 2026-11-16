@@ -20,5 +20,5 @@ bun <skill-root>/scripts/run-claude-review.ts --cwd <repository> --context-file 
 Keep the context file outside the repository and pass command arguments without shell interpolation.
 Wait for the wrapper's single JSON envelope, validate it, and use the core workflow for the ledger,
 fixes, primary-agent tests, and subsequent passes. If the process tool, Bun, Claude authentication,
-`fable/xhigh`, or the enforced tool boundary is unavailable, report the blocker and ask before
+`opus/xhigh`, or the enforced tool boundary is unavailable, report the blocker and ask before
 fallback.

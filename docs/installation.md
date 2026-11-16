@@ -102,7 +102,8 @@ may differ from those of the primary host. The installer copies the wrapper and 
 not install or authenticate the CLI or install a global read-only Codex custom-agent profile.
 
 `run-claude-review-loop` requires Bun plus an authenticated Claude Code CLI with access to the
-`fable` model alias and `xhigh` effort when the packaged wrapper is used. The wrapper invokes a
+`opus` model alias and `xhigh` effort when the packaged wrapper is used. The alias follows the
+CLI's current Opus version rather than pinning one release. The wrapper invokes a
 direct Claude executable, strips conflicting profile and content-telemetry variables, disables
 updates and nonessential traffic, runs a no-tool profile probe, enables safe and plan modes, and
 exposes only `Read`, `Grep`, and `Glob`. The probe is an additional small model call for every wrapper

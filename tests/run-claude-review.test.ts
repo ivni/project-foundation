@@ -128,9 +128,9 @@ describe("run-claude-review-loop registry", () => {
 });
 
 describe("Claude review wrapper arguments", () => {
-  test("pins Fable xhigh and excludes shell access", () => {
+  test("pins the Opus alias and xhigh and excludes shell access", () => {
     const args = buildClaudeArguments('{"type":"object"}');
-    expect(args).toContain("fable");
+    expect(args).toContain("opus");
     expect(args).toContain("xhigh");
     expect(args).toContain("Read,Grep,Glob");
     expect(args).toContain("plan");
@@ -141,7 +141,7 @@ describe("Claude review wrapper arguments", () => {
     expect(args).not.toContain("--dangerously-skip-permissions");
 
     const probeArgs = buildClaudeProfileProbeArguments();
-    expect(probeArgs).toContain("fable");
+    expect(probeArgs).toContain("opus");
     expect(probeArgs).toContain("xhigh");
     expect(probeArgs).toContain("text");
     expect(probeArgs).toContain("");
@@ -318,20 +318,28 @@ describe("Claude review wrapper arguments", () => {
     );
   });
 
-  test("rejects a CLI-reported fallback away from Fable", () => {
+  test("rejects a CLI-reported fallback away from Opus", () => {
     const models = reportedModels({
-      modelUsage: { "claude-fable-5": {}, "claude-sonnet-fallback": {} },
+      modelUsage: { "claude-opus-5-5": {}, "claude-sonnet-fallback": {} },
     });
-    expect(models).toEqual(["claude-fable-5", "claude-sonnet-fallback"]);
-    expect(() => verifyReportedModels(models)).toThrow("non-Fable runtime model");
-    expect(() => verifyReportedModels(["claude-fable-5"])).not.toThrow();
+    expect(models).toEqual(["claude-opus-5-5", "claude-sonnet-fallback"]);
+    expect(() => verifyReportedModels(models)).toThrow("non-Opus runtime model");
+    expect(() =>
+      verifyReportedModels([
+        "opus",
+        "claude-opus-5-5",
+        "claude-opus-4-8",
+        "anthropic.claude-opus-5-5-20261116",
+        "claude-opus-5-5[1m]",
+      ]),
+    ).not.toThrow();
     expect(() => verifyReportedModels([])).toThrow("did not report the runtime model");
     expect(() => verifyReportedModels(["provider-deployment-123"])).toThrow(
-      "non-Fable runtime model",
+      "non-Opus runtime model",
     );
-    expect(() => verifyReportedModels(["claude-opus-4-8"])).toThrow("non-Fable runtime model");
-    expect(() => verifyReportedModels(["not-fable-model"])).toThrow("non-Fable runtime model");
-    expect(reportedModels({ model: "fable", modelUsage: {} })).toEqual([]);
+    expect(() => verifyReportedModels(["claude-fable-5"])).toThrow("non-Opus runtime model");
+    expect(() => verifyReportedModels(["not-opus-model"])).toThrow("non-Opus runtime model");
+    expect(reportedModels({ model: "opus", modelUsage: {} })).toEqual([]);
   });
 
   test("keeps only a bounded diagnostic tail", async () => {
@@ -425,17 +433,17 @@ describe("Claude review verdict derivation", () => {
 });
 
 describe("Claude review result validation", () => {
-  test("accepts only a complete successful Fable envelope", () => {
+  test("accepts only a complete successful Opus envelope", () => {
     const envelope = {
       type: "result",
       subtype: "success",
       is_error: false,
       terminal_reason: "completed",
       permission_denials: [],
-      modelUsage: { "claude-fable-5": {} },
+      modelUsage: { "claude-opus-5-5": {} },
       structured_output: reviewResult("REVIEWED"),
     };
-    expect(parseClaudeReviewEnvelope(envelope).runtimeModels).toEqual(["claude-fable-5"]);
+    expect(parseClaudeReviewEnvelope(envelope).runtimeModels).toEqual(["claude-opus-5-5"]);
     expect(() =>
       parseClaudeReviewEnvelope({
         ...envelope,
@@ -448,9 +456,9 @@ describe("Claude review result validation", () => {
     expect(() => parseClaudeReviewEnvelope({ ...envelope, modelUsage: {} })).toThrow(
       "did not report the runtime model",
     );
-    expect(() =>
-      parseClaudeReviewEnvelope({ ...envelope, model: "fable", modelUsage: {} }),
-    ).toThrow("did not report the runtime model");
+    expect(() => parseClaudeReviewEnvelope({ ...envelope, model: "opus", modelUsage: {} })).toThrow(
+      "did not report the runtime model",
+    );
     expect(() =>
       parseClaudeReviewEnvelope({
         type: "result",

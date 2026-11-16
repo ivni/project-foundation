@@ -13,7 +13,7 @@ import {
   type TreeSnapshot,
 } from "./tree-snapshot.ts";
 
-const MODEL = "fable";
+const MODEL = "opus";
 const EFFORT = "xhigh";
 const TOOLS = "Read,Grep,Glob";
 const MAX_PASS = 10;
@@ -282,10 +282,6 @@ const PROFILE_OVERRIDE_KEYS = new Set([
   "OTEL_LOG_TOOL_DETAILS",
   "OTEL_LOG_USER_PROMPTS",
 ]);
-
-// ANTHROPIC_DEFAULT_FABLE_MODEL is intentionally retained so Claude Code can resolve supported
-// third-party Fable deployments. It is not trusted as proof: successful output still needs a
-// recognizable Fable model identifier.
 
 export function buildClaudeEnvironment(
   source: NodeJS.ProcessEnv = process.env,
@@ -874,14 +870,14 @@ export function verifyReportedModels(models: string[]): void {
   }
   const unexpected = models.filter(
     (model) =>
-      !/^(?:(?:anthropic|aws|bedrock|vertex)[._:/-])?(?:claude[._:/-])?fable(?:[._:/-]5)?(?:[._:/-][a-z0-9]+)*$/i.test(
+      !/^(?:(?:anthropic|aws|bedrock|vertex)[._:/-])?(?:claude[._:/-])?opus(?:[._:/-][a-z0-9]+)*$/i.test(
         model.replace(/\[1m\]$/i, ""),
       ),
   );
   if (unexpected.length > 0) {
     throw new RunnerError(
       "model_unavailable",
-      `Claude reported a non-Fable runtime model: ${unexpected.join(", ")}`,
+      `Claude reported a non-Opus runtime model: ${unexpected.join(", ")}`,
     );
   }
 }
@@ -1071,7 +1067,7 @@ async function runReview(options: ParsedArguments): Promise<Record<string, unkno
       throw new RunnerError("timeout", `Claude review exceeded ${options.timeoutMs} ms`);
     }
     if (profileTimedOut) {
-      throw new RunnerError("timeout", "Claude Fable/xhigh profile probe timed out");
+      throw new RunnerError("timeout", "Claude Opus/xhigh profile probe timed out");
     }
     if (profileExitCode !== 0) {
       const fullDiagnostic = selectClaudeDiagnostic(
@@ -1102,7 +1098,7 @@ async function runReview(options: ParsedArguments): Promise<Record<string, unkno
     if (!profileStdoutResult.text.includes(PROFILE_PROBE_RESPONSE)) {
       throw new RunnerError(
         "profile_unavailable",
-        "Claude profile probe did not confirm the requested Fable/xhigh session",
+        "Claude profile probe did not confirm the requested Opus/xhigh session",
       );
     }
     stdoutConsumer = undefined;

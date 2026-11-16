@@ -7,6 +7,13 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.13.1] - 2026-11-16
+
+### Changed
+
+- Claude review uses the `opus` model alias with `xhigh` effort and verifies Opus-only runtime
+  model usage, allowing the Opus version to follow the CLI alias.
+
 ## [3.13.0] - 2026-11-15
 
 ### Added
@@ -698,7 +705,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.13.0...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.13.1...HEAD
+[3.13.1]: https://github.com/ivni/project-foundation/compare/v3.13.0...v3.13.1
 [3.13.0]: https://github.com/ivni/project-foundation/compare/v3.12.0...v3.13.0
 [3.12.0]: https://github.com/ivni/project-foundation/compare/v3.11.1...v3.12.0
 [3.11.1]: https://github.com/ivni/project-foundation/compare/v3.11.0...v3.11.1

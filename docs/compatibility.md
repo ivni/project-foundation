@@ -107,13 +107,13 @@ The `run-claude-review-loop` payload keeps the same workflow and selects the act
 | OpenCode | Claude Code CLI through the packaged Bun wrapper | Skill permission `ask` plus an instruction-level boundary |
 | Hermes Agent | Claude Code CLI through the packaged Bun wrapper | Instruction-level boundary; no equivalent per-skill hard flag was verified |
 
-The wrapper pins `--model fable` and `--effort xhigh`, removes conflicting model, effort, update, and
+The wrapper pins `--model opus` and `--effort xhigh`, removes conflicting model, effort, update, and
 content-telemetry inputs from the child environment, enables safe mode and plan permissions, disables session
 persistence, and exposes only `Read`, `Grep`, and `Glob`. This prevents model-initiated tests and
 edits, while those responsibilities stay with the primary agent. Organization-managed policy hooks
 remain outside the model tool allowlist even in safe mode, so a whole-process guarantee additionally
 requires verified harmless hooks or OS-level isolation. The wrapper runs a plain-text profile probe,
-then requires non-empty Fable model usage from the JSON review result.
+then requires non-empty Opus model usage from the JSON review result.
 
 The Codex and Claude adapter behavior was reviewed on 2026-08-04 against the primary sources above
 plus [OpenAI Codex non-interactive mode](https://developers.openai.com/codex/noninteractive/),
