@@ -7,8 +7,12 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.13.2] - 2026-11-23
+
 ### Changed
 
+- UX and UI critics independently assess shared evidence. After fixes, they review affected
+  scenarios against the previous reviewed tree and can request missing observations.
 - Codex Review Loop uses `gpt-6.2-sol` with `xhigh` reasoning for native and CLI reviewers.
 
 ## [3.13.1] - 2026-11-16
@@ -709,7 +713,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.13.1...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.13.2...HEAD
+[3.13.2]: https://github.com/ivni/project-foundation/compare/v3.13.1...v3.13.2
 [3.13.1]: https://github.com/ivni/project-foundation/compare/v3.13.0...v3.13.1
 [3.13.0]: https://github.com/ivni/project-foundation/compare/v3.12.0...v3.13.0
 [3.12.0]: https://github.com/ivni/project-foundation/compare/v3.11.1...v3.12.0
