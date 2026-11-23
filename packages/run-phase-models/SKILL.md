@@ -56,8 +56,9 @@ profile replaces `run-subphase`'s default vendor preference, but not the chosen 
    model/effort, profile digest and evidence destination. They must not commit or edit completion
    checkboxes. Await real termination and inspect each result before another job.
 4. Run the recorded verification command and acceptance checks. Route supported failures through
-   fresh `fix` jobs. Apply required affected-test cleanup and [UI verification](references/ui-verification.md)
-   before final checks; capture the exact tested state.
+   fresh `fix` jobs. Apply required affected-test cleanup and capture the exact tested state. For UI
+   work, prepare and inspect the shared results before dispatching a required critic. Use the
+   [critic assignment](references/ui-verification.md) and handle requests for additional evidence.
 5. Assess review demand and select an adequate approved installed loop with its pinned effort.
    Product fixes are delegated under the shared model workflow; the parent retains findings, dispositions, checks and verdict responsibility.
    Preserve loop identity for the bounded run. If a different approved loop is required after a

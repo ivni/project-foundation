@@ -22,54 +22,72 @@ no blocking finding remains, rather than iterating for a critic's perfect score.
 requires scores or two separate critics, retain those gates until an authorized decision changes them;
 do not silently reinterpret a lower score as passing or add another critic merely for reassurance.
 
-## Review changes without restarting the assessment
+## Prepare the evidence before dispatch
 
-The primary agent checks the agreed criteria before requesting independent review. The first review
-assesses the complete in-scope UI change. Consolidate valid findings into a coherent fix batch and
-keep their dispositions in the existing work record, with evidence and a stable finding identity.
-Resolve contradictory recommendations against agreed behavior and design rules before editing;
-ask only when resolving them needs a stakeholder decision. Do not alternate implementations to
-satisfy incompatible preferences.
+The primary agent owns the test environment, scenario scripts and results. Use the project's existing
+preview, browser checks, fixtures and capture commands. For recurring checks, keep one reusable
+scenario or helper within the authorized work area. Reuse a compatible environment, isolate
+conflicting data and leave other tasks' processes alone. Await completion through notifications or
+bounded waits.
 
-After fixes, reviewers focus on changed behavior, its consequences, unresolved findings and affected
-interactions. Keep the complete current change and prior evidence available; the reviewer may expand
-inspection when a concrete concern warrants it. Renew the full assessment when the journey, contract,
-shared component or design tokens change broadly, the impact is uncertain, or the baseline is invalid.
-A new reviewer or session alone is not a reason to repeat every screenshot and machine check.
+Before dispatching any required UX/UI critic, open the evidence and check that it shows the behavior
+under review. Share each scenario's results across critics. Repeat a run when the project requires
+it or conflicting observations need resolving. Give critics the same factual index in the existing
+work record, with links to:
 
-Reopen a resolved finding for new evidence, a regression, or a changed criterion, stating which.
-Optional polish alone does not initiate another pass unless the user explicitly requested it.
-If rounds stop converging, identify the disputed premise or recurring defect and change the approach;
-do not reset the ledger or declare success because a time or round budget was spent.
+- The reviewed tree including uncommitted changes, build, configuration and fixtures.
+- The agreed criteria, accepted design references, relevant decisions and scope.
+- Observations by scenario, role, state, viewport and theme as applicable. For visual judgments
+  include labelled screenshots and existing measurements such as contrast, overflow or target size.
+  For interactions show the action and
+  observed outcome, for example a trace of focus before and after a dialog closes. Record commands
+  for reproduction, mocked boundaries and gaps. A still image alone cannot establish a focus change.
 
-## Prepare evidence once for each relevant state
+## Assignment for each required UX/UI critic
 
-Use the project's existing preview, Storybook, browser checks, fixtures and screenshot commands.
-When recurring preparation lacks a supported entry point, consolidate it into a small project-local
-helper within the authorized implementation scope; do not have every critic invent a parallel harness.
-The primary agent owns preparation and environment lifecycle. Reuse a healthy, compatible test
-environment; isolate conflicting data or configuration, and restart only when needed. Do not stop
-another task's processes. Await background completion through supported notifications or bounded
-waits rather than repeatedly asking the model to poll unchanged output.
+Start each required critic in a clean context without the parent conversation. Supply a factual
+excerpt or index pointing directly to artifacts, agreed decisions and open findings. Keep the
+author's verdict, other critics' verdicts and past reports out of the supplied context, including
+linked work logs. If the host cannot isolate the context, use an authorized independent route or
+record the unmet independence requirement. Fill in the bracketed fields for each assignment.
 
-Give all required critics one factual evidence index in the existing work record, linking:
+> Assess [UX or UI] for [scope and reviewed tree] against [criteria, accepted reference and decisions].
+> Use [evidence index]. Review [whole in-scope change on first pass, or changed behavior, affected
+> interactions and open finding IDs on follow-up]. Cite the artifact and observed user consequence
+> for each finding. Report the disposition of open IDs, new findings and the verdict or score
+> required by the project. Where evidence is missing or contradictory, name the criterion, scenario
+> and exact observation needed. Leave that criterion pending and assess what the evidence supports.
+> Your role is to inspect the supplied results. Leave running the app, writing scripts, collecting
+> captures and operating the environment to the primary agent.
 
-- the reviewed source state (commit plus uncommitted-state identity where applicable), build,
-  relevant environment/configuration and test-data or fixture identity;
-- the agreed criteria and affected scenarios, roles, states, themes and viewports;
-- reproducible commands, observed results and labelled screenshots or traces, with known gaps and
-  mocked boundaries explicit. A mockup or mocked response does not prove live integration behavior.
+For evidence requests, first check whether an existing observation answers the question. Otherwise
+extend or add the scenario and share the resulting observation. Before returning it, compare
+its tree, build, configuration and fixtures with those under review. For the same state, supplement
+the existing assessment. If any identity changed, record the new state and apply the delta rules
+below before requesting a verdict. In either case, return the evidence to every critic whose
+assessment it affects, including one who already gave a score. Reconcile their updated verdicts
+before closeout.
 
-Reuse machine results for applicable checks such as overflow, accessible names, target sizes,
-contrast and browser errors. They complement visual and interaction judgment, not replace it.
-Critics assess evidence independently, can inspect the source and runtime within their permissions,
-and request missing or conflicting evidence; a shared packet is not an instruction to accept the
-author's verdict. Where a critic is read-only or cannot run tools, the primary agent executes needed
-probes and provides the results without relaxing the critic's restrictions.
+## Review fixes against the previous reviewed tree
 
-After an edit, refresh affected evidence and explain why retained results still apply, considering
-shared dependencies, runtime configuration and fixtures as well as file paths. Unknown impact calls
-for broader checks. Preserve each result's original tested identity and distinguish retained from
-new observations; never relabel old screenshots as a fresh run on the final tree. Before closeout,
-reconcile the final state against the baseline, fix reviews and evidence, then run any mandatory final
-gate. Retain recovery evidence until accepted and apply the owning workflow's cleanup rules afterward.
+Consolidate supported findings into one fix batch. Keep stable finding IDs and dispositions in the
+existing work record. When the same defect appears in neighboring states, identify the common rule,
+fix its cause and check the affected class of cases together. Resolve conflicting recommendations
+against agreed behavior and design rules. Ask the stakeholder only when a decision is needed.
+
+Keep a comparable snapshot for each reviewed tree, such as a Git tree object or a manifest of
+paths and content hashes that includes staged, unstaged and relevant untracked work. Compare the
+previous reviewed snapshot with the current snapshot. When both rounds share a HEAD commit, a diff
+against HEAD also includes earlier rounds' work. Select scenarios for the actual delta, affected
+interactions and open findings. Account for shared components, design tokens, build configuration and
+fixtures. Reassess the whole affected journey when its steps, acceptance criteria or contract
+change materially. Broaden the assessment when the impact is uncertain, a shared change has broad
+effects or the prior snapshot cannot be verified.
+
+Refresh affected observations and explain why retained evidence still applies. Preserve each
+result's original tested identity. Reopen a resolved finding only for new evidence, a regression
+or a changed criterion. Follow the project's explicit polish and scoring requirements.
+If rounds stop converging, identify the recurring defect or disputed premise before the next pass.
+A new critic or session alone does not require fresh captures. Before closeout, reconcile the final
+tree with the evidence and run any mandatory final gate. Retain recovery evidence until acceptance
+and follow the owning workflow's cleanup rules.
