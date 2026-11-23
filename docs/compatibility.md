@@ -77,10 +77,9 @@ The `run-codex-review-loop` payload uses one workflow but not one delegation mec
 | OpenCode | `codex exec` through the packaged Bun wrapper | Skill permission `ask` plus an instruction-level boundary |
 | Hermes Agent | `codex exec` through the packaged Bun wrapper | Instruction-level boundary; no equivalent per-skill hard flag was verified |
 
-The reviewer uses `gpt-6.1-sol` with `xhigh` reasoning, supported by the
-[official model documentation](https://developers.openai.com/api/docs/models/gpt-6.1-sol). A local
-probe on 2026-09-30 with `codex-cli 0.159.2` completed a structured-output request using that model
-and reasoning effort with `--ephemeral`, `--strict-config`, and the `read-only` sandbox.
+The reviewer uses [GPT-6.2 Sol](https://developers.openai.com/api/docs/models/gpt-6.2-sol)
+with `xhigh` reasoning. On 2026-11-23, `codex-cli 0.171.0` returned a schema-valid response with
+`--model gpt-6.2-sol`, `--ephemeral`, `--strict-config` and the `read-only` sandbox.
 
 The external adapters intentionally do not relabel host-native agents configured with OpenAI models
 as Codex. Their wrapper pins the model, reasoning effort, ephemeral mode, read-only sandbox, output

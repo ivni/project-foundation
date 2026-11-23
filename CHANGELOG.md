@@ -7,6 +7,10 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Codex Review Loop uses `gpt-6.2-sol` with `xhigh` reasoning for native and CLI reviewers.
+
 ## [3.13.1] - 2026-11-16
 
 ### Changed

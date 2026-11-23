@@ -96,7 +96,7 @@ available; otherwise its standard path is the packaged Codex CLI wrapper. Every 
 the actual Codex CLI through `scripts/run-codex-review.ts`; a host-native subagent using an OpenAI
 model is not a substitute.
 
-Require `gpt-6.1-sol` with `xhigh` reasoning.
+Require `gpt-6.2-sol` with `xhigh` reasoning.
 <!-- /host:adapter -->
 
 Select a path according to the host adapter. If that path cannot provide the exact profile or its

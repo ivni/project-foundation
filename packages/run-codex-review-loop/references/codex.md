@@ -14,7 +14,7 @@ instructions rather than a host-enforced prohibition.
 1. Load `reviewer-contract.md` and `assets/review-result.schema.json`, then build the neutral context
    packet from the core workflow.
 2. Prefer a fresh native Codex subagent when the host can provide all of these controls:
-   - model `gpt-6.1-sol`;
+   - model `gpt-6.2-sol`;
    - reasoning effort `xhigh`;
    - no inherited implementation conversation or suspected findings;
    - a selected custom reviewer profile or delegation override that sets the sandbox to read-only;

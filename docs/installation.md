@@ -95,7 +95,7 @@ older skill versions and external tools do not participate in that coordination.
 `run-codex-review-loop` uses a native Codex subagent on the Codex host when the required fresh
 context, profile and read-only sandbox are available. Otherwise, and on Claude Code, Pi, OpenCode
 and Hermes, it uses the packaged Codex CLI wrapper. That standard path requires `bun`, an
-authenticated `codex` CLI with access to `gpt-6.1-sol` and `xhigh` reasoning, and a functioning
+authenticated `codex` CLI with access to `gpt-6.2-sol` and `xhigh` reasoning, and a functioning
 read-only sandbox. It needs no separate approval merely to select the wrapper, but host permission
 prompts and user or repository restrictions still apply. CLI authentication, account and usage limits
 may differ from those of the primary host. The installer copies the wrapper and instructions but does
