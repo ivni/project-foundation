@@ -68,7 +68,8 @@ phase or perform unauthorized delivery actions.
 
 ## Recovery and stopping
 
-Diagnose ordinary errors and retry the same subphase with a changed approach; preserve side effects.
+Apply [verification between fix rounds](references/fix-rounds.md) before retrying the subphase or
+starting another review. Preserve side effects and verify any required recovery evidence first.
 For a bounded review stop, retain its full ledger, fixes and tested states, record the diagnosis and
 changed approach, and start a new identified bounded review run under this workflow's authority.
 Never use pass 11, discard unresolved findings, weaken isolation or silently switch reviewer.

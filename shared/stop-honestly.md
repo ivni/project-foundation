@@ -15,7 +15,7 @@ Return `Review: BLOCKED` immediately when:
 - the same unresolved finding repeats without the new evidence the contract requires;
 - fixes oscillate or reviewer conclusions contradict without changed evidence;
 - a repaired defect class keeps recurring, or fixes keep introducing substantial new defects, without
-  a credible change of approach;
+  a demonstrated change of approach under [the two-round recovery rule](references/fix-rounds.md);
 - no safe progress is possible;
 - a valid defect crosses the authority boundary or cannot be fixed without expanding the surface;
 - the task scope cannot be separated from unrelated work;

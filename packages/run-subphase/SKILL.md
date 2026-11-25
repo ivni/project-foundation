@@ -126,6 +126,9 @@ the traceability table rather than creating a second implementation description.
 
 ## 5. Verify
 
+For a failed check or critic finding, apply [verification between fix rounds](references/fix-rounds.md)
+before assigning fixes or rerunning acceptance. Keep the subphase's final verification command.
+
 Before final verification, clean up tests introduced or affected by this subphase under the subphase
 contract: remove obsolete, redundant, completed one-time, and justified low-value checks, plus helpers
 or fixtures with no remaining consumers. Briefly record removals and residual risk; do not expand this

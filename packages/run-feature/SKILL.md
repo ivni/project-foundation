@@ -98,6 +98,8 @@ For other outcomes investigate the cause and side effects before dispatch:
 - `interrupted`: save the action/remaining work and reconcile Git/issue side effects on resume.
   Physical runtime/usage interruption is not stage completion or a stakeholder decision.
 
+Before issuing the next fix or review packet, apply [verification between fix rounds](references/fix-rounds.md)
+to the worker's ledger. When recovery is due, assign the bounded trial before authorizing further passes.
 Repetition, no progress or a review pass budget alone never ends the whole feature as a user blocker.
 There is no additional retry-count limit. Review independence, permissions and acceptance remain
 mandatory. A new permission, scope decision or unavailable access requires the exact missing user

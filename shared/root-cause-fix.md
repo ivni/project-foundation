@@ -60,9 +60,9 @@ even in Markdown. Do not add a permanent invariant or ADR merely because a revie
 use one only when it records a lasting rule or decision. Deferred defects still follow the register
 requirements in **Classify what blocks**.
 
-Before requesting another pass, inspect the fix diff and its affected interactions, and run relevant
-available checks. Reuse trustworthy results for unaffected behavior; run the required full gate at the
-repository's commit, merge, or release boundary. Keep the ledger concise: cause, changed paths,
+Before requesting another pass, apply [verification between fix rounds](references/fix-rounds.md)
+to the actual delta and inspect the affected interactions. Run the required full gate at the
+repository's prescribed boundary. Keep the ledger concise: cause, changed paths,
 evidence, disposition, and any remaining limitation. Reference existing tests, commands, and CI results
 instead of copying their contents into permanent project documents.
 

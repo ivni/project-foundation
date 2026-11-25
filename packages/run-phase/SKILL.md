@@ -82,7 +82,9 @@ and dispatch the next subphase. Never advance on malformed, stale or unsupported
 
 ## Recover and finish
 
-Diagnose ordinary errors, preserve side effects and retry the **same** subphase with a fresh worker.
+For fix retries, apply [verification between fix rounds](references/fix-rounds.md) to the worker's
+ledger before issuing the next packet. When the threshold is reached, assign the bounded recovery
+work first. Preserve side effects and retry the **same** subphase with a fresh worker.
 At a bounded review stop, preserve the run and ledger, diagnose the cause, and authorize a new
 identified review run with a changed approach and unresolved findings. Never add pass 11 to the old
 run or use a reset as evidence of convergence. Review selection/independence and all gates remain.

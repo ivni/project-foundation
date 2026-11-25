@@ -128,6 +128,22 @@ export const SHARED_BLOCKS: SharedBlock[] = [
 
 export const SHARED_REFERENCES: SharedReference[] = [
   {
+    source: "shared/fix-rounds.md",
+    copies: [
+      "packages/run-claude-review-loop/references/fix-rounds.md",
+      "packages/run-codex-review-loop/references/fix-rounds.md",
+      "packages/run-qwen-review-loop/references/fix-rounds.md",
+      "packages/run-feature/references/fix-rounds.md",
+      "packages/run-feature-direct/references/fix-rounds.md",
+      "packages/run-feature-models/references/fix-rounds.md",
+      "packages/run-feature-stage/references/fix-rounds.md",
+      "packages/run-phase/references/fix-rounds.md",
+      "packages/run-phase-direct/references/fix-rounds.md",
+      "packages/run-phase-models/references/fix-rounds.md",
+      "packages/run-subphase/references/fix-rounds.md",
+    ],
+  },
+  {
     source: "shared/model-routing.ts",
     copies: [
       "packages/run-feature-models/scripts/model-routing.ts",

@@ -112,9 +112,11 @@ workflow's test-maintenance rules. Remove unnecessary tests and helpers/fixtures
 consumers; summarize removals, retained protection and residual risk. No whole-suite audit is required.
 Include this cleanup in the tested, reviewed and committed change, not the later temporary-file cleanup.
 
-Run required project checks and the planned acceptance methods yourself. Verify relevant failure
-paths and interactions with earlier stages, and update documentation only where it changes a
-reader's decisions or actions. Record commands/results and the tested code state, not just "works".
+For a failed check or critic finding, apply [verification between fix rounds](references/fix-rounds.md)
+before assigning fixes or rerunning acceptance. Run required project checks and the planned
+acceptance methods yourself. Verify relevant failure paths and interactions with earlier stages.
+Update documentation where it changes a reader's decisions or actions. Record commands/results
+and the tested code state.
 
 The last stage also exercises the complete feature journey and all feature-wide criteria. Separate
 local evidence from pending CI, merge, or deployment. If a required check fails, investigate and fix

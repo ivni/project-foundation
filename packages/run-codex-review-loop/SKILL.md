@@ -40,7 +40,7 @@ the defects it reports. A clean review and passing tests are separate claims.
 
 User-started `run-phase` delegates through `run-subphase`; `run-feature` delegates the required Codex loop through `run-feature-stage`.
 At an exhausted/disputed/non-converged run, preserve verdict, limitations, ledger, fixes and tested states and return the cause to the parent.
-After diagnosis the parent may authorize a new identified run with the prior run, changed approach and all unresolved findings; start at pass 1, never pass 11.
+After diagnosis the parent may authorize a new identified run with the prior run, changed approach and all unresolved findings. When the [two-round threshold](references/fix-rounds.md) applies, verify the trial first. Start at pass 1.
 Missing scope/permission/access requires its specific answer. Diagnose other safe errors; keep every review requirement and honor host denials.
 User-started `run-phase-direct` and `run-feature-direct` provide the same authority through their executors and record diagnosis/history in the direct checkpoint.
 Direct workflows require the selected loop's packaged independent CLI reviewer, its preflight and isolation; no native reviewer, self-review or provider substitution.
@@ -405,9 +405,9 @@ even in Markdown. Do not add a permanent invariant or ADR merely because a revie
 use one only when it records a lasting rule or decision. Deferred defects still follow the register
 requirements in **Classify what blocks**.
 
-Before requesting another pass, inspect the fix diff and its affected interactions, and run relevant
-available checks. Reuse trustworthy results for unaffected behavior; run the required full gate at the
-repository's commit, merge, or release boundary. Keep the ledger concise: cause, changed paths,
+Before requesting another pass, apply [verification between fix rounds](references/fix-rounds.md)
+to the actual delta and inspect the affected interactions. Run the required full gate at the
+repository's prescribed boundary. Keep the ledger concise: cause, changed paths,
 evidence, disposition, and any remaining limitation. Reference existing tests, commands, and CI results
 instead of copying their contents into permanent project documents.
 
@@ -435,7 +435,7 @@ Return `Review: BLOCKED` immediately when:
 - the same unresolved finding repeats without the new evidence the contract requires;
 - fixes oscillate or reviewer conclusions contradict without changed evidence;
 - a repaired defect class keeps recurring, or fixes keep introducing substantial new defects, without
-  a credible change of approach;
+  a demonstrated change of approach under [the two-round recovery rule](references/fix-rounds.md);
 - no safe progress is possible;
 - a valid defect crosses the authority boundary or cannot be fixed without expanding the surface;
 - the task scope cannot be separated from unrelated work;

@@ -64,7 +64,8 @@ the feature workflow even if delivery gates remain pending, and report them with
 
 ## Recovery and stopping
 
-Diagnose ordinary errors and retry the same stage with a changed approach; preserve side effects.
+Apply [verification between fix rounds](references/fix-rounds.md) before retrying the stage or
+starting another review. Preserve side effects and verify any required recovery evidence first.
 For a bounded review stop, retain its complete ledger, fixes and tested states, record the diagnosis
 and changed approach, and start a new identified bounded review run under this workflow's authority.
 Never use pass 11, discard unresolved findings, weaken isolation or switch reviewer silently. Do not

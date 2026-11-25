@@ -7,6 +7,15 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.13.3] - 2026-11-25
+
+### Changed
+
+- Fix rounds start with the observed failure. The workflow owner checks the actual scope and cost
+  of broad verification and runs required acceptance on the assembled candidate.
+- After two consecutive rounds with recurring causes or substantial fix-induced regressions, phase, feature
+  and review workflows require a bounded trial and verified recovery evidence before another round.
+
 ## [3.13.2] - 2026-11-23
 
 ### Changed
@@ -713,7 +722,8 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Canonical path handling for managed-link migrations on macOS and Windows.
 
-[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.13.2...HEAD
+[Unreleased]: https://github.com/ivni/project-foundation/compare/v3.13.3...HEAD
+[3.13.3]: https://github.com/ivni/project-foundation/compare/v3.13.2...v3.13.3
 [3.13.2]: https://github.com/ivni/project-foundation/compare/v3.13.1...v3.13.2
 [3.13.1]: https://github.com/ivni/project-foundation/compare/v3.13.0...v3.13.1
 [3.13.0]: https://github.com/ivni/project-foundation/compare/v3.12.0...v3.13.0

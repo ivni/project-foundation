@@ -56,9 +56,10 @@ Profile/runtime gaps stop before product edits; never silently weaken review or 
    job. Call the selector with those requirements and observed availability. Persist its exact model
    AND effort, resource estimates and reason; reserve and dispatch a fresh native worker with explicit
    model/effort. Inspect actual changes and terminal status before any subsequent job.
-4. Run checks and acceptance at real seams; reassess and select model/effort for scoped `fix` jobs.
-   Maintain the required test cleanup and save the tested state. For UI work, prepare and inspect
-   the shared results before dispatching a required critic. Use the
+4. Before each fix, broad check or repeat review, apply [verification between fix rounds](references/fix-rounds.md).
+   Reassess model/effort for scoped `fix` jobs and give the worker the failing case first. The parent
+   owns candidate acceptance at real seams. Maintain required test cleanup and save the tested state.
+   For UI work, prepare and inspect the shared results before dispatching a required critic. Use the
    [critic assignment](references/ui-verification.md) and handle requests for additional evidence.
 5. Assess review demand and select an adequate installed loop with its pinned effort. Product fixes
    use new native `fix` jobs under the shared model workflow; the parent validates findings and reruns checks. Preserve the selected loop

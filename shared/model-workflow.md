@@ -159,6 +159,10 @@ loop. The parent alone owns those transitions. Investigate/advisor jobs do not m
 use host restrictions where available and inspect the actual diff after every job. Unauthorized edits
 are a failed job to reconcile, never evidence of success.
 
+Before dispatching a fix or another review, apply [verification between fix rounds](fix-rounds.md)
+to the increment's combined QA, critic and code-review history. Put the failing case and focused
+check in the worker packet. When recovery is required, dispatch only the investigation or its
+bounded trial fix until the parent verifies both outcomes. Keep that evidence in the checkpoint.
 The parent runs or independently verifies checks at the agreed real seams and invokes the selected
 installed review loop in its own context. For these two user-started workflows, delegate product
 fixes from that loop to a fresh `fix` worker, then resume the same loop and ledger. The parent still
